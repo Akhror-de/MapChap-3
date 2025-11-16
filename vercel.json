@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "name": "mapchap-v3",
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/dist/$1"
+    }
+  ],
+  "env": {
+    "VITE_YANDEX_MAPS_API_KEY": "07b74146-5f5a-46bf-a2b1-cf6d052a41bb",
+    "VITE_API_BASE_URL": "https://d5djdb4t6ohnfrpfaaic.ql6wied2.apigw.yandexcloud.net"
+  }
+}
