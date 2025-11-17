@@ -1,21 +1,6 @@
 <template>
-  <div class="app">
-    <header class="header">
-      <h1>🗺️ MapChap</h1>
-      <p>Платформа бизнес-объявлений на карте</p>
-    </header>
-    <main class="main">
-      <div class="placeholder">
-        <h2>Скоро здесь будет карта с объявлениями!</h2>
-        <p>Мы работаем над созданием лучшей платформы для вашего бизнеса.</p>
-        <div class="features">
-          <div class="feature">🍕 Рестораны и кафе</div>
-          <div class="feature">🛍️ Магазины одежды</div>
-          <div class="feature">💄 Салоны красоты</div>
-          <div class="feature">🔧 Автосервисы</div>
-        </div>
-      </div>
-    </main>
+  <div>
+    <!-- Vue app will be mounted here -->
   </div>
 </template>
 
@@ -24,81 +9,3 @@ export default {
   name: 'App'
 }
 </script>
-
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-}
-
-.app {
-  min-height: 100vh;
-  color: white;
-}
-
-.header {
-  text-align: center;
-  padding: 2rem 1rem;
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.header h1 {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
-}
-
-.header p {
-  font-size: 1.2rem;
-  opacity: 0.9;
-}
-
-.main {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  min-height: 60vh;
-}
-
-.placeholder {
-  text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 3rem 2rem;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  max-width: 600px;
-  width: 100%;
-}
-
-.placeholder h2 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
-.placeholder p {
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
-}
-
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.feature {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 1rem;
-  border-radius: 10px;
-  font-weight: bold;
-}
-</style>
