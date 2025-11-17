@@ -33,18 +33,15 @@ export class YandexMapsService {
     return new Promise((resolve, reject) => {
       try {
         const defaultOptions = {
-          center: [55.7558, 37.6173], // Москва по умолчанию
+          center: [55.7558, 37.6173],
           zoom: 10,
-          controls: [] // Убираем ВСЕ стандартные элементы управления
+          controls: []
         }
 
         this.map = new this.ymaps.Map(containerId, {
           ...defaultOptions,
           ...options
         })
-
-        // НЕ добавляем стандартные элементы управления
-        // Все управление будет через наши кастомные кнопки
 
         resolve(this.map)
       } catch (error) {
@@ -74,12 +71,10 @@ export class YandexMapsService {
 
   // Добавление кастомного маркера пользователя
   addUserMarker(coordinates) {
-    // Сначала удаляем старый маркер пользователя
     if (this.userMarker) {
       this.map.geoObjects.remove(this.userMarker)
     }
 
-    // Создаем кастомный маркер пользователя
     this.userMarker = new this.ymaps.Placemark(
       coordinates,
       {
@@ -87,15 +82,8 @@ export class YandexMapsService {
         balloonContent: 'Вы здесь'
       },
       {
-        // Кастомная иконка для пользователя
         preset: 'islands#greenCircleIcon',
-        iconColor: '#4CAF50', // Зеленый цвет
-        iconLayout: 'default#circle',
-        iconShape: {
-          type: 'Circle',
-          coordinates: [0, 0],
-          radius: 15
-        }
+        iconColor: '#4CAF50'
       }
     )
 
@@ -105,13 +93,10 @@ export class YandexMapsService {
 
   // Удаление всех маркеров (кроме пользовательского)
   clearMarkers() {
-    // Удаляем только маркеры бизнесов
     this.markers.forEach(marker => {
       this.map.geoObjects.remove(marker)
     })
     this.markers = []
-    
-    // Маркер пользователя не удаляем
   }
 
   // Центрирование карты на координатах
@@ -126,46 +111,6 @@ export class YandexMapsService {
   // Установка зума
   setZoom(zoom) {
     this.map.setZoom(zoom)
-  }
-
-  // Получение текущих границ карты
-  getBounds() {
-    return this.map.getBounds()
-  }
-
-  // Поиск по адресу (геокодирование)
-  geocode(address) {
-    return new Promise((resolve, reject) => {
-      this.ymaps.geocode(address).then((res) => {
-        const firstGeoObject = res.geoObjects.get(0)
-        if (firstGeoObject) {
-          const coordinates = firstGeoObject.geometry.getCoordinates()
-          const bounds = firstGeoObject.properties.get('boundedBy')
-          resolve({ coordinates, bounds, address: firstGeoObject.getAddressLine() })
-        } else {
-          reject(new Error('Адрес не найден'))
-        }
-      }).catch(reject)
-    })
-  }
-
-  // Обратное геокодирование (координаты в адрес)
-  reverseGeocode(coordinates) {
-    return new Promise((resolve, reject) => {
-      this.ymaps.geocode(coordinates).then((res) => {
-        const firstGeoObject = res.geoObjects.get(0)
-        if (firstGeoObject) {
-          resolve(firstGeoObject.getAddressLine())
-        } else {
-          reject(new Error('Адрес не найден'))
-        }
-      }).catch(reject)
-    })
-  }
-
-  // Добавление кастомного элемента управления
-  addControl(control, options = {}) {
-    this.map.controls.add(control, options)
   }
 }
 
