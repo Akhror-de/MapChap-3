@@ -1,86 +1,57 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+// ... предыдущий код без изменений ...
 
-export const useOffersStore = defineStore('offers', () => {
-  // State
-  const offers = ref([])
-  const selectedCategory = ref('all')
-  const userLocation = ref(null)
-  const isLoading = ref(false)
-
-  // Getters
-  const filteredOffers = computed(() => {
-    if (selectedCategory.value === 'all') return offers.value
-    return offers.value.filter(offer => offer.category === selectedCategory.value)
-  })
-
-  const categories = computed(() => [
-    { id: 'all', name: 'Все категории', icon: '🗺️' },
-    { id: 'food', name: '🍕 Еда и рестораны', icon: '🍕' },
-    { id: 'shopping', name: '🛍️ Покупки', icon: '🛍️' },
-    { id: 'beauty', name: '💄 Салоны красоты', icon: '💄' },
-    { id: 'services', name: '🔧 Услуги', icon: '🔧' },
-    { id: 'medical', name: '⚕️ Медицина', icon: '⚕️' },
-    { id: 'furniture', name: '🛋️ Мебель', icon: '🛋️' },
-    { id: 'pharmacy', name: '💊 Аптеки', icon: '💊' }
-  ])
-
-  // Actions
-  const setSelectedCategory = (category) => {
-    selectedCategory.value = category
+const fetchOffers = async () => {
+  isLoading.value = true
+  try {
+    // TODO: Заменить на реальный API вызов
+    const mockOffers = [
+      {
+        id: 1,
+        title: "Кофейня 'Уют'",
+        category: "food",
+        coordinates: [55.7558, 37.6176],
+        address: "ул. Тверская, 1",
+        description: "Лучший кофе в городе с домашней атмосферой",
+        phone: "+7 (999) 821-47-58", // Обновленный номер
+        workingHours: "09:00-22:00",
+        rating: 4.8,
+        reviews: 124,
+        image: "https://via.placeholder.com/300x200/FF6B6B/white?text=Кофейня+Уют"
+      },
+      {
+        id: 2,
+        title: "Магазин электроники 'ТехноМир'",
+        category: "shopping",
+        coordinates: [55.7517, 37.6178],
+        address: "ул. Арбат, 15",
+        description: "Широкий выбор техники и гаджетов",
+        phone: "+7 (999) 821-47-58", // Обновленный номер
+        workingHours: "10:00-21:00",
+        rating: 4.5,
+        reviews: 89,
+        image: "https://via.placeholder.com/300x200/4ECDC4/white?text=ТехноМир"
+      },
+      {
+        id: 3,
+        title: "Салон красоты 'Элегант'",
+        category: "beauty",
+        coordinates: [55.7597, 37.6172],
+        address: "ул. Петровка, 25",
+        description: "Профессиональные услуги красоты",
+        phone: "+7 (999) 821-47-58", // Обновленный номер
+        workingHours: "09:00-20:00",
+        rating: 4.9,
+        reviews: 67,
+        image: "https://via.placeholder.com/300x200/FFD166/white?text=Элегант"
+      }
+    ]
+    offers.value = mockOffers
+  } catch (error) {
+    console.error('Ошибка загрузки предложений:', error)
+    throw error
+  } finally {
+    isLoading.value = false
   }
+}
 
-  const setUserLocation = (location) => {
-    userLocation.value = location
-  }
-
-  const addOffer = (offer) => {
-    offers.value.push({
-      id: Date.now(),
-      ...offer,
-      createdAt: new Date().toISOString()
-    })
-  }
-
-  const fetchOffers = async () => {
-    isLoading.value = true
-    try {
-      // TODO: Заменить на реальный API вызов
-      const mockOffers = [
-        {
-          id: 1,
-          title: "Кофейня 'Уют'",
-          category: "food",
-          coordinates: [55.7558, 37.6173],
-          address: "ул. Примерная, 1",
-          description: "Лучший кофе в городе",
-          phone: "+7 (999) 123-45-67",
-          workingHours: "09:00-22:00"
-        }
-      ]
-      offers.value = mockOffers
-    } catch (error) {
-      console.error('Ошибка загрузки предложений:', error)
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  return {
-    // State
-    offers,
-    selectedCategory,
-    userLocation,
-    isLoading,
-    
-    // Getters
-    filteredOffers,
-    categories,
-    
-    // Actions
-    setSelectedCategory,
-    setUserLocation,
-    addOffer,
-    fetchOffers
-  }
-})
+// ... остальной код без изменений ...
