@@ -2,6 +2,7 @@
   <div class="yandex-map-container">
     <div 
       ref="mapContainer" 
+      id="yandex-map"
       class="yandex-map"
       :class="{ loading: isMapLoading }"
     ></div>
@@ -41,15 +42,6 @@
         <span v-if="isLocating" class="locating-spinner"></span>
         <span v-else>📍</span>
       </button>
-
-      <!-- Кнопка полноэкранного режима -->
-      <button 
-        class="control-btn fullscreen-btn"
-        @click="toggleFullscreen"
-        :title="isFullscreen ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим'"
-      >
-        {{ isFullscreen ? '⤓' : '⤢' }}
-      </button>
     </div>
 
     <!-- Индикатор текущего местоположения -->
@@ -63,7 +55,7 @@
 
 <script>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { useOffersStore } from '../stores/offersStore'
+import { useOffersStore } from '../stores/offersStore.js'
 import { yandexMapsService } from '../services/yandexMaps.js'
 
 export default {
@@ -72,7 +64,6 @@ export default {
     const mapContainer = ref(null)
     const isMapLoading = ref(false)
     const isLocating = ref(false)
-    const isFullscreen = ref(false)
     const userLocation = ref(null)
     const offersStore = useOffersStore()
 
@@ -80,8 +71,6 @@ export default {
 
     // Инициализация карты
     const initMap = async () => {
-      if (!mapContainer.value) return
-
       isMapLoading.value = true
       try {
         map = await yandexMapsService.init('yandex-map', {
@@ -124,7 +113,7 @@ export default {
                 <p><strong>Адрес:</strong> ${offer.address}</p>
                 <p><strong>Телефон:</strong> ${offer.phone}</p>
                 <p><strong>Часы работы:</strong> ${offer.workingHours}</p>
-                <button onclick="selectOffer(${offer.id})" class="balloon-btn">
+                <button onclick="window.selectOffer && window.selectOffer(${offer.id})" class="balloon-btn">
                   Подробнее
                 </button>
               </div>
@@ -160,13 +149,17 @@ export default {
 
     // Управление зумом
     const zoomIn = () => {
-      const currentZoom = map.getZoom()
-      map.setZoom(currentZoom + 1, { duration: 300 })
+      if (map) {
+        const currentZoom = map.getZoom()
+        map.setZoom(currentZoom + 1, { duration: 300 })
+      }
     }
 
     const zoomOut = () => {
-      const currentZoom = map.getZoom()
-      map.setZoom(currentZoom - 1, { duration: 300 })
+      if (map) {
+        const currentZoom = map.getZoom()
+        map.setZoom(currentZoom - 1, { duration: 300 })
+      }
     }
 
     // Центрирование на местоположении пользователя
@@ -201,24 +194,6 @@ export default {
       }
     }
 
-    // Полноэкранный режим
-    const toggleFullscreen = () => {
-      if (!document.fullscreenElement) {
-        mapContainer.value.requestFullscreen().catch(err => {
-          console.error('Ошибка полноэкранного режима:', err)
-        })
-        isFullscreen.value = true
-      } else {
-        document.exitFullscreen()
-        isFullscreen.value = false
-      }
-    }
-
-    // Обработчик выхода из полноэкранного режима
-    const handleFullscreenChange = () => {
-      isFullscreen.value = !!document.fullscreenElement
-    }
-
     // Наблюдаем за изменениями предложений
     watch(() => offersStore.filteredOffers, updateMarkers)
     watch(() => offersStore.mapCenter, (center) => {
@@ -229,34 +204,30 @@ export default {
 
     onMounted(() => {
       initMap()
-      document.addEventListener('fullscreenchange', handleFullscreenChange)
+      
+      // Глобальная функция для балунов
+      window.selectOffer = (offerId) => {
+        const offer = offersStore.offers.find(o => o.id === offerId)
+        if (offer) {
+          offersStore.setSelectedOffer(offer)
+        }
+      }
     })
 
     onUnmounted(() => {
       if (map) {
         map.destroy()
       }
-      document.removeEventListener('fullscreenchange', handleFullscreenChange)
     })
-
-    // Глобальная функция для балунов
-    window.selectOffer = (offerId) => {
-      const offer = offersStore.offers.find(o => o.id === offerId)
-      if (offer) {
-        offersStore.setSelectedOffer(offer)
-      }
-    }
 
     return {
       mapContainer,
       isMapLoading,
       isLocating,
-      isFullscreen,
       userLocation,
       zoomIn,
       zoomOut,
-      centerToUserLocation,
-      toggleFullscreen
+      centerToUserLocation
     }
   }
 }
@@ -359,7 +330,7 @@ export default {
   border-top: 1px solid #e9ecef;
 }
 
-.location-btn, .fullscreen-btn {
+.location-btn {
   background: white;
 }
 
