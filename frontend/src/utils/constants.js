@@ -1,5 +1,5 @@
 export const MAP_SETTINGS = {
-  defaultCenter: [55.7558, 37.6173], // Москва
+  defaultCenter: [55.7558, 37.6173],
   defaultZoom: 10,
   minZoom: 3,
   maxZoom: 18
