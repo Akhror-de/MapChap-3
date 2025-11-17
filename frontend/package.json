@@ -1,20 +1,24 @@
 {
   "name": "mapchap-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "echo 'No tests yet'",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
-  "dependencies": {
+   "dependencies": {
     "vue": "^3.3.4",
     "pinia": "^2.1.6"
   },
   "devDependencies": {
     "vite": "^4.4.5",
-    "@vitejs/plugin-vue": "^4.3.4"
+    "@vitejs/plugin-vue": "^4.3.4",
+    "eslint": "^8.45.0",
+    "eslint-plugin-vue": "^9.15.1"
   },
   "engines": {
     "node": "22.x"
