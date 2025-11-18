@@ -1,11 +1,12 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
 
-// Контактные данные для поддержки
+// Контактные данные для поддержки (2024 год)
 export const SUPPORT_CONTACTS = {
   email: 'khabibullaevakhrorjon@gmail.com',
   phone: '+7 (999) 821-47-58',
   founder: 'Хабибуллаев Ахрор',
-  financeDirector: 'Яна Владимировна Ивченко'
+  financeDirector: 'Яна Владимировна Ивченко',
+  creationYear: 2024
 }
 
 export const apiService = {
@@ -38,28 +39,6 @@ export const apiService = {
   },
 
   async uploadImage(file) {
-    // TODO: Реализовать загрузку изображений
     return Promise.resolve({ url: 'https://via.placeholder.com/300' })
-  },
-
-  // Метод для связи с поддержкой
-  async contactSupport(message) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/support`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...message,
-          supportEmail: SUPPORT_CONTACTS.email
-        })
-      })
-      if (!response.ok) throw new Error('Network response was not ok')
-      return await response.json()
-    } catch (error) {
-      console.error('API Error:', error)
-      throw error
-    }
   }
 }
