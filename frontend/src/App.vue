@@ -1,7 +1,6 @@
 <template>
   <div id="app">
     <div class="app-container">
-      <!-- Хедер -->
       <header class="app-header">
         <div class="container">
           <div class="header-content">
@@ -18,7 +17,6 @@
         </div>
       </header>
 
-      <!-- Основной контент -->
       <main class="app-main">
         <div class="container">
           <div class="dashboard">
@@ -224,21 +222,5 @@ body {
   .dashboard {
     gap: 1rem;
   }
-}
-
-/* Утилиты */
-.loading {
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>
