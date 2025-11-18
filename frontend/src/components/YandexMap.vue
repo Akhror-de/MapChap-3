@@ -1,7 +1,6 @@
 <template>
   <div class="yandex-map-container">
     <div 
-      ref="mapContainer" 
       id="yandex-map"
       class="yandex-map"
       :class="{ loading: isMapLoading }"
@@ -21,14 +20,14 @@
           @click="zoomIn"
           title="Приблизить"
         >
-          +
+          <span class="control-icon">+</span>
         </button>
         <button 
           class="control-btn zoom-out"
           @click="zoomOut"
           title="Отдалить"
         >
-          −
+          <span class="control-icon">−</span>
         </button>
       </div>
 
@@ -40,7 +39,7 @@
         :disabled="isLocating"
       >
         <span v-if="isLocating" class="locating-spinner"></span>
-        <span v-else>📍</span>
+        <span v-else class="control-icon">📍</span>
       </button>
     </div>
 
@@ -57,7 +56,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useOffersStore } from '../stores/offersStore.js'
 
-// ВРЕМЕННО: Переносим сервис прямо в компонент чтобы избежать проблем с путями
+// Сервис Яндекс.Карт прямо в компоненте
 class YandexMapsService {
   constructor() {
     this.map = null
@@ -92,7 +91,7 @@ class YandexMapsService {
         const defaultOptions = {
           center: [55.7558, 37.6173],
           zoom: 10,
-          controls: []
+          controls: [] // УБИРАЕМ ВСЕ СТАНДАРТНЫЕ ЭЛЕМЕНТЫ
         }
 
         this.map = new this.ymaps.Map(containerId, {
@@ -170,7 +169,6 @@ const yandexMapsService = new YandexMapsService()
 export default {
   name: 'YandexMap',
   setup() {
-    const mapContainer = ref(null)
     const isMapLoading = ref(false)
     const isLocating = ref(false)
     const userLocation = ref(null)
@@ -315,7 +313,6 @@ export default {
     })
 
     return {
-      mapContainer,
       isMapLoading,
       isLocating,
       userLocation,
@@ -337,7 +334,6 @@ export default {
 .yandex-map {
   width: 100%;
   height: 100%;
-  border-radius: 8px;
 }
 
 .yandex-map.loading {
@@ -350,20 +346,21 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  color: #333;
+  color: white;
   z-index: 1000;
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
+  border: 4px solid rgba(255, 255, 255, 0.3);
   border-top: 4px solid #667eea;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 10px;
 }
 
+/* Кастомные элементы управления */
 .map-controls {
   position: absolute;
   top: 20px;
@@ -378,20 +375,19 @@ export default {
   display: flex;
   flex-direction: column;
   background: white;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .control-btn {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   background: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -399,9 +395,9 @@ export default {
 }
 
 .control-btn:hover:not(:disabled) {
-  background: #f8f9fa;
+  background: #f8f9ff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
 }
 
 .control-btn:disabled {
@@ -409,17 +405,21 @@ export default {
   cursor: not-allowed;
 }
 
+.control-icon {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
 .zoom-in, .zoom-out {
   font-weight: bold;
-  font-size: 20px;
 }
 
 .zoom-in {
-  border-radius: 8px 8px 0 0;
+  border-radius: 12px 12px 0 0;
 }
 
 .zoom-out {
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 12px 12px;
   border-top: 1px solid #e9ecef;
 }
 
@@ -427,6 +427,7 @@ export default {
   background: white;
 }
 
+/* Спиннер для локации */
 .locating-spinner {
   width: 20px;
   height: 20px;
@@ -436,6 +437,7 @@ export default {
   animation: spin 1s linear infinite;
 }
 
+/* Индикатор местоположения */
 .location-indicator {
   position: absolute;
   top: 50%;
@@ -496,38 +498,45 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
+/* Стили для балунов */
 :deep(.balloon-content) {
-  padding: 10px;
-  max-width: 250px;
+  padding: 12px;
+  max-width: 280px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 :deep(.balloon-content h3) {
   margin: 0 0 8px 0;
   color: #333;
   font-size: 16px;
+  font-weight: 600;
 }
 
 :deep(.balloon-content p) {
   margin: 4px 0;
-  font-size: 12px;
+  font-size: 13px;
   color: #666;
+  line-height: 1.4;
 }
 
 :deep(.balloon-btn) {
-  background: #667eea;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
   border: none;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
   margin-top: 8px;
+  transition: all 0.3s ease;
 }
 
 :deep(.balloon-btn:hover) {
-  background: #5a6fd8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+/* Адаптивность */
 @media (max-width: 768px) {
   .map-controls {
     top: 10px;
@@ -535,9 +544,8 @@ export default {
   }
   
   .control-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
+    width: 44px;
+    height: 44px;
   }
   
   .location-text {
