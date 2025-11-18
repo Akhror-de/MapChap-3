@@ -6,19 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "test": "echo 'No tests yet'",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
+    "preview": "vite preview"
   },
-   "dependencies": {
+  "dependencies": {
     "vue": "^3.3.4",
     "pinia": "^2.1.6"
   },
   "devDependencies": {
     "vite": "^4.4.5",
-    "@vitejs/plugin-vue": "^4.3.4",
-    "eslint": "^8.45.0",
-    "eslint-plugin-vue": "^9.15.1"
+    "@vitejs/plugin-vue": "^4.3.4"
   },
   "engines": {
     "node": "22.x"
