@@ -56,7 +56,116 @@
 <script>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useOffersStore } from '../stores/offersStore.js'
-import { yandexMapsService } from '../services/yandexMaps.js'
+
+// ВРЕМЕННО: Переносим сервис прямо в компонент чтобы избежать проблем с путями
+class YandexMapsService {
+  constructor() {
+    this.map = null
+    this.ymaps = null
+    this.markers = []
+    this.isLoaded = false
+    this.userMarker = null
+  }
+
+  init(containerId, options = {}) {
+    return new Promise((resolve, reject) => {
+      if (this.isLoaded && this.ymaps) {
+        this.createMap(containerId, options).then(resolve).catch(reject)
+        return
+      }
+
+      if (window.ymaps) {
+        window.ymaps.ready(() => {
+          this.ymaps = window.ymaps
+          this.isLoaded = true
+          this.createMap(containerId, options).then(resolve).catch(reject)
+        })
+      } else {
+        reject(new Error('Yandex Maps API not loaded'))
+      }
+    })
+  }
+
+  createMap(containerId, options) {
+    return new Promise((resolve, reject) => {
+      try {
+        const defaultOptions = {
+          center: [55.7558, 37.6173],
+          zoom: 10,
+          controls: []
+        }
+
+        this.map = new this.ymaps.Map(containerId, {
+          ...defaultOptions,
+          ...options
+        })
+
+        resolve(this.map)
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
+  addMarker(coordinates, properties = {}, options = {}) {
+    return new Promise((resolve) => {
+      const marker = new this.ymaps.Placemark(
+        coordinates,
+        properties,
+        {
+          preset: 'islands#blueIcon',
+          ...options
+        }
+      )
+
+      this.map.geoObjects.add(marker)
+      this.markers.push(marker)
+      resolve(marker)
+    })
+  }
+
+  addUserMarker(coordinates) {
+    if (this.userMarker) {
+      this.map.geoObjects.remove(this.userMarker)
+    }
+
+    this.userMarker = new this.ymaps.Placemark(
+      coordinates,
+      {
+        hintContent: 'Ваше местоположение',
+        balloonContent: 'Вы здесь'
+      },
+      {
+        preset: 'islands#greenCircleIcon',
+        iconColor: '#4CAF50'
+      }
+    )
+
+    this.map.geoObjects.add(this.userMarker)
+    return this.userMarker
+  }
+
+  clearMarkers() {
+    this.markers.forEach(marker => {
+      this.map.geoObjects.remove(marker)
+    })
+    this.markers = []
+  }
+
+  setCenter(coordinates, zoom = null) {
+    if (zoom) {
+      this.map.setCenter(coordinates, zoom)
+    } else {
+      this.map.setCenter(coordinates)
+    }
+  }
+
+  setZoom(zoom) {
+    this.map.setZoom(zoom)
+  }
+}
+
+const yandexMapsService = new YandexMapsService()
 
 export default {
   name: 'YandexMap',
@@ -69,7 +178,6 @@ export default {
 
     let map = null
 
-    // Инициализация карты
     const initMap = async () => {
       isMapLoading.value = true
       try {
@@ -78,13 +186,11 @@ export default {
           zoom: offersStore.mapZoom
         })
 
-        // Слушаем события карты
         map.events.add('boundschange', (e) => {
           offersStore.setMapCenter(e.get('newCenter'))
           offersStore.setMapZoom(e.get('newZoom'))
         })
 
-        // Добавляем маркеры
         updateMarkers()
 
       } catch (error) {
@@ -94,14 +200,11 @@ export default {
       }
     }
 
-    // Обновление маркеров
     const updateMarkers = () => {
       if (!map) return
 
-      // Удаляем старые маркеры
       yandexMapsService.clearMarkers()
 
-      // Добавляем новые маркеры
       offersStore.filteredOffers.forEach(offer => {
         const marker = yandexMapsService.addMarker(
           offer.coordinates,
@@ -124,7 +227,6 @@ export default {
           }
         )
 
-        // Событие клика на маркер
         marker.then(m => {
           m.events.add('click', () => {
             offersStore.setSelectedOffer(offer)
@@ -133,7 +235,6 @@ export default {
       })
     }
 
-    // Получение пресета маркера по категории
     const getMarkerPreset = (category) => {
       const presets = {
         food: 'islands#redIcon',
@@ -147,7 +248,6 @@ export default {
       return presets[category] || 'islands#darkBlueIcon'
     }
 
-    // Управление зумом
     const zoomIn = () => {
       if (map) {
         const currentZoom = map.getZoom()
@@ -162,7 +262,6 @@ export default {
       }
     }
 
-    // Центрирование на местоположении пользователя
     const centerToUserLocation = () => {
       if (navigator.geolocation) {
         isLocating.value = true
@@ -172,10 +271,7 @@ export default {
             userLocation.value = { lat: coords[0], lng: coords[1] }
             offersStore.setUserLocation(userLocation.value)
             yandexMapsService.setCenter(coords, 14)
-            
-            // Добавляем кастомный маркер пользователя
             yandexMapsService.addUserMarker(coords)
-            
             isLocating.value = false
           },
           (error) => {
@@ -194,7 +290,6 @@ export default {
       }
     }
 
-    // Наблюдаем за изменениями предложений
     watch(() => offersStore.filteredOffers, updateMarkers)
     watch(() => offersStore.mapCenter, (center) => {
       if (map) {
@@ -205,7 +300,6 @@ export default {
     onMounted(() => {
       initMap()
       
-      // Глобальная функция для балунов
       window.selectOffer = (offerId) => {
         const offer = offersStore.offers.find(o => o.id === offerId)
         if (offer) {
@@ -270,7 +364,6 @@ export default {
   margin: 0 auto 10px;
 }
 
-/* Кастомные элементы управления */
 .map-controls {
   position: absolute;
   top: 20px;
@@ -334,7 +427,6 @@ export default {
   background: white;
 }
 
-/* Спиннер для локации */
 .locating-spinner {
   width: 20px;
   height: 20px;
@@ -344,7 +436,6 @@ export default {
   animation: spin 1s linear infinite;
 }
 
-/* Индикатор местоположения */
 .location-indicator {
   position: absolute;
   top: 50%;
@@ -405,7 +496,6 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
-/* Стили для балунов */
 :deep(.balloon-content) {
   padding: 10px;
   max-width: 250px;
@@ -438,7 +528,6 @@ export default {
   background: #5a6fd8;
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
   .map-controls {
     top: 10px;
