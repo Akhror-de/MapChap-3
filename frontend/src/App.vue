@@ -11,7 +11,8 @@
             </div>
             <nav class="nav">
               <button class="nav-btn" @click="openAbout">О приложении</button>
-              <button class="nav-btn" @click="toggleBottomSheet">Фильтры</button>
+              <button class="nav-btn">Для бизнеса</button>
+              <button class="nav-btn">Войти</button>
             </nav>
           </div>
         </div>
@@ -19,49 +20,55 @@
 
       <!-- Основной контент -->
       <main class="app-main">
-        <div class="map-fullscreen">
-          <YandexMap />
+        <div class="container">
+          <div class="dashboard">
+            <!-- Левая панель - Фильтры -->
+            <div class="sidebar">
+              <div class="search-section">
+                <div class="search-box">
+                  <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Поиск по адресу или названию..."
+                    class="search-input"
+                    @input="onSearchInput"
+                  />
+                  <button class="search-btn" @click="onSearch">
+                    🔍
+                  </button>
+                </div>
+              </div>
+
+              <div class="categories-section">
+                <h3 class="section-title">Категории</h3>
+                <div class="categories-grid">
+                  <button
+                    v-for="category in categories"
+                    :key="category.id"
+                    class="category-btn"
+                    :class="{ active: selectedCategory === category.id }"
+                    @click="selectCategory(category.id)"
+                  >
+                    <span class="category-icon">{{ category.icon }}</span>
+                    <span class="category-name">{{ category.name }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="location-section">
+                <button class="location-btn" @click="getUserLocation">
+                  📍 Мое местоположение
+                </button>
+              </div>
+            </div>
+
+            <!-- Правая панель - Карта -->
+            <div class="map-container">
+              <YandexMap />
+            </div>
+          </div>
         </div>
       </main>
-
-      <!-- Поисковая панель -->
-      <div class="search-panel">
-        <div class="search-container">
-          <div class="search-box">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Поиск по адресу или названию..."
-              class="search-input"
-              @input="onSearchInput"
-            />
-            <button class="search-btn" @click="onSearch">
-              <span class="search-icon">🔍</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Упрощенный BottomSheet -->
-      <div class="bottom-sheet-simple" :class="{ open: isBottomSheetOpen }">
-        <div class="sheet-handle" @click="toggleBottomSheet">
-          <div class="handle-bar"></div>
-        </div>
-        <div class="sheet-content">
-          <h3>Категории</h3>
-          <div class="categories-grid">
-            <button
-              v-for="category in categories"
-              :key="category.id"
-              class="category-btn"
-              @click="selectCategory(category.id)"
-            >
-              <span class="category-icon">{{ category.icon }}</span>
-              <span class="category-name">{{ category.name }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
       <!-- Панель "О приложении" -->
       <AboutPanel ref="aboutPanel" />
@@ -72,6 +79,7 @@
 <script>
 import { ref, computed } from 'vue'
 import { useOffersStore } from './stores/offersStore.js'
+import { useGeolocation } from './composables/useGeolocation.js'
 import YandexMap from './components/YandexMap.vue'
 import AboutPanel from './components/AboutPanel.vue'
 
@@ -83,26 +91,27 @@ export default {
   },
   setup() {
     const offersStore = useOffersStore()
+    const { getCurrentLocation } = useGeolocation()
     const aboutPanel = ref(null)
     const searchQuery = ref('')
-    const isBottomSheetOpen = ref(false)
 
     const categories = computed(() => [
       { id: 'all', name: 'Все категории', icon: '🗺️' },
-      { id: 'food', name: 'Еда', icon: '🍕' },
-      { id: 'shopping', name: 'Покупки', icon: '🛍️' },
-      { id: 'beauty', name: 'Красота', icon: '💄' },
-      { id: 'services', name: 'Услуги', icon: '🔧' }
+      { id: 'food', name: '🍕 Еда и рестораны', icon: '🍕' },
+      { id: 'shopping', name: '🛍️ Покупки', icon: '🛍️' },
+      { id: 'beauty', name: '💄 Салоны красоты', icon: '💄' },
+      { id: 'services', name: '🔧 Услуги', icon: '🔧' },
+      { id: 'medical', name: '⚕️ Медицина', icon: '⚕️' },
+      { id: 'furniture', name: '🛋️ Мебель', icon: '🛋️' },
+      { id: 'pharmacy', name: '💊 Аптеки', icon: '💊' }
     ])
+
+    const selectedCategory = computed(() => offersStore.selectedCategory)
 
     const openAbout = () => {
       if (aboutPanel.value) {
         aboutPanel.value.open()
       }
-    }
-
-    const toggleBottomSheet = () => {
-      isBottomSheetOpen.value = !isBottomSheetOpen.value
     }
 
     const selectCategory = (categoryId) => {
@@ -119,16 +128,26 @@ export default {
       }
     }
 
+    const getUserLocation = async () => {
+      try {
+        const location = await getCurrentLocation()
+        offersStore.setUserLocation(location)
+      } catch (error) {
+        console.error('Ошибка получения местоположения:', error)
+        alert('Не удалось получить ваше местоположение. Проверьте разрешения браузера.')
+      }
+    }
+
     return {
       aboutPanel,
       searchQuery,
-      isBottomSheetOpen,
       categories,
+      selectedCategory,
       openAbout,
-      toggleBottomSheet,
       selectCategory,
       onSearchInput,
-      onSearch
+      onSearch,
+      getUserLocation
     }
   }
 }
@@ -143,21 +162,19 @@ export default {
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #0f1419;
+  background: #f8f9fa;
   color: #333;
   line-height: 1.6;
 }
 
 #app {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f1419 0%, #1e2a3a 100%);
 }
 
 .app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  position: relative;
 }
 
 .container {
@@ -168,14 +185,11 @@ body {
 
 /* Хедер */
 .app-header {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 0.75rem 0;
-  position: fixed;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 1rem 0;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 1000;
 }
 
@@ -186,18 +200,16 @@ body {
 }
 
 .logo h1 {
-  font-size: 1.5rem;
-  margin-bottom: 0.1rem;
+  font-size: 1.8rem;
+  margin-bottom: 0.25rem;
   background: linear-gradient(135deg, #667eea, #764ba2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-weight: 700;
 }
 
 .logo p {
   color: #666;
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .nav {
@@ -223,60 +235,55 @@ body {
 /* Основной контент */
 .app-main {
   flex: 1;
-  padding-top: 70px;
-  height: 100vh;
+  padding: 2rem 0;
 }
 
-.map-fullscreen {
-  width: 100%;
-  height: 100%;
-  position: relative;
+.dashboard {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 2rem;
+  height: calc(100vh - 120px);
 }
 
-/* Поисковая панель */
-.search-panel {
-  position: fixed;
-  top: 80px;
-  left: 0;
-  right: 0;
-  z-index: 998;
-  padding: 0 1rem;
-}
-
-.search-container {
+.sidebar {
   display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  max-width: 500px;
-  margin: 0 auto;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+}
+
+.search-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .search-box {
-  flex: 1;
   display: flex;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
+  gap: 0.5rem;
 }
 
 .search-input {
   flex: 1;
   padding: 0.75rem 1rem;
-  border: none;
-  background: transparent;
-  font-size: 0.9rem;
-  outline: none;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
 }
 
-.search-input::placeholder {
-  color: #999;
+.search-input:focus {
+  outline: none;
+  border-color: #667eea;
 }
 
 .search-btn {
   padding: 0.75rem 1rem;
   background: #667eea;
+  color: white;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
@@ -285,111 +292,122 @@ body {
   background: #5a6fd8;
 }
 
-.search-icon {
-  color: white;
-  font-size: 1rem;
-}
-
-/* Упрощенный BottomSheet */
-.bottom-sheet-simple {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+.categories-section {
   background: white;
-  border-radius: 20px 20px 0 0;
-  box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.15);
-  transform: translateY(100%);
-  transition: transform 0.3s ease;
-  z-index: 999;
-  max-height: 50vh;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  overflow-y: auto;
 }
 
-.bottom-sheet-simple.open {
-  transform: translateY(0);
-}
-
-.sheet-handle {
-  padding: 1rem;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.handle-bar {
-  width: 40px;
-  height: 4px;
-  background: #ddd;
-  border-radius: 2px;
-}
-
-.sheet-content {
-  padding: 1rem;
-}
-
-.sheet-content h3 {
-  margin: 0 0 1rem 0;
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
   color: #333;
-  text-align: center;
 }
 
 .categories-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.5rem;
 }
 
 .category-btn {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 0.5rem;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
   border: 2px solid #e9ecef;
-  border-radius: 12px;
+  border-radius: 8px;
   background: white;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-align: left;
 }
 
 .category-btn:hover {
   border-color: #667eea;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.category-btn.active {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
 }
 
 .category-icon {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
 }
 
 .category-name {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  text-align: center;
+}
+
+.location-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.location-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.location-btn:hover {
+  border-color: #667eea;
+  background: #667eea;
+  color: white;
+}
+
+.map-container {
+  position: relative;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* Адаптивность */
+@media (max-width: 1024px) {
+  .dashboard {
+    grid-template-columns: 350px 1fr;
+    gap: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
-  .app-header {
-    padding: 0.5rem 0;
+  .dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: auto;
+    min-height: calc(100vh - 120px);
   }
-  
-  .logo h1 {
-    font-size: 1.3rem;
+
+  .sidebar {
+    height: auto;
   }
-  
-  .logo p {
-    font-size: 0.7rem;
+
+  .map-container {
+    height: 400px;
   }
-  
-  .search-panel {
-    top: 70px;
-    padding: 0 0.5rem;
-  }
-  
-  .categories-grid {
-    grid-template-columns: repeat(3, 1fr);
+
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
   }
 }
 
@@ -397,13 +415,13 @@ body {
   .container {
     padding: 0 0.5rem;
   }
-  
-  .search-input {
-    font-size: 0.8rem;
+
+  .app-main {
+    padding: 1rem 0;
   }
-  
-  .categories-grid {
-    grid-template-columns: repeat(2, 1fr);
+
+  .dashboard {
+    gap: 1rem;
   }
 }
 </style>
