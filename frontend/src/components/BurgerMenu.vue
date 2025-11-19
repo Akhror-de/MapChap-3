@@ -1,203 +1,94 @@
 <template>
   <div class="burger-menu">
-    <!-- Кнопка бургера -->
-    <button class="burger-btn" @click="toggleMenu" :class="{ active: isOpen }">
+    <!-- Кнопка бургер-меню -->
+    <button 
+      class="burger-btn"
+      :class="{ 'active': isOpen }"
+      @click="toggleMenu"
+    >
       <span></span>
       <span></span>
       <span></span>
     </button>
 
-    <!-- Затемнение -->
-    <div v-if="isOpen" class="menu-overlay" @click="closeMenu"></div>
+    <!-- Затемнение фона -->
+    <div 
+      v-if="isOpen"
+      class="menu-overlay"
+      @click="toggleMenu"
+    ></div>
 
-    <!-- Меню -->
-    <div class="menu-content" :class="{ open: isOpen }">
+    <!-- Само меню -->
+    <div 
+      class="menu-sidebar"
+      :class="{ 'open': isOpen }"
+    >
+      <!-- Заголовок меню -->
       <div class="menu-header">
-        <h3>Меню</h3>
-        <button class="close-btn" @click="closeMenu">×</button>
+        <h3>Меню MapChap</h3>
+        <button class="close-btn" @click="toggleMenu">✕</button>
       </div>
 
-      <div class="menu-items">
+      <!-- Навигация -->
+      <nav class="menu-nav">
         <!-- Профиль -->
-        <div class="menu-section">
-          <h4>Аккаунт</h4>
-          <button class="menu-item" @click="openProfile">
-            <span class="menu-icon">👤</span>
-            <span class="menu-text">Мой профиль</span>
-          </button>
-          <button class="menu-item" @click="openSettings">
-            <span class="menu-icon">⚙️</span>
-            <span class="menu-text">Настройки</span>
-          </button>
-          <button class="menu-item" @click="openFavorites">
-            <span class="menu-icon">❤️</span>
-            <span class="menu-text">Избранное</span>
-          </button>
+        <div class="menu-item profile-item" @click="openModal('profile')">
+          <div class="profile-avatar">
+            {{ user.avatar }}
+          </div>
+          <div class="profile-info">
+            <strong>{{ user.name }}</strong>
+            <span class="profile-subtitle">Посмотреть профиль</span>
+          </div>
         </div>
 
-        <!-- Бизнес -->
-        <div class="menu-section">
-          <h4>Для бизнеса</h4>
-          <button class="menu-item" @click="openCreateBusiness">
-            <span class="menu-icon">➕</span>
-            <span class="menu-text">Создать бизнес</span>
-          </button>
-          <button class="menu-item" @click="openEditBusiness">
-            <span class="menu-icon">✏️</span>
-            <span class="menu-text">Редактировать бизнес</span>
-          </button>
-          <button class="menu-item" @click="openBusinessPanel">
-            <span class="menu-icon">🏢</span>
-            <span class="menu-text">Панель управления</span>
-          </button>
-        </div>
+        <!-- Для бизнеса -->
+        <button class="menu-item" @click="openModal('business')">
+          <span class="menu-icon">💼</span>
+          <span class="menu-text">Для бизнеса</span>
+          <span class="menu-arrow">›</span>
+        </button>
 
         <!-- Блог -->
-        <div class="menu-section">
-          <h4>BlogChap</h4>
-          <button class="menu-item" @click="openBlog">
-            <span class="menu-icon">📝</span>
-            <span class="menu-text">Читать блог</span>
-          </button>
-          <button class="menu-item" @click="openCreatePost">
-            <span class="menu-icon">🖊️</span>
-            <span class="menu-text">Написать пост</span>
-          </button>
-          <button class="menu-item" @click="openMyPosts">
-            <span class="menu-icon">📚</span>
-            <span class="menu-text">Мои публикации</span>
-          </button>
-        </div>
-
-        <!-- Информация -->
-        <div class="menu-section">
-          <h4>Информация</h4>
-          <button class="menu-item" @click="openAbout">
-            <span class="menu-icon">ℹ️</span>
-            <span class="menu-text">О приложении</span>
-          </button>
-          <button class="menu-item" @click="openHelp">
-            <span class="menu-icon">❓</span>
-            <span class="menu-text">Помощь</span>
-          </button>
-          <button class="menu-item" @click="openContact">
-            <span class="menu-icon">📞</span>
-            <span class="menu-text">Связаться с нами</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="menu-footer">
-        <button class="logout-btn" @click="logout">
-          <span class="menu-icon">🚪</span>
-          <span class="menu-text">Выйти</span>
+        <button class="menu-item" @click="openModal('blog')">
+          <span class="menu-icon">📝</span>
+          <span class="menu-text">Блог MapChap</span>
+          <span class="menu-arrow">›</span>
         </button>
+
+        <!-- О приложении -->
+        <button class="menu-item" @click="openModal('about')">
+          <span class="menu-icon">ℹ️</span>
+          <span class="menu-text">О приложении</span>
+          <span class="menu-arrow">›</span>
+        </button>
+      </nav>
+
+      <!-- Футер меню -->
+      <div class="menu-footer">
+        <p>MapChap v3.0</p>
+        <p>С любовью для бизнеса ❤️</p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue'
+import { useUIStore } from '../stores/uiStore'
+import { storeToRefs } from 'pinia'
 
 export default {
   name: 'BurgerMenu',
-  emits: ['open-profile', 'open-business', 'open-blog', 'open-about'],
-  setup(props, { emit }) {
-    const isOpen = ref(false)
-
-    const toggleMenu = () => {
-      isOpen.value = !isOpen.value
-    }
-
-    const closeMenu = () => {
-      isOpen.value = false
-    }
-
-    const openProfile = () => {
-      emit('open-profile')
-      closeMenu()
-    }
-
-    const openSettings = () => {
-      alert('Открыть настройки')
-      closeMenu()
-    }
-
-    const openFavorites = () => {
-      alert('Открыть избранное')
-      closeMenu()
-    }
-
-    const openCreateBusiness = () => {
-      emit('open-business', 'create')
-      closeMenu()
-    }
-
-    const openEditBusiness = () => {
-      emit('open-business', 'edit')
-      closeMenu()
-    }
-
-    const openBusinessPanel = () => {
-      emit('open-business', 'panel')
-      closeMenu()
-    }
-
-    const openBlog = () => {
-      emit('open-blog', 'read')
-      closeMenu()
-    }
-
-    const openCreatePost = () => {
-      emit('open-blog', 'create')
-      closeMenu()
-    }
-
-    const openMyPosts = () => {
-      emit('open-blog', 'my-posts')
-      closeMenu()
-    }
-
-    const openAbout = () => {
-      emit('open-about')
-      closeMenu()
-    }
-
-    const openHelp = () => {
-      alert('Открыть помощь')
-      closeMenu()
-    }
-
-    const openContact = () => {
-      alert('Открыть контакты')
-      closeMenu()
-    }
-
-    const logout = () => {
-      if (confirm('Вы уверены, что хотите выйти?')) {
-        alert('Выход из системы')
-        closeMenu()
-      }
-    }
+  setup() {
+    const uiStore = useUIStore()
+    const { isBurgerMenuOpen: isOpen, user } = storeToRefs(uiStore)
+    const { toggleBurgerMenu, openModal } = uiStore
 
     return {
       isOpen,
-      toggleMenu,
-      closeMenu,
-      openProfile,
-      openSettings,
-      openFavorites,
-      openCreateBusiness,
-      openEditBusiness,
-      openBusinessPanel,
-      openBlog,
-      openCreatePost,
-      openMyPosts,
-      openAbout,
-      openHelp,
-      openContact,
-      logout
+      user,
+      toggleMenu: toggleBurgerMenu,
+      openModal
     }
   }
 }
@@ -208,26 +99,30 @@ export default {
   position: relative;
 }
 
+/* Кнопка бургера */
 .burger-btn {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1001;
+  background: white;
+  border: none;
+  border-radius: 8px;
   width: 44px;
   height: 44px;
-  background: white;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  position: relative;
-  z-index: 1002;
 }
 
 .burger-btn:hover {
-  border-color: #667eea;
-  background: #f8f9ff;
+  background: #f8f9fa;
+  transform: scale(1.05);
 }
 
 .burger-btn span {
@@ -235,7 +130,6 @@ export default {
   height: 2px;
   background: #333;
   transition: all 0.3s ease;
-  transform-origin: center;
 }
 
 .burger-btn.active span:nth-child(1) {
@@ -250,6 +144,7 @@ export default {
   transform: rotate(-45deg) translate(6px, -6px);
 }
 
+/* Затемнение фона */
 .menu-overlay {
   position: fixed;
   top: 0;
@@ -257,28 +152,35 @@ export default {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  z-index: 1000;
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
 }
 
-.menu-content {
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Боковая панель меню */
+.menu-sidebar {
   position: fixed;
   top: 0;
-  right: -400px;
-  width: 350px;
+  left: -320px;
+  width: 320px;
   height: 100%;
   background: white;
-  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
-  z-index: 1001;
-  transition: right 0.3s ease;
+  z-index: 1000;
+  transition: left 0.3s ease;
   display: flex;
   flex-direction: column;
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
 }
 
-.menu-content.open {
-  right: 0;
+.menu-sidebar.open {
+  left: 0;
 }
 
+/* Заголовок меню */
 .menu-header {
   display: flex;
   justify-content: space-between;
@@ -291,7 +193,7 @@ export default {
 
 .menu-header h3 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
 }
 
 .close-btn {
@@ -300,12 +202,13 @@ export default {
   color: white;
   font-size: 1.5rem;
   cursor: pointer;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  padding: 0;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
   transition: background 0.3s ease;
 }
 
@@ -313,83 +216,103 @@ export default {
   background: rgba(255, 255, 255, 0.2);
 }
 
-.menu-items {
+/* Навигация */
+.menu-nav {
   flex: 1;
-  overflow-y: auto;
   padding: 1rem 0;
-}
-
-.menu-section {
-  margin-bottom: 1.5rem;
-}
-
-.menu-section h4 {
-  padding: 0 1.5rem 0.5rem;
-  margin: 0;
-  color: #667eea;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  overflow-y: auto;
 }
 
 .menu-item {
-  width: 100%;
-  padding: 0.75rem 1.5rem;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
   transition: background 0.3s ease;
-  color: #333;
+  text-align: left;
+  gap: 1rem;
 }
 
 .menu-item:hover {
-  background: #f8f9ff;
+  background: #f8f9fa;
+}
+
+.menu-item.profile-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.profile-avatar {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-info strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.profile-subtitle {
+  font-size: 0.85rem;
+  color: #666;
 }
 
 .menu-icon {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   width: 24px;
   text-align: center;
 }
 
 .menu-text {
+  flex: 1;
   font-size: 0.95rem;
-  font-weight: 500;
 }
 
+.menu-arrow {
+  color: #999;
+  font-size: 1.2rem;
+}
+
+/* Футер меню */
 .menu-footer {
-  padding: 1rem 1.5rem;
+  padding: 1.5rem;
   border-top: 1px solid #e9ecef;
+  text-align: center;
+  color: #666;
+  font-size: 0.85rem;
 }
 
-.logout-btn {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.3s ease;
-  color: #dc3545;
+.menu-footer p {
+  margin: 0.25rem 0;
 }
 
-.logout-btn:hover {
-  background: #dc3545;
-  color: white;
-  border-color: #dc3545;
-}
-
+/* Адаптивность */
 @media (max-width: 480px) {
-  .menu-content {
-    width: 300px;
+  .menu-sidebar {
+    width: 280px;
+    left: -280px;
+  }
+  
+  .burger-btn {
+    top: 0.5rem;
+    left: 0.5rem;
   }
 }
 </style>
