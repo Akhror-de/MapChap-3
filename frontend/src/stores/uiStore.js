@@ -1,18 +1,23 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 export const useUIStore = defineStore('ui', () => {
   // Состояние меню и модальных окон
   const isBurgerMenuOpen = ref(false)
-  const activeModal = ref(null) // 'profile', 'business', 'blog', 'about'
+  const activeModal = ref(null)
+  const isDarkTheme = ref(false)
   
-  // Данные пользователя (временные, пока нет бэкенда)
+  // Данные пользователя
   const user = ref({
     name: 'Ахрор Хабибуллаев',
     avatar: '👨‍💼',
     favoriteCategories: ['🍕 Еда', '🛍️ Покупки', '💄 Красота'],
-    favorites: ['Ресторан "Суши-Мастер"', 'ТЦ "Мега"', 'Салон "Клео"']
+    favorites: ['Ресторан "Суши-Мастер"', 'ТЦ "Мега"', 'Салон "Клео"'],
+    email: 'khabibullaevakhrorjon@gmail.com'
   })
+
+  // Вычисляемые свойства
+  const themeClass = computed(() => isDarkTheme.value ? 'dark-theme' : 'light-theme')
 
   // Действия
   const toggleBurgerMenu = () => {
@@ -21,19 +26,46 @@ export const useUIStore = defineStore('ui', () => {
 
   const openModal = (modalName) => {
     activeModal.value = modalName
-    isBurgerMenuOpen.value = false // Закрываем меню при открытии модалки
+    isBurgerMenuOpen.value = false
   }
 
   const closeModal = () => {
     activeModal.value = null
   }
 
+  const toggleTheme = () => {
+    isDarkTheme.value = !isDarkTheme.value
+    // Сохраняем в localStorage
+    localStorage.setItem('mapchap-theme', isDarkTheme.value ? 'dark' : 'light')
+    // Применяем класс к body
+    if (isDarkTheme.value) {
+      document.body.classList.add('dark-theme')
+    } else {
+      document.body.classList.remove('dark-theme')
+    }
+  }
+
+  // Инициализация темы
+  const initTheme = () => {
+    const savedTheme = localStorage.getItem('mapchap-theme')
+    if (savedTheme) {
+      isDarkTheme.value = savedTheme === 'dark'
+      if (isDarkTheme.value) {
+        document.body.classList.add('dark-theme')
+      }
+    }
+  }
+
   return {
     isBurgerMenuOpen,
     activeModal,
     user,
+    isDarkTheme,
+    themeClass,
     toggleBurgerMenu,
     openModal,
-    closeModal
+    closeModal,
+    toggleTheme,
+    initTheme
   }
 })
