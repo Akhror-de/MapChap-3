@@ -11,9 +11,9 @@ export const useUIStore = defineStore('ui', () => {
   const user = ref({
     name: 'Ахрор Хабибуллаев',
     avatar: '👨‍💼',
+    email: 'khabibullaevakhrorjon@gmail.com',
     favoriteCategories: ['🍕 Еда', '🛍️ Покупки', '💄 Красота'],
-    favorites: ['Ресторан "Суши-Мастер"', 'ТЦ "Мега"', 'Салон "Клео"'],
-    email: 'khabibullaevakhrorjon@gmail.com'
+    favorites: ['Ресторан "Суши-Мастер"', 'ТЦ "Мега"', 'Салон "Клео"']
   })
 
   // Вычисляемые свойства
@@ -35,9 +35,8 @@ export const useUIStore = defineStore('ui', () => {
 
   const toggleTheme = () => {
     isDarkTheme.value = !isDarkTheme.value
-    // Сохраняем в localStorage
     localStorage.setItem('mapchap-theme', isDarkTheme.value ? 'dark' : 'light')
-    // Применяем класс к body
+    
     if (isDarkTheme.value) {
       document.body.classList.add('dark-theme')
     } else {
