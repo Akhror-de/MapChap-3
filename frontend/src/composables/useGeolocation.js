@@ -1,41 +1,45 @@
 import { ref } from 'vue'
 
 export function useGeolocation() {
-  const location = ref(null)
-  const error = ref(null)
   const isLoading = ref(false)
+  const error = ref(null)
 
   const getCurrentLocation = () => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
-        reject(new Error('Geolocation is not supported'))
+        reject(new Error('Geolocation is not supported by this browser'))
         return
       }
 
       isLoading.value = true
-      
+      error.value = null
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          location.value = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          }
           isLoading.value = false
-          resolve(location.value)
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy
+          })
         },
         (err) => {
-          error.value = err.message
           isLoading.value = false
+          error.value = err.message
           reject(err)
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
         }
       )
     })
   }
 
   return {
-    location,
-    error,
     isLoading,
+    error,
     getCurrentLocation
   }
 }
