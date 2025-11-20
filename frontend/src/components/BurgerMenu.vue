@@ -31,37 +31,50 @@
 
       <!-- Навигация -->
       <nav class="menu-nav">
-        <!-- Профиль -->
-        <div class="menu-item profile-item" @click="openModal('profile')">
-          <div class="profile-avatar">
-            {{ user.avatar }}
+        <!-- Профиль (только для авторизованных) -->
+        <template v-if="isAuthenticated">
+          <div class="menu-item profile-item" @click="openModal('profile')">
+            <div class="profile-avatar">
+              {{ user.avatar }}
+            </div>
+            <div class="profile-info">
+              <strong>{{ user.name }}</strong>
+              <span class="profile-subtitle">@{{ user.username }}</span>
+              <span class="profile-role">{{ user.role === 'business_owner' ? 'Владелец бизнеса' : 'Пользователь' }}</span>
+            </div>
           </div>
-          <div class="profile-info">
-            <strong>{{ user.name }}</strong>
-            <span class="profile-subtitle">Посмотреть профиль</span>
-          </div>
-        </div>
 
-        <!-- Для бизнеса -->
+          <div class="menu-divider"></div>
+        </template>
+
+        <!-- Основная навигация -->
         <button class="menu-item" @click="openModal('business')">
           <span class="menu-icon">💼</span>
           <span class="menu-text">Для бизнеса</span>
           <span class="menu-arrow">›</span>
         </button>
 
-        <!-- Блог -->
         <button class="menu-item" @click="openModal('blog')">
           <span class="menu-icon">📝</span>
           <span class="menu-text">Блог MapChap</span>
           <span class="menu-arrow">›</span>
         </button>
 
-        <!-- О приложении -->
-        <button class="menu-item" @click="openModal('about')">
+        <button class="menu-item" @click="openAbout">
           <span class="menu-icon">ℹ️</span>
           <span class="menu-text">О приложении</span>
           <span class="menu-arrow">›</span>
         </button>
+
+        <!-- Авторизация (только для неавторизованных) -->
+        <template v-if="!isAuthenticated">
+          <div class="menu-divider"></div>
+          <button class="menu-item auth-item" @click="initAuth">
+            <span class="menu-icon">🔗</span>
+            <span class="menu-text">Войти через Telegram</span>
+            <span class="menu-arrow">›</span>
+          </button>
+        </template>
       </nav>
 
       <!-- Футер меню -->
@@ -75,24 +88,49 @@
 
 <script>
 import { useUIStore } from '../stores/uiStore'
+import { useAuthStore } from '../stores/authStore'
 import { storeToRefs } from 'pinia'
 
 export default {
   name: 'BurgerMenu',
-  setup() {
+  emits: ['open-about'],
+  setup(props, { emit }) {
     const uiStore = useUIStore()
-    const { isBurgerMenuOpen: isOpen, user } = storeToRefs(uiStore)
+    const authStore = useAuthStore()
+    
+    const { isBurgerMenuOpen: isOpen } = storeToRefs(uiStore)
+    const { isAuthenticated, user } = storeToRefs(authStore)
+
     const { toggleBurgerMenu, openModal } = uiStore
+    const { initTelegramAuth } = authStore
 
     const toggleMenu = () => {
+      toggleBurgerMenu()
+    }
+
+    const openModalWithClose = (modalName) => {
+      openModal(modalName)
+      toggleBurgerMenu()
+    }
+
+    const openAbout = () => {
+      emit('open-about')
+      toggleBurgerMenu()
+    }
+
+    const initAuth = () => {
+      initTelegramAuth()
       toggleBurgerMenu()
     }
 
     return {
       isOpen,
       user,
+      isAuthenticated,
       toggleMenu,
-      openModal
+      openModal: openModalWithClose,
+      openAbout,
+      initAuth
     }
   }
 }
@@ -108,7 +146,7 @@ export default {
   position: fixed;
   top: 1rem;
   left: 1rem;
-  z-index: 100;
+  z-index: 1001;
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -160,7 +198,8 @@ export default {
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(5px);
-  z-index: 99;
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 999;
   animation: fadeIn 0.3s ease;
 }
 
@@ -175,7 +214,7 @@ export default {
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border-right: 1px solid var(--glass-border);
-  z-index: 100;
+  z-index: 1000;
   transition: left 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -286,6 +325,16 @@ export default {
   color: var(--text-secondary);
 }
 
+.profile-role {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 0.1rem 0.4rem;
+  border-radius: 8px;
+  margin-top: 0.2rem;
+  display: inline-block;
+}
+
 .menu-icon {
   font-size: 1.25rem;
   width: 24px;
@@ -307,6 +356,28 @@ export default {
 .menu-item:hover .menu-arrow {
   transform: translateX(3px);
   color: var(--accent-color);
+}
+
+.menu-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.5rem 1.5rem;
+}
+
+.auth-item {
+  background: linear-gradient(135deg, #0088cc, #00a2e8) !important;
+  color: white !important;
+  margin: 0.5rem 1.5rem;
+  border-radius: 12px;
+  border: none !important;
+}
+
+.auth-item .menu-text {
+  color: white !important;
+}
+
+.auth-item .menu-arrow {
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 
 /* Футер меню */
