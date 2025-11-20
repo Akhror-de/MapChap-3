@@ -84,10 +84,14 @@ export default {
     const { isBurgerMenuOpen: isOpen, user } = storeToRefs(uiStore)
     const { toggleBurgerMenu, openModal } = uiStore
 
+    const toggleMenu = () => {
+      toggleBurgerMenu()
+    }
+
     return {
       isOpen,
       user,
-      toggleMenu: toggleBurgerMenu,
+      toggleMenu,
       openModal
     }
   }
@@ -104,10 +108,12 @@ export default {
   position: fixed;
   top: 1rem;
   left: 1rem;
-  z-index: 1001;
-  background: white;
-  border: none;
-  border-radius: 8px;
+  z-index: 100;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
   width: 44px;
   height: 44px;
   display: flex;
@@ -116,19 +122,20 @@ export default {
   align-items: center;
   gap: 4px;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
   transition: all 0.3s ease;
 }
 
 .burger-btn:hover {
-  background: #f8f9fa;
+  background: var(--bg-tertiary);
   transform: scale(1.05);
+  box-shadow: var(--shadow-xl);
 }
 
 .burger-btn span {
   width: 20px;
   height: 2px;
-  background: #333;
+  background: var(--text-primary);
   transition: all 0.3s ease;
 }
 
@@ -152,13 +159,9 @@ export default {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  backdrop-filter: blur(5px);
+  z-index: 99;
   animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 /* Боковая панель меню */
@@ -168,12 +171,15 @@ export default {
   left: -320px;
   width: 320px;
   height: 100%;
-  background: white;
-  z-index: 1000;
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-right: 1px solid var(--glass-border);
+  z-index: 100;
   transition: left 0.3s ease;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-xl);
 }
 
 .menu-sidebar.open {
@@ -186,34 +192,36 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #e9ecef;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--primary-gradient);
   color: white;
 }
 
 .menu-header h3 {
   margin: 0;
   font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .close-btn {
-  background: none;
+  background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
   font-size: 1.5rem;
   cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
+  padding: 0.5rem;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
 }
 
 /* Навигация */
@@ -231,20 +239,22 @@ export default {
   border: none;
   background: none;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
   text-align: left;
   gap: 1rem;
+  color: var(--text-primary);
 }
 
 .menu-item:hover {
-  background: #f8f9fa;
+  background: var(--bg-tertiary);
+  padding-left: 2rem;
 }
 
 .menu-item.profile-item {
   display: flex;
   align-items: center;
   gap: 1rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 1.5rem;
   margin-bottom: 0.5rem;
 }
@@ -252,12 +262,13 @@ export default {
 .profile-avatar {
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--primary-gradient);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
+  box-shadow: var(--shadow-md);
 }
 
 .profile-info {
@@ -267,11 +278,12 @@ export default {
 .profile-info strong {
   display: block;
   margin-bottom: 0.25rem;
+  font-weight: 600;
 }
 
 .profile-subtitle {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .menu-icon {
@@ -283,19 +295,26 @@ export default {
 .menu-text {
   flex: 1;
   font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .menu-arrow {
-  color: #999;
+  color: var(--text-muted);
   font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.menu-item:hover .menu-arrow {
+  transform: translateX(3px);
+  color: var(--accent-color);
 }
 
 /* Футер меню */
 .menu-footer {
   padding: 1.5rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--border-color);
   text-align: center;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.85rem;
 }
 
@@ -314,5 +333,10 @@ export default {
     top: 0.5rem;
     left: 0.5rem;
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 </style>
