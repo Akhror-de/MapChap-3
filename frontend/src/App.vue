@@ -1,43 +1,28 @@
 <template>
   <div id="app" :class="themeClass">
-    <!-- Бургер-меню -->
+    <!-- Бургер-меню и панели -->
     <BurgerMenu />
     
-    <!-- Боковые панели -->
-    <div class="panels-container">
-      <ProfilePanel v-if="currentPanel === 'profile'" />
-      <BusinessPanel v-if="currentPanel === 'business'" />
-      <BlogPanel v-if="currentPanel === 'blog'" />
-      <AboutPanel v-if="currentPanel === 'about'" />
-      <ArticlePanel 
-        v-if="currentPanel === 'article' && currentArticle" 
-        :article="currentArticle" 
-      />
-    </div>
-
     <!-- Основной контент -->
-    <div class="main-content" :class="{ 'panel-open': isPanelOpen }">
-      <!-- Хедер -->
+    <div class="main-content" :class="{ 'content-shifted': isAnyPanelOpen }">
+      <!-- Упрощенный хедер -->
       <header class="app-header">
-        <div class="container">
-          <div class="header-content">
-            <div class="logo">
-              <h1>🗺️ MapChap</h1>
-              <p>Бизнес-объявления на карте</p>
-            </div>
-            <nav class="nav desktop-only">
-              <button class="nav-btn" @click="openPanel('about')">О приложении</button>
-              <button class="nav-btn" @click="openPanel('business')">Для бизнеса</button>
-              <button 
-                class="nav-btn" 
-                @click="isAuthenticated ? openPanel('profile') : initAuth()"
-              >
-                {{ isAuthenticated ? 'Профиль' : 'Войти' }}
-              </button>
-              <button class="theme-toggle" @click="toggleTheme">
-                {{ isDarkTheme ? '☀️' : '🌙' }}
-              </button>
-            </nav>
+        <div class="header-content">
+          <button class="burger-toggle" @click="toggleBurgerMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          
+          <div class="logo">
+            <h1>🗺️ MapChap</h1>
+            <span class="tagline">Бизнес на карте</span>
+          </div>
+          
+          <div class="header-actions">
+            <button class="theme-toggle" @click="toggleTheme">
+              {{ isDarkTheme ? '☀️' : '🌙' }}
+            </button>
           </div>
         </div>
       </header>
@@ -47,56 +32,41 @@
         {{ notification.message }}
       </div>
 
-      <!-- Основной контент -->
+      <!-- Основной контент - только карта и фильтры -->
       <main class="app-main">
-        <div class="container">
-          <div class="dashboard">
-            <!-- Левая панель - Фильтры -->
-            <div class="sidebar">
-              <div class="search-section">
-                <div class="search-box">
-                  <input
-                    v-model="searchQuery"
-                    type="text"
-                    placeholder="Поиск по адресу или названию..."
-                    class="search-input"
-                    @input="onSearchInput"
-                    @keyup.enter="onSearch"
-                  />
-                  <button class="search-btn" @click="onSearch">
-                    🔍
-                  </button>
-                </div>
-              </div>
-
-              <div class="categories-section">
-                <h3 class="section-title">Категории</h3>
-                <div class="categories-grid">
-                  <button
-                    v-for="category in categories"
-                    :key="category.id"
-                    class="category-btn"
-                    :class="{ active: selectedCategory === category.id }"
-                    @click="selectCategory(category.id)"
-                  >
-                    <span class="category-icon">{{ category.icon }}</span>
-                    <span class="category-name">{{ category.name }}</span>
-                  </button>
-                </div>
-              </div>
-
-              <div class="location-section">
-                <button class="location-btn" @click="getUserLocation">
-                  📍 Мое местоположение
-                </button>
-              </div>
-            </div>
-
-            <!-- Правая панель - Карта -->
-            <div class="map-container">
-              <YandexMap />
-            </div>
+        <div class="map-container">
+          <YandexMap />
+        </div>
+        
+        <!-- Плавающая панель фильтров -->
+        <div class="floating-filters">
+          <div class="search-box">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Поиск бизнесов..."
+              class="search-input"
+              @keyup.enter="onSearch"
+            />
+            <button class="search-btn" @click="onSearch">🔍</button>
           </div>
+          
+          <div class="quick-categories">
+            <button
+              v-for="category in quickCategories"
+              :key="category.id"
+              class="category-chip"
+              :class="{ active: selectedCategory === category.id }"
+              @click="selectCategory(category.id)"
+            >
+              <span class="chip-icon">{{ category.icon }}</span>
+              <span class="chip-text">{{ category.name }}</span>
+            </button>
+          </div>
+          
+          <button class="location-fab" @click="getUserLocation" title="Мое местоположение">
+            <span class="fab-icon">📍</span>
+          </button>
         </div>
       </main>
     </div>
@@ -113,23 +83,11 @@ import { useGeolocation } from './composables/useGeolocation.js'
 import YandexMap from './components/YandexMap.vue'
 import BurgerMenu from './components/BurgerMenu.vue'
 
-// Импортируем компоненты панелей
-import ProfilePanel from './components/ProfilePanel.vue'
-import BusinessPanel from './components/BusinessPanel.vue'
-import BlogPanel from './components/BlogPanel.vue'
-import AboutPanel from './components/AboutPanel.vue'
-import ArticlePanel from './components/ArticlePanel.vue'
-
 export default {
   name: 'App',
   components: {
     YandexMap,
-    BurgerMenu,
-    ProfilePanel,
-    BusinessPanel,
-    BlogPanel,
-    AboutPanel,
-    ArticlePanel
+    BurgerMenu
   },
   setup() {
     const offersStore = useOffersStore()
@@ -139,12 +97,12 @@ export default {
     const searchQuery = ref('')
 
     // Store refs
-    const { isPanelOpen, currentPanel, isDarkTheme, currentArticle, notification } = storeToRefs(uiStore)
+    const { isBurgerMenuOpen, isDarkTheme, notification, activePanel } = storeToRefs(uiStore)
     const { isAuthenticated } = storeToRefs(authStore)
 
     // Store actions
-    const { initTheme, openPanel, closePanel, toggleTheme, showNotification } = uiStore
-    const { initTelegramAuth } = authStore
+    const { initTheme, toggleTheme, toggleBurgerMenu, showNotification } = uiStore
+    const { setSelectedCategory, setSearchQuery, searchByAddress, setUserLocation } = offersStore
 
     // Инициализация при загрузке
     onMounted(() => {
@@ -152,31 +110,26 @@ export default {
       authStore.checkAuth()
     })
 
-    const categories = computed(() => [
-      { id: 'all', name: 'Все категории', icon: '🗺️' },
-      { id: 'food', name: '🍕 Еда и рестораны', icon: '🍕' },
-      { id: 'shopping', name: '🛍️ Покупки', icon: '🛍️' },
-      { id: 'beauty', name: '💄 Салоны красоты', icon: '💄' },
-      { id: 'services', name: '🔧 Услуги', icon: '🔧' },
-      { id: 'medical', name: '⚕️ Медицина', icon: '⚕️' },
-      { id: 'furniture', name: '🛋️ Мебель', icon: '🛋️' },
-      { id: 'pharmacy', name: '💊 Аптеки', icon: '💊' }
-    ])
+    const quickCategories = [
+      { id: 'all', name: 'Все', icon: '🗺️' },
+      { id: 'food', name: 'Еда', icon: '🍕' },
+      { id: 'shopping', name: 'Магазины', icon: '🛍️' },
+      { id: 'beauty', name: 'Красота', icon: '💄' },
+      { id: 'services', name: 'Услуги', icon: '🔧' }
+    ]
 
     const selectedCategory = computed(() => offersStore.selectedCategory)
     const themeClass = computed(() => isDarkTheme.value ? 'dark-theme' : 'light-theme')
+    const isAnyPanelOpen = computed(() => isBurgerMenuOpen.value || activePanel.value !== null)
 
     const selectCategory = (categoryId) => {
-      offersStore.setSelectedCategory(categoryId)
-    }
-
-    const onSearchInput = () => {
-      offersStore.setSearchQuery(searchQuery.value)
+      setSelectedCategory(categoryId)
     }
 
     const onSearch = () => {
       if (searchQuery.value.trim()) {
-        offersStore.searchByAddress(searchQuery.value)
+        setSearchQuery(searchQuery.value)
+        searchByAddress(searchQuery.value)
         showNotification(`Поиск: "${searchQuery.value}"`, 'info')
       }
     }
@@ -184,90 +137,34 @@ export default {
     const getUserLocation = async () => {
       try {
         const location = await getCurrentLocation()
-        offersStore.setUserLocation(location)
+        setUserLocation(location)
         showNotification(`Местоположение получено!`, 'success')
       } catch (error) {
         console.error('Ошибка получения местоположения:', error)
-        showNotification('Не удалось получить местоположение. Проверьте разрешения браузера.', 'error')
+        showNotification('Не удалось получить местоположение', 'error')
       }
-    }
-
-    const initAuth = () => {
-      initTelegramAuth()
-      showNotification('Авторизация через Telegram выполнена!', 'success')
     }
 
     return {
       searchQuery,
-      categories,
+      quickCategories,
       selectedCategory,
       isDarkTheme,
       themeClass,
-      isPanelOpen,
-      currentPanel,
-      currentArticle,
+      isAnyPanelOpen,
       notification,
       isAuthenticated,
-      openPanel,
-      closePanel,
       toggleTheme,
+      toggleBurgerMenu,
       selectCategory,
-      onSearchInput,
       onSearch,
-      getUserLocation,
-      initAuth
+      getUserLocation
     }
   }
 }
 </script>
 
 <style>
-/* Добавим стили для уведомлений */
-.notification {
-  position: fixed;
-  top: 80px;
-  right: 20px;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  color: white;
-  font-weight: 500;
-  z-index: 10000;
-  animation: slideInRight 0.3s ease;
-  max-width: 300px;
-}
-
-.notification.success {
-  background: #10b981;
-  border: 1px solid #059669;
-}
-
-.notification.error {
-  background: #ef4444;
-  border: 1px solid #dc2626;
-}
-
-.notification.info {
-  background: #3b82f6;
-  border: 1px solid #2563eb;
-}
-
-.notification.warning {
-  background: #f59e0b;
-  border: 1px solid #d97706;
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Остальные стили остаются без изменений */
 * {
   margin: 0;
   padding: 0;
@@ -275,50 +172,47 @@ export default {
 }
 
 :root {
-  /* Light theme variables */
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --accent-color: #667eea;
-  --accent-hover: #5a6fd8;
-  --text-primary: #2d3748;
-  --text-secondary: #718096;
-  --text-muted: #a0aec0;
+  /* Light theme - Modern professional colors */
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-light: #8b5cf6;
+  --secondary: #06d6a0;
+  --accent: #f59e0b;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
   --bg-primary: #ffffff;
-  --bg-secondary: #f7fafc;
-  --bg-tertiary: #edf2f7;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
   --border-color: #e2e8f0;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --glass-bg: rgba(255, 255, 255, 0.8);
   --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --backdrop-blur: blur(20px);
 }
 
 .dark-theme {
-  --primary-gradient: linear-gradient(135deg, #7c93e0 0%, #8a68c2 100%);
-  --secondary-gradient: linear-gradient(135deg, #ff8ce3 0%, #ff6b7a 100%);
-  --accent-color: #7c93e0;
-  --accent-hover: #6b83d4;
-  --text-primary: #f7fafc;
-  --text-secondary: #e2e8f0;
-  --text-muted: #a0aec0;
-  --bg-primary: #1a202c;
-  --bg-secondary: #2d3748;
-  --bg-tertiary: #4a5568;
-  --border-color: #4a5568;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.5);
-  --glass-bg: rgba(45, 55, 72, 0.8);
+  --primary: #818cf8;
+  --primary-dark: #6366f1;
+  --primary-light: #a5b4fc;
+  --secondary: #34d399;
+  --accent: #fbbf24;
+  --text-primary: #f3f4f6;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --bg-tertiary: #374151;
+  --border-color: #4b5563;
+  --glass-bg: rgba(17, 24, 39, 0.8);
   --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
@@ -331,311 +225,324 @@ body {
   flex-direction: column;
 }
 
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-/* Система панелей */
-.panels-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 2000;
-  pointer-events: none;
-}
-
+/* Main content */
 .main-content {
-  transition: transform 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-.main-content.panel-open {
-  transform: translateX(400px);
+.content-shifted {
+  transform: translateX(320px);
 }
 
-/* Хедер */
+/* Header */
 .app-header {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
   border-bottom: 1px solid var(--glass-border);
-  padding: 1rem 0;
+  padding: 0.75rem 1rem;
   position: sticky;
   top: 0;
   z-index: 100;
-  transition: all 0.3s ease;
 }
 
 .header-content {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.burger-toggle {
+  background: none;
+  border: none;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.burger-toggle:hover {
+  background: var(--bg-tertiary);
+}
+
+.burger-toggle span {
+  width: 20px;
+  height: 2px;
+  background: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .logo h1 {
-  font-size: 1.8rem;
-  margin-bottom: 0.25rem;
-  background: var(--primary-gradient);
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-weight: 700;
 }
 
-.logo p {
+.tagline {
+  font-size: 0.8rem;
   color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-.nav {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.nav-btn {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-color);
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-}
-
-.nav-btn:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  font-weight: 500;
 }
 
 .theme-toggle {
-  background: none;
+  background: var(--bg-tertiary);
   border: none;
-  font-size: 1.2rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
+  font-size: 1.1rem;
   transition: all 0.3s ease;
 }
 
 .theme-toggle:hover {
-  background: var(--bg-tertiary);
-  transform: scale(1.1);
+  background: var(--primary);
+  color: white;
+  transform: scale(1.05);
 }
 
-/* Основной контент */
+/* Notifications */
+.notification {
+  position: fixed;
+  top: 80px;
+  right: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  color: white;
+  font-weight: 500;
+  z-index: 10000;
+  animation: slideInRight 0.3s ease;
+  max-width: 300px;
+  backdrop-filter: var(--backdrop-blur);
+}
+
+.notification.success {
+  background: rgba(16, 185, 129, 0.9);
+  border: 1px solid rgba(5, 150, 105, 0.3);
+}
+
+.notification.error {
+  background: rgba(239, 68, 68, 0.9);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.notification.info {
+  background: rgba(59, 130, 246, 0.9);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+}
+
+/* Main app content */
 .app-main {
   flex: 1;
-  padding: 2rem 0;
+  position: relative;
+  overflow: hidden;
 }
 
-.dashboard {
-  display: grid;
-  grid-template-columns: 400px 1fr;
-  gap: 2rem;
-  height: calc(100vh - 120px);
+.map-container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
 }
 
-.sidebar {
+/* Floating filters */
+.floating-filters {
+  position: fixed;
+  top: 50%;
+  right: 2rem;
+  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  height: 100%;
-}
-
-.search-section, .categories-section, .location-section {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: var(--shadow-lg);
-  transition: all 0.3s ease;
+  gap: 1rem;
+  z-index: 90;
 }
 
 .search-box {
   display: flex;
-  gap: 0.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 0.5rem;
+  box-shadow: var(--shadow-lg);
 }
 
 .search-input {
   flex: 1;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  background: var(--bg-primary);
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: transparent;
   color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
 }
 
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+.search-input::placeholder {
+  color: var(--text-muted);
 }
 
 .search-btn {
-  padding: 0.75rem 1rem;
-  background: var(--primary-gradient);
-  color: white;
+  background: var(--primary);
   border: none;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   cursor: pointer;
+  color: white;
   transition: all 0.3s ease;
-  font-weight: 600;
 }
 
 .search-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  background: var(--primary-dark);
+  transform: scale(1.05);
 }
 
-.section-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-}
-
-.categories-grid {
-  display: grid;
-  grid-template-columns: 1fr;
+.quick-categories {
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: var(--shadow-lg);
 }
 
-.category-btn {
+.category-chip {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border-color);
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: transparent;
   border-radius: 12px;
-  background: var(--bg-primary);
   cursor: pointer;
   transition: all 0.3s ease;
-  text-align: left;
-}
-
-.category-btn:hover {
-  border-color: var(--accent-color);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.category-btn.active {
-  border-color: var(--accent-color);
-  background: var(--primary-gradient);
-  color: white;
-  box-shadow: var(--shadow-md);
-}
-
-.category-icon {
-  font-size: 1.25rem;
-}
-
-.category-name {
-  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
   font-weight: 500;
 }
 
-.location-btn {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+.category-chip:hover {
+  background: var(--bg-tertiary);
   color: var(--text-primary);
-  font-weight: 500;
 }
 
-.location-btn:hover {
-  border-color: var(--accent-color);
-  background: var(--primary-gradient);
+.category-chip.active {
+  background: var(--primary);
   color: white;
-  transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
-.map-container {
-  position: relative;
-  height: 100%;
+.chip-icon {
+  font-size: 1rem;
+}
+
+.location-fab {
+  background: var(--primary);
+  border: none;
+  width: 56px;
+  height: 56px;
   border-radius: 16px;
-  overflow: hidden;
+  cursor: pointer;
+  color: white;
+  font-size: 1.5rem;
   box-shadow: var(--shadow-lg);
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Адаптивность */
-@media (max-width: 1024px) {
-  .dashboard {
-    grid-template-columns: 350px 1fr;
-    gap: 1.5rem;
+.location-fab:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Animations */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
   }
-  
-  .main-content.panel-open {
-    transform: translateX(350px);
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 
+/* Responsive */
 @media (max-width: 768px) {
-  .dashboard {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    height: auto;
-    min-height: calc(100vh - 120px);
-  }
-
-  .sidebar {
-    height: auto;
-  }
-
-  .map-container {
-    height: 400px;
-  }
-
-  .header-content {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-
-  .desktop-only {
-    display: none !important;
+  .floating-filters {
+    right: 1rem;
+    bottom: 2rem;
+    top: auto;
+    transform: none;
+    flex-direction: row;
+    align-items: flex-end;
   }
   
-  .main-content.panel-open {
-    transform: translateX(320px);
+  .quick-categories {
+    flex-direction: row;
+    order: 2;
+  }
+  
+  .search-box {
+    order: 1;
+  }
+  
+  .location-fab {
+    order: 3;
+    width: 48px;
+    height: 48px;
+  }
+  
+  .content-shifted {
+    transform: translateX(280px);
   }
 }
 
 @media (max-width: 480px) {
-  .container {
+  .header-content {
     padding: 0 0.5rem;
   }
-
-  .app-main {
-    padding: 1rem 0;
-  }
-
-  .dashboard {
-    gap: 1rem;
+  
+  .logo h1 {
+    font-size: 1.25rem;
   }
   
-  .main-content.panel-open {
-    transform: translateX(280px);
+  .tagline {
+    display: none;
+  }
+  
+  .floating-filters {
+    right: 0.5rem;
+    bottom: 1rem;
+  }
+  
+  .content-shifted {
+    transform: translateX(260px);
   }
 }
 </style>
