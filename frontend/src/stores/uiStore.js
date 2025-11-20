@@ -11,10 +11,6 @@ export const useUIStore = defineStore('ui', () => {
   // Действия
   const toggleBurgerMenu = () => {
     isBurgerMenuOpen.value = !isBurgerMenuOpen.value
-    // Закрываем панель при открытии бургер-меню
-    if (isBurgerMenuOpen.value) {
-      activePanel.value = null
-    }
   }
 
   const openPanel = (panelName) => {
