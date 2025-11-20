@@ -4,7 +4,6 @@
 
 <script>
 import { onMounted, ref, onUnmounted } from 'vue'
-import { useOffersStore } from '../stores/offersStore'
 
 export default {
   name: 'YandexMap',
@@ -13,12 +12,11 @@ export default {
     let map = null
     let ymaps = null
 
-    const offersStore = useOffersStore()
-
     const initMap = () => {
       // Проверяем, загружены ли Яндекс.Карты
       if (typeof window.ymaps === 'undefined') {
         console.error('Yandex Maps API not loaded')
+        setTimeout(initMap, 100)
         return
       }
 
@@ -83,8 +81,8 @@ export default {
       const placemarks = [
         {
           coords: [55.751244, 37.618423],
-          title: 'Кофейня "Уютная"',
-          description: 'Лучший кофе в городе',
+          title: 'Кофейня "Уютный уголок"',
+          description: 'Лучший кофе в городе, свежая выпечка',
           category: 'food'
         },
         {
@@ -96,7 +94,7 @@ export default {
         {
           coords: [55.749762, 37.621594],
           title: 'Салон красоты "Элегант"',
-          description: 'Парикмахерские услуги',
+          description: 'Парикмахерские услуги, маникюр',
           category: 'beauty'
         }
       ]
@@ -128,10 +126,16 @@ export default {
     onMounted(() => {
       console.log('YandexMap component mounted')
       
-      // Даем время на рендеринг DOM
-      setTimeout(() => {
-        initMap()
-      }, 100)
+      // Загружаем Яндекс.Карты API
+      const script = document.createElement('script')
+      script.src = 'https://api-maps.yandex.ru/2.1/?apikey=07b74146-5f5a-46bf-a2b1-cf6d052a41bb&lang=ru_RU'
+      script.onload = () => {
+        // Даем время на рендеринг DOM
+        setTimeout(() => {
+          initMap()
+        }, 500)
+      }
+      document.head.appendChild(script)
     })
 
     onUnmounted(() => {
