@@ -3,120 +3,131 @@
     <!-- Бургер-меню -->
     <BurgerMenu />
     
-    <!-- Хедер -->
-    <header class="app-header">
-      <div class="container">
-        <div class="header-content">
-          <div class="logo">
-            <h1>🗺️ MapChap</h1>
-            <p>Бизнес-объявления на карте</p>
-          </div>
-          <nav class="nav desktop-only">
-            <button class="nav-btn" @click="openAbout">О приложении</button>
-            <button class="nav-btn" @click="openModal('business')">Для бизнеса</button>
-            <button class="nav-btn" @click="openModal('profile')">Войти</button>
-            <button class="theme-toggle" @click="toggleTheme">
-              {{ isDarkTheme ? '☀️' : '🌙' }}
-            </button>
-          </nav>
-        </div>
-      </div>
-    </header>
+    <!-- Боковые панели -->
+    <div class="panels-container">
+      <ProfilePanel v-if="currentPanel === 'profile'" />
+      <BusinessPanel v-if="currentPanel === 'business'" />
+      <BlogPanel v-if="currentPanel === 'blog'" />
+      <AboutPanel v-if="currentPanel === 'about'" />
+    </div>
 
     <!-- Основной контент -->
-    <main class="app-main">
-      <div class="container">
-        <div class="dashboard">
-          <!-- Левая панель - Фильтры -->
-          <div class="sidebar">
-            <div class="search-section">
-              <div class="search-box">
-                <input
-                  v-model="searchQuery"
-                  type="text"
-                  placeholder="Поиск по адресу или названию..."
-                  class="search-input"
-                  @input="onSearchInput"
-                />
-                <button class="search-btn" @click="onSearch">
-                  🔍
-                </button>
-              </div>
+    <div class="main-content" :class="{ 'panel-open': isPanelOpen }">
+      <!-- Хедер -->
+      <header class="app-header">
+        <div class="container">
+          <div class="header-content">
+            <div class="logo">
+              <h1>🗺️ MapChap</h1>
+              <p>Бизнес-объявления на карте</p>
             </div>
-
-            <div class="categories-section">
-              <h3 class="section-title">Категории</h3>
-              <div class="categories-grid">
-                <button
-                  v-for="category in categories"
-                  :key="category.id"
-                  class="category-btn"
-                  :class="{ active: selectedCategory === category.id }"
-                  @click="selectCategory(category.id)"
-                >
-                  <span class="category-icon">{{ category.icon }}</span>
-                  <span class="category-name">{{ category.name }}</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="location-section">
-              <button class="location-btn" @click="getUserLocation">
-                📍 Мое местоположение
+            <nav class="nav desktop-only">
+              <button class="nav-btn" @click="openPanel('about')">О приложении</button>
+              <button class="nav-btn" @click="openPanel('business')">Для бизнеса</button>
+              <button class="nav-btn" @click="openPanel('profile')">Войти</button>
+              <button class="theme-toggle" @click="toggleTheme">
+                {{ isDarkTheme ? '☀️' : '🌙' }}
               </button>
-            </div>
-          </div>
-
-          <!-- Правая панель - Карта -->
-          <div class="map-container">
-            <YandexMap />
+            </nav>
           </div>
         </div>
-      </div>
-    </main>
+      </header>
 
-    <!-- Модальные окна ДОЛЖНЫ БЫТЬ ПОСЛЕ основного контента -->
-    <ProfileModal />
-    <BusinessModal />
-    <BlogModal />
-    
-    <!-- Панель "О приложении" -->
-    <AboutPanel ref="aboutPanel" />
+      <!-- Основной контент -->
+      <main class="app-main">
+        <div class="container">
+          <div class="dashboard">
+            <!-- Левая панель - Фильтры -->
+            <div class="sidebar">
+              <div class="search-section">
+                <div class="search-box">
+                  <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Поиск по адресу или названию..."
+                    class="search-input"
+                    @input="onSearchInput"
+                  />
+                  <button class="search-btn" @click="onSearch">
+                    🔍
+                  </button>
+                </div>
+              </div>
+
+              <div class="categories-section">
+                <h3 class="section-title">Категории</h3>
+                <div class="categories-grid">
+                  <button
+                    v-for="category in categories"
+                    :key="category.id"
+                    class="category-btn"
+                    :class="{ active: selectedCategory === category.id }"
+                    @click="selectCategory(category.id)"
+                  >
+                    <span class="category-icon">{{ category.icon }}</span>
+                    <span class="category-name">{{ category.name }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="location-section">
+                <button class="location-btn" @click="getUserLocation">
+                  📍 Мое местоположение
+                </button>
+              </div>
+            </div>
+
+            <!-- Правая панель - Карта -->
+            <div class="map-container">
+              <YandexMap />
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useOffersStore } from './stores/offersStore.js'
 import { useUIStore } from './stores/uiStore.js'
 import { useGeolocation } from './composables/useGeolocation.js'
 import YandexMap from './components/YandexMap.vue'
-import AboutPanel from './components/AboutPanel.vue'
 import BurgerMenu from './components/BurgerMenu.vue'
-import ProfileModal from './components/ProfileModal.vue'
-import BusinessModal from './components/BusinessModal.vue'
-import BlogModal from './components/BlogModal.vue'
+
+// Импортируем компоненты панелей
+import ProfilePanel from './components/ProfilePanel.vue'
+import BusinessPanel from './components/BusinessPanel.vue'
+import BlogPanel from './components/BlogPanel.vue'
+import AboutPanel from './components/AboutPanel.vue'
 
 export default {
   name: 'App',
   components: {
     YandexMap,
-    AboutPanel,
     BurgerMenu,
-    ProfileModal,
-    BusinessModal,
-    BlogModal
+    ProfilePanel,
+    BusinessPanel,
+    BlogPanel,
+    AboutPanel
   },
   setup() {
     const offersStore = useOffersStore()
     const uiStore = useUIStore()
     const { getCurrentLocation } = useGeolocation()
-    const aboutPanel = ref(null)
     const searchQuery = ref('')
 
-    // Инициализация темы при загрузке
+    // Store refs
+    const { isPanelOpen, currentPanel, isDarkTheme } = storeToRefs(uiStore)
+
+    // Store actions
+    const { initTheme, openPanel, closePanel, toggleTheme } = uiStore
+
+    // Инициализация при загрузке
     onMounted(() => {
-      uiStore.initTheme()
+      initTheme()
     })
 
     const categories = computed(() => [
@@ -131,22 +142,7 @@ export default {
     ])
 
     const selectedCategory = computed(() => offersStore.selectedCategory)
-    const isDarkTheme = computed(() => uiStore.isDarkTheme)
-    const themeClass = computed(() => uiStore.themeClass)
-
-    const openAbout = () => {
-      if (aboutPanel.value) {
-        aboutPanel.value.open()
-      }
-    }
-
-    const openModal = (modalName) => {
-      uiStore.openModal(modalName)
-    }
-
-    const toggleTheme = () => {
-      uiStore.toggleTheme()
-    }
+    const themeClass = computed(() => isDarkTheme.value ? 'dark-theme' : 'light-theme')
 
     const selectCategory = (categoryId) => {
       offersStore.setSelectedCategory(categoryId)
@@ -174,14 +170,15 @@ export default {
     }
 
     return {
-      aboutPanel,
       searchQuery,
       categories,
       selectedCategory,
       isDarkTheme,
       themeClass,
-      openAbout,
-      openModal,
+      isPanelOpen,
+      currentPanel,
+      openPanel,
+      closePanel,
       toggleTheme,
       selectCategory,
       onSearchInput,
@@ -260,6 +257,26 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 1rem;
+}
+
+/* Система панелей */
+.panels-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.main-content {
+  transition: transform 0.3s ease;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content.panel-open {
+  transform: translateX(400px);
 }
 
 /* Хедер */
@@ -489,6 +506,10 @@ body {
     grid-template-columns: 350px 1fr;
     gap: 1.5rem;
   }
+  
+  .main-content.panel-open {
+    transform: translateX(350px);
+  }
 }
 
 @media (max-width: 768px) {
@@ -516,6 +537,10 @@ body {
   .desktop-only {
     display: none !important;
   }
+  
+  .main-content.panel-open {
+    transform: translateX(320px);
+  }
 }
 
 @media (max-width: 480px) {
@@ -529,6 +554,10 @@ body {
 
   .dashboard {
     gap: 1rem;
+  }
+  
+  .main-content.panel-open {
+    transform: translateX(280px);
   }
 }
 </style>
