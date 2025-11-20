@@ -187,7 +187,6 @@ export const useBlogStore = defineStore('blog', () => {
     return articles.value.find(article => article.id === parseInt(articleId))
   }
 
-  // ДОБАВЛЕННЫЙ МЕТОД: Создание статьи
   const createArticle = (articleData) => {
     const newArticle = {
       id: Date.now(),
@@ -221,7 +220,6 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  // ДОБАВЛЕННЫЙ МЕТОД: Лайк статьи
   const toggleArticleLike = (articleId) => {
     const article = articles.value.find(article => article.id === articleId)
     if (article) {
@@ -236,7 +234,6 @@ export const useBlogStore = defineStore('blog', () => {
     return comments.value.filter(comment => comment.articleId === parseInt(articleId))
   })
 
-  // ДОБАВЛЕННЫЙ МЕТОД: Добавление комментария
   const addComment = (articleId, content) => {
     const newComment = {
       id: Date.now(),
@@ -264,7 +261,6 @@ export const useBlogStore = defineStore('blog', () => {
     return newComment
   }
 
-  // ДОБАВЛЕННЫЙ МЕТОД: Лайк комментария
   const toggleCommentLike = (commentId) => {
     const comment = comments.value.find(comment => comment.id === commentId)
     if (comment) {
