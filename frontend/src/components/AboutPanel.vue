@@ -1,12 +1,12 @@
 <template>
-  <div v-if="isOpen" class="about-overlay" @click="close">
-    <div class="about-content" @click.stop>
-      <div class="about-header">
+  <div v-if="isOpen" class="modal-overlay" @click="close">
+    <div class="modal-content" @click.stop>
+      <div class="modal-header">
         <h2>🗺️ О приложении MapChap</h2>
         <button class="close-btn" @click="close">✕</button>
       </div>
       
-      <div class="about-body">
+      <div class="modal-body">
         <div class="info-section">
           <h3>Контакты</h3>
           <p><strong>Телефон:</strong> +7 (999) 821-47-58</p>
@@ -22,6 +22,11 @@
         <div class="info-section">
           <h3>Версия</h3>
           <p>MapChap v3.0</p>
+        </div>
+
+        <div class="info-section">
+          <h3>Технологии</h3>
+          <p>Vue 3 • Vite • Pinia • Яндекс.Карты</p>
         </div>
       </div>
     </div>
@@ -54,24 +59,25 @@ export default {
 </script>
 
 <style scoped>
-.about-overlay {
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
-  z-index: 2000;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
   animation: fadeIn 0.3s ease;
 }
 
-.about-content {
+.modal-content {
   background: var(--glass-bg);
   backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   width: 90%;
@@ -80,9 +86,10 @@ export default {
   overflow-y: auto;
   animation: slideIn 0.3s ease;
   box-shadow: var(--shadow-xl);
+  z-index: 10001;
 }
 
-.about-header {
+.modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -93,7 +100,7 @@ export default {
   border-radius: 20px 20px 0 0;
 }
 
-.about-header h2 {
+.modal-header h2 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
@@ -120,7 +127,7 @@ export default {
   transform: rotate(90deg);
 }
 
-.about-body {
+.modal-body {
   padding: 1.5rem;
 }
 
