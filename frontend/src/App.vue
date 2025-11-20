@@ -9,6 +9,10 @@
       <BusinessPanel v-if="currentPanel === 'business'" />
       <BlogPanel v-if="currentPanel === 'blog'" />
       <AboutPanel v-if="currentPanel === 'about'" />
+      <ArticlePanel 
+        v-if="currentPanel === 'article' && currentArticle" 
+        :article="currentArticle" 
+      />
     </div>
 
     <!-- Основной контент -->
@@ -24,7 +28,12 @@
             <nav class="nav desktop-only">
               <button class="nav-btn" @click="openPanel('about')">О приложении</button>
               <button class="nav-btn" @click="openPanel('business')">Для бизнеса</button>
-              <button class="nav-btn" @click="openPanel('profile')">Войти</button>
+              <button 
+                class="nav-btn" 
+                @click="isAuthenticated ? openPanel('profile') : initAuth()"
+              >
+                {{ isAuthenticated ? 'Профиль' : 'Войти' }}
+              </button>
               <button class="theme-toggle" @click="toggleTheme">
                 {{ isDarkTheme ? '☀️' : '🌙' }}
               </button>
@@ -32,6 +41,11 @@
           </div>
         </div>
       </header>
+
+      <!-- Уведомления -->
+      <div v-if="notification" class="notification" :class="notification.type">
+        {{ notification.message }}
+      </div>
 
       <!-- Основной контент -->
       <main class="app-main">
@@ -47,6 +61,7 @@
                     placeholder="Поиск по адресу или названию..."
                     class="search-input"
                     @input="onSearchInput"
+                    @keyup.enter="onSearch"
                   />
                   <button class="search-btn" @click="onSearch">
                     🔍
@@ -93,6 +108,7 @@ import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useOffersStore } from './stores/offersStore.js'
 import { useUIStore } from './stores/uiStore.js'
+import { useAuthStore } from './stores/authStore.js'
 import { useGeolocation } from './composables/useGeolocation.js'
 import YandexMap from './components/YandexMap.vue'
 import BurgerMenu from './components/BurgerMenu.vue'
@@ -102,6 +118,7 @@ import ProfilePanel from './components/ProfilePanel.vue'
 import BusinessPanel from './components/BusinessPanel.vue'
 import BlogPanel from './components/BlogPanel.vue'
 import AboutPanel from './components/AboutPanel.vue'
+import ArticlePanel from './components/ArticlePanel.vue'
 
 export default {
   name: 'App',
@@ -111,23 +128,28 @@ export default {
     ProfilePanel,
     BusinessPanel,
     BlogPanel,
-    AboutPanel
+    AboutPanel,
+    ArticlePanel
   },
   setup() {
     const offersStore = useOffersStore()
     const uiStore = useUIStore()
+    const authStore = useAuthStore()
     const { getCurrentLocation } = useGeolocation()
     const searchQuery = ref('')
 
     // Store refs
-    const { isPanelOpen, currentPanel, isDarkTheme } = storeToRefs(uiStore)
+    const { isPanelOpen, currentPanel, isDarkTheme, currentArticle, notification } = storeToRefs(uiStore)
+    const { isAuthenticated } = storeToRefs(authStore)
 
     // Store actions
-    const { initTheme, openPanel, closePanel, toggleTheme } = uiStore
+    const { initTheme, openPanel, closePanel, toggleTheme, showNotification } = uiStore
+    const { initTelegramAuth } = authStore
 
     // Инициализация при загрузке
     onMounted(() => {
       initTheme()
+      authStore.checkAuth()
     })
 
     const categories = computed(() => [
@@ -155,6 +177,7 @@ export default {
     const onSearch = () => {
       if (searchQuery.value.trim()) {
         offersStore.searchByAddress(searchQuery.value)
+        showNotification(`Поиск: "${searchQuery.value}"`, 'info')
       }
     }
 
@@ -162,11 +185,16 @@ export default {
       try {
         const location = await getCurrentLocation()
         offersStore.setUserLocation(location)
-        alert(`Ваше местоположение: ${location.latitude}, ${location.longitude}`)
+        showNotification(`Местоположение получено!`, 'success')
       } catch (error) {
         console.error('Ошибка получения местоположения:', error)
-        alert('Не удалось получить ваше местоположение. Проверьте разрешения браузера.')
+        showNotification('Не удалось получить местоположение. Проверьте разрешения браузера.', 'error')
       }
+    }
+
+    const initAuth = () => {
+      initTelegramAuth()
+      showNotification('Авторизация через Telegram выполнена!', 'success')
     }
 
     return {
@@ -177,19 +205,69 @@ export default {
       themeClass,
       isPanelOpen,
       currentPanel,
+      currentArticle,
+      notification,
+      isAuthenticated,
       openPanel,
       closePanel,
       toggleTheme,
       selectCategory,
       onSearchInput,
       onSearch,
-      getUserLocation
+      getUserLocation,
+      initAuth
     }
   }
 }
 </script>
 
 <style>
+/* Добавим стили для уведомлений */
+.notification {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  z-index: 10000;
+  animation: slideInRight 0.3s ease;
+  max-width: 300px;
+}
+
+.notification.success {
+  background: #10b981;
+  border: 1px solid #059669;
+}
+
+.notification.error {
+  background: #ef4444;
+  border: 1px solid #dc2626;
+}
+
+.notification.info {
+  background: #3b82f6;
+  border: 1px solid #2563eb;
+}
+
+.notification.warning {
+  background: #f59e0b;
+  border: 1px solid #d97706;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Остальные стили остаются без изменений */
 * {
   margin: 0;
   padding: 0;
