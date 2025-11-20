@@ -248,13 +248,13 @@
                 <button 
                   class="btn btn-small" 
                   :class="offer.status === 'active' ? 'btn-warning' : 'btn-success'"
-                  @click="toggleOfferStatus(offer.id)"
+                  @click="handleToggleStatus(offer.id)"
                 >
                   {{ offer.status === 'active' ? '⏸️ Пауза' : '▶️ Активировать' }}
                 </button>
                 <button 
                   class="btn btn-small btn-danger" 
-                  @click="deleteOffer(offer.id)"
+                  @click="handleDeleteOffer(offer.id)"
                 >
                   🗑️ Удалить
                 </button>
@@ -426,11 +426,18 @@ export default {
       activeTab.value = 'create'
     }
 
-    const deleteOffer = (offerId) => {
+    // ИСПРАВЛЕНИЕ: Переименовал функцию чтобы избежать конфликта имен
+    const handleDeleteOffer = (offerId) => {
       if (confirm('Вы уверены, что хотите удалить это объявление?')) {
         deleteOffer(offerId)
         showNotification('Объявление удалено', 'success')
       }
+    }
+
+    // ИСПРАВЛЕНИЕ: Переименовал функцию чтобы избежать конфликта имен
+    const handleToggleStatus = (offerId) => {
+      toggleOfferStatus(offerId)
+      showNotification('Статус объявления изменен', 'success')
     }
 
     const resetForm = () => {
@@ -460,8 +467,9 @@ export default {
       closeModal,
       submitOffer,
       editOffer,
-      deleteOffer: (offerId) => deleteOffer(offerId),
-      toggleOfferStatus: (offerId) => toggleOfferStatus(offerId),
+      // ИСПРАВЛЕНИЕ: Используем переименованные функции
+      deleteOffer: handleDeleteOffer,
+      toggleOfferStatus: handleToggleStatus,
       getCategoryName,
       getCategoryColor,
       getFeatureName,
