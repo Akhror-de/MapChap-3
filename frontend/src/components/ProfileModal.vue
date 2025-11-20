@@ -1,54 +1,94 @@
 <template>
   <div v-if="isOpen" class="modal-overlay" @click="closeModal">
-    <div class="modal-content" @click.stop>
+    <div class="modal-content profile-modal" @click.stop>
       <!-- Заголовок -->
       <div class="modal-header">
         <h2>👤 Мой профиль</h2>
         <button class="close-btn" @click="closeModal">✕</button>
       </div>
 
-      <!-- Информация профиля -->
-      <div class="profile-section">
-        <div class="avatar-large">
-          {{ user.avatar }}
-        </div>
-        <h3 class="user-name">{{ user.name }}</h3>
-        <p class="user-email">{{ user.email }}</p>
-      </div>
-
-      <!-- Любимые категории -->
-      <div class="section">
-        <h4>❤️ Любимые категории</h4>
-        <div class="categories-list">
-          <span 
-            v-for="category in user.favoriteCategories" 
-            :key="category"
-            class="category-tag"
-          >
-            {{ category }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Избранные -->
-      <div class="section">
-        <h4>⭐ Избранные объявления</h4>
-        <div class="favorites-list">
-          <div 
-            v-for="favorite in user.favorites" 
-            :key="favorite"
-            class="favorite-item"
-          >
-            <span class="favorite-icon">📍</span>
-            <span class="favorite-text">{{ favorite }}</span>
+      <div class="profile-content">
+        <!-- Информация профиля -->
+        <div class="profile-section">
+          <div class="avatar-large">
+            {{ user.avatar }}
+          </div>
+          <div class="profile-info">
+            <h3 class="user-name">{{ user.name }}</h3>
+            <p class="user-username">@{{ user.username }}</p>
+            <p class="user-email">{{ user.email }}</p>
+            <p class="user-phone">{{ user.phone }}</p>
+            <div class="profile-badge">
+              <span class="badge">{{ user.role === 'business_owner' ? 'Владелец бизнеса' : 'Пользователь' }}</span>
+              <span class="join-date">С {{ formatDate(user.registrationDate) }}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Действия -->
-      <div class="modal-actions">
-        <button class="btn btn-primary">Редактировать профиль</button>
-        <button class="btn btn-secondary">Выйти</button>
+        <!-- Статистика -->
+        <div class="stats-section">
+          <h4>📊 Моя статистика</h4>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value">{{ businessStats.activeOffers }}</div>
+              <div class="stat-label">Активных объявлений</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ businessStats.totalViews }}</div>
+              <div class="stat-label">Просмотров</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ businessStats.totalLikes }}</div>
+              <div class="stat-label">Лайков</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Быстрые действия -->
+        <div class="actions-section">
+          <h4>⚡ Быстрые действия</h4>
+          <div class="actions-grid">
+            <button class="action-btn" @click="openBusinessModal">
+              <span class="action-icon">💼</span>
+              <span class="action-text">Мои объявления</span>
+            </button>
+            <button class="action-btn" @click="openBlogModal">
+              <span class="action-icon">📝</span>
+              <span class="action-text">Мои статьи</span>
+            </button>
+            <button class="action-btn" @click="showFavorites">
+              <span class="action-icon">❤️</span>
+              <span class="action-text">Избранное</span>
+            </button>
+            <button class="action-btn" @click="showSettings">
+              <span class="action-icon">⚙️</span>
+              <span class="action-text">Настройки</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Телеграм информация -->
+        <div class="telegram-section">
+          <h4>🔗 Telegram</h4>
+          <div class="telegram-info">
+            <p>Вы вошли через Telegram Web App</p>
+            <div class="telegram-data">
+              <p><strong>ID:</strong> {{ telegramAuthData.id }}</p>
+              <p><strong>Имя пользователя:</strong> @{{ telegramAuthData.username }}</p>
+              <p><strong>Дата авторизации:</strong> {{ formatTelegramDate(telegramAuthData.auth_date) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Действия -->
+        <div class="profile-actions">
+          <button class="btn btn-primary" @click="editProfile">
+            ✏️ Редактировать профиль
+          </button>
+          <button class="btn btn-secondary" @click="logout">
+            🚪 Выйти из аккаунта
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -56,6 +96,8 @@
 
 <script>
 import { useUIStore } from '../stores/uiStore'
+import { useAuthStore } from '../stores/authStore'
+import { useBusinessStore } from '../stores/businessStore'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 
@@ -63,231 +105,273 @@ export default {
   name: 'ProfileModal',
   setup() {
     const uiStore = useUIStore()
-    const { activeModal, user } = storeToRefs(uiStore)
-    const { closeModal } = uiStore
+    const authStore = useAuthStore()
+    const businessStore = useBusinessStore()
+    
+    const { activeModal } = storeToRefs(uiStore)
+    const { user, telegramAuthData } = storeToRefs(authStore)
+    const { getBusinessStats } = storeToRefs(businessStore)
+
+    const { closeModal, openModal, showNotification } = uiStore
+    const { logout } = authStore
 
     const isOpen = computed(() => activeModal.value === 'profile')
+
+    const businessStats = computed(() => getBusinessStats.value)
+
+    const formatDate = (dateString) => {
+      return new Date(dateString).toLocaleDateString('ru-RU', {
+        year: 'numeric',
+        month: 'long'
+      })
+    }
+
+    const formatTelegramDate = (timestamp) => {
+      return new Date(timestamp * 1000).toLocaleDateString('ru-RU', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+
+    const openBusinessModal = () => {
+      openModal('business')
+    }
+
+    const openBlogModal = () => {
+      openModal('blog')
+    }
+
+    const showFavorites = () => {
+      showNotification('Раздел "Избранное" в разработке', 'info')
+    }
+
+    const showSettings = () => {
+      showNotification('Настройки профиля в разработке', 'info')
+    }
+
+    const editProfile = () => {
+      showNotification('Редактирование профиля будет доступно в следующем обновлении', 'info')
+    }
+
+    const handleLogout = () => {
+      if (confirm('Вы уверены, что хотите выйти из аккаунта?')) {
+        logout()
+        closeModal()
+        showNotification('Вы успешно вышли из аккаунта', 'success')
+      }
+    }
 
     return {
       isOpen,
       user,
-      closeModal
+      telegramAuthData,
+      businessStats,
+      closeModal,
+      openBusinessModal,
+      openBlogModal,
+      showFavorites,
+      showSettings,
+      editProfile,
+      logout: handleLogout,
+      formatDate,
+      formatTelegramDate
     }
   }
 }
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-content {
-  background: var(--glass-bg);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  width: 90%;
-  max-width: 500px;
+.profile-modal {
+  max-width: 600px;
   max-height: 90vh;
-  overflow-y: auto;
-  animation: slideIn 0.3s ease;
-  box-shadow: var(--shadow-xl);
-  z-index: 10001;
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--glass-border);
-  background: var(--primary-gradient);
-  color: white;
-  border-radius: 20px 20px 0 0;
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.close-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: rotate(90deg);
+.profile-content {
+  padding: 0;
 }
 
 .profile-section {
-  text-align: center;
-  padding: 2rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--accent-color), var(--bg-tertiary));
+  color: white;
 }
 
 .avatar-large {
   width: 80px;
   height: 80px;
-  background: var(--primary-gradient);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
-  margin: 0 auto 1rem;
-  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.profile-info {
+  flex: 1;
 }
 
 .user-name {
   margin: 0 0 0.5rem 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-primary);
 }
 
-.user-email {
-  margin: 0;
-  color: var(--text-secondary);
+.user-username {
+  margin: 0 0 0.25rem 0;
+  opacity: 0.9;
 }
 
-.section {
-  padding: 1.5rem;
+.user-email, .user-phone {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.join-date {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.stats-section, .actions-section, .telegram-section {
+  padding: 1.5rem 2rem;
   border-bottom: 1px solid var(--border-color);
 }
 
-.section h4 {
+.stats-section h4, .actions-section h4, .telegram-section h4 {
   margin: 0 0 1rem 0;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.categories-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
 }
 
-.category-tag {
-  background: var(--bg-tertiary);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  transition: all 0.3s ease;
-}
-
-.category-tag:hover {
-  background: var(--accent-color);
-  color: white;
-  transform: translateY(-1px);
-}
-
-.favorites-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.favorite-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
+.stat-item {
+  text-align: center;
+  padding: 1rem;
   background: var(--bg-tertiary);
   border-radius: 12px;
-  transition: all 0.3s ease;
   border: 1px solid var(--border-color);
 }
 
-.favorite-item:hover {
-  background: var(--bg-secondary);
-  transform: translateX(5px);
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  margin-bottom: 0.25rem;
 }
 
-.favorite-icon {
-  font-size: 1.2rem;
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
-.favorite-text {
-  flex: 1;
-  color: var(--text-primary);
-}
-
-.modal-actions {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
 }
 
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   cursor: pointer;
-  font-size: 1rem;
   transition: all 0.3s ease;
-  font-weight: 600;
+  text-align: center;
 }
 
-.btn-primary {
-  background: var(--primary-gradient);
-  color: white;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.btn-secondary {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
+.action-btn:hover {
   background: var(--bg-secondary);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
 }
 
-@keyframes slideIn {
-  from { transform: translateY(-50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+.action-icon {
+  font-size: 1.5rem;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.action-text {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.telegram-info {
+  background: var(--bg-tertiary);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.telegram-info p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.telegram-data {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.profile-actions {
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .profile-section {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .profile-actions {
+    padding: 1rem;
+  }
 }
 </style>
