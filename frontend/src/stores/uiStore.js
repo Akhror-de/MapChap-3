@@ -2,22 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export const useUIStore = defineStore('ui', () => {
-  // Состояние меню и модальных окон
   const isBurgerMenuOpen = ref(false)
   const activeModal = ref(null)
   const isDarkTheme = ref(false)
-  
-  // Данные пользователя
-  const user = ref({
-    name: 'Ахрор Хабибуллаев',
-    avatar: '👨‍💼',
-    email: 'khabibullaevakhrorjon@gmail.com',
-    favoriteCategories: ['🍕 Еда', '🛍️ Покупки', '💄 Красота'],
-    favorites: ['Ресторан "Суши-Мастер"', 'ТЦ "Мега"', 'Салон "Клео"']
-  })
-
-  // Вычисляемые свойства
-  const themeClass = computed(() => isDarkTheme.value ? 'dark-theme' : 'light-theme')
+  const currentArticle = ref(null)
+  const notification = ref(null)
 
   // Действия
   const toggleBurgerMenu = () => {
@@ -31,6 +20,19 @@ export const useUIStore = defineStore('ui', () => {
 
   const closeModal = () => {
     activeModal.value = null
+    currentArticle.value = null
+  }
+
+  const openArticle = (article) => {
+    currentArticle.value = article
+    activeModal.value = 'article'
+  }
+
+  const showNotification = (message, type = 'info') => {
+    notification.value = { message, type }
+    setTimeout(() => {
+      notification.value = null
+    }, 3000)
   }
 
   const toggleTheme = () => {
@@ -58,12 +60,14 @@ export const useUIStore = defineStore('ui', () => {
   return {
     isBurgerMenuOpen,
     activeModal,
-    user,
     isDarkTheme,
-    themeClass,
+    currentArticle,
+    notification,
     toggleBurgerMenu,
     openModal,
     closeModal,
+    openArticle,
+    showNotification,
     toggleTheme,
     initTheme
   }
