@@ -1,11 +1,20 @@
 <template>
-  <div class="side-panel article-panel" v-if="article">
+  <div class="side-panel modern-panel" v-if="article">
     <!-- Заголовок -->
     <div class="panel-header">
-      <h2>📝 Статья</h2>
-      <button class="close-btn" @click="closePanel">✕</button>
+      <div class="header-content">
+        <button class="back-button" @click="closePanel">
+          <span class="back-icon">←</span>
+          <span class="back-text">Назад</span>
+        </button>
+        <h2 class="panel-title">
+          <span class="title-icon">📝</span>
+          Статья
+        </h2>
+      </div>
     </div>
 
+    <!-- Содержимое панели -->
     <div class="panel-content">
       <article class="article-full">
         <header class="article-full-header">
@@ -166,67 +175,8 @@ export default {
 </script>
 
 <style scoped>
-.side-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 400px;
-  height: 100vh;
-  background: var(--bg-primary);
-  border-right: 1px solid var(--border-color);
-  box-shadow: var(--shadow-xl);
-  z-index: 2001;
-  pointer-events: auto;
-  display: flex;
-  flex-direction: column;
-  animation: slideInLeft 0.3s ease;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-}
-
-.panel-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--text-secondary);
-  padding: 0.5rem;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
-.close-btn:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.panel-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0;
-}
-
 .article-full {
-  padding: 1.5rem;
+  padding: 0;
 }
 
 .article-full-header {
@@ -286,7 +236,7 @@ export default {
 }
 
 .article-badge.founder, .article-badge.finance_director {
-  background: var(--accent-color);
+  background: var(--primary);
   color: white;
 }
 
@@ -395,21 +345,8 @@ export default {
   border-color: #ff6b6b;
 }
 
-@keyframes slideInLeft {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
 /* Адаптивность */
 @media (max-width: 768px) {
-  .side-panel {
-    width: 320px;
-  }
-  
   .article-full-title {
     font-size: 1.5rem;
   }
@@ -425,12 +362,14 @@ export default {
 }
 
 @media (max-width: 480px) {
-  .side-panel {
-    width: 280px;
+  .article-full {
+    padding: 0;
   }
   
-  .article-full {
-    padding: 1rem;
+  .article-author {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
   }
 }
 </style>
