@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 
 export const useUIStore = defineStore('ui', () => {
   const isBurgerMenuOpen = ref(false)
-  const activeModal = ref(null)
+  const activePanel = ref(null) // 'profile', 'business', 'blog', 'about', 'article'
   const isDarkTheme = ref(false)
   const currentArticle = ref(null)
   const notification = ref(null)
@@ -11,21 +11,25 @@ export const useUIStore = defineStore('ui', () => {
   // Действия
   const toggleBurgerMenu = () => {
     isBurgerMenuOpen.value = !isBurgerMenuOpen.value
+    // Закрываем панель при открытии бургер-меню
+    if (isBurgerMenuOpen.value) {
+      activePanel.value = null
+    }
   }
 
-  const openModal = (modalName) => {
-    activeModal.value = modalName
+  const openPanel = (panelName) => {
+    activePanel.value = panelName
     isBurgerMenuOpen.value = false
   }
 
-  const closeModal = () => {
-    activeModal.value = null
+  const closePanel = () => {
+    activePanel.value = null
     currentArticle.value = null
   }
 
   const openArticle = (article) => {
     currentArticle.value = article
-    activeModal.value = 'article'
+    activePanel.value = 'article'
   }
 
   const showNotification = (message, type = 'info') => {
@@ -57,15 +61,26 @@ export const useUIStore = defineStore('ui', () => {
     }
   }
 
+  // Computed
+  const isPanelOpen = computed(() => activePanel.value !== null)
+  const currentPanel = computed(() => activePanel.value)
+
   return {
+    // State
     isBurgerMenuOpen,
-    activeModal,
+    activePanel,
     isDarkTheme,
     currentArticle,
     notification,
+    
+    // Computed
+    isPanelOpen,
+    currentPanel,
+    
+    // Actions
     toggleBurgerMenu,
-    openModal,
-    closeModal,
+    openPanel,
+    closePanel,
     openArticle,
     showNotification,
     toggleTheme,
