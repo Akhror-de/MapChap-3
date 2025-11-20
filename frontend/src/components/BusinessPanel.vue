@@ -1,12 +1,21 @@
 <template>
-  <div v-if="isOpen" class="modal-overlay" @click="closeModal">
-    <div class="modal-content business-modal" @click.stop>
-      <!-- Заголовок -->
-      <div class="modal-header">
-        <h2>💼 Панель бизнеса</h2>
-        <button class="close-btn" @click="closeModal">✕</button>
+  <div class="side-panel modern-panel">
+    <!-- Заголовок -->
+    <div class="panel-header">
+      <div class="header-content">
+        <button class="back-button" @click="closePanel">
+          <span class="back-icon">←</span>
+          <span class="back-text">Назад</span>
+        </button>
+        <h2 class="panel-title">
+          <span class="title-icon">💼</span>
+          Панель бизнеса
+        </h2>
       </div>
+    </div>
 
+    <!-- Содержимое панели -->
+    <div class="panel-content">
       <!-- Вкладки -->
       <div class="tabs">
         <button 
@@ -14,7 +23,7 @@
           :class="{ active: activeTab === 'create' }"
           @click="activeTab = 'create'"
         >
-          ➕ Создать объявление
+          ➕ Создать
         </button>
         <button 
           class="tab-btn"
@@ -170,7 +179,7 @@
                 {{ editingOffer ? 'Отменить' : 'Очистить' }}
               </button>
               <button type="submit" class="btn btn-primary">
-                {{ editingOffer ? '💾 Сохранить изменения' : '🚀 Опубликовать объявление' }}
+                {{ editingOffer ? '💾 Сохранить' : '🚀 Опубликовать' }}
               </button>
             </div>
           </form>
@@ -248,13 +257,13 @@
                 <button 
                   class="btn btn-small" 
                   :class="offer.status === 'active' ? 'btn-warning' : 'btn-success'"
-                  @click="handleToggleStatus(offer.id)"
+                  @click="toggleOfferStatus(offer.id)"
                 >
                   {{ offer.status === 'active' ? '⏸️ Пауза' : '▶️ Активировать' }}
                 </button>
                 <button 
                   class="btn btn-small btn-danger" 
-                  @click="handleDeleteOffer(offer.id)"
+                  @click="deleteOffer(offer.id)"
                 >
                   🗑️ Удалить
                 </button>
@@ -335,18 +344,16 @@ import { storeToRefs } from 'pinia'
 import { ref, computed, reactive } from 'vue'
 
 export default {
-  name: 'BusinessModal',
+  name: 'BusinessPanel',
   setup() {
     const uiStore = useUIStore()
     const businessStore = useBusinessStore()
     
-    const { activeModal } = storeToRefs(uiStore)
     const { categories, getUserOffers, getBusinessStats } = storeToRefs(businessStore)
     
-    const { closeModal, showNotification } = uiStore
+    const { closePanel, showNotification } = uiStore
     const { createOffer, updateOffer, deleteOffer, toggleOfferStatus, getCategoryById } = businessStore
 
-    const isOpen = computed(() => activeModal.value === 'business')
     const activeTab = ref('my')
     const editingOffer = ref(null)
 
@@ -426,7 +433,6 @@ export default {
       activeTab.value = 'create'
     }
 
-    // ИСПРАВЛЕНИЕ: Переименовал функцию чтобы избежать конфликта имен
     const handleDeleteOffer = (offerId) => {
       if (confirm('Вы уверены, что хотите удалить это объявление?')) {
         deleteOffer(offerId)
@@ -434,7 +440,6 @@ export default {
       }
     }
 
-    // ИСПРАВЛЕНИЕ: Переименовал функцию чтобы избежать конфликта имен
     const handleToggleStatus = (offerId) => {
       toggleOfferStatus(offerId)
       showNotification('Статус объявления изменен', 'success')
@@ -457,17 +462,15 @@ export default {
     }
 
     return {
-      isOpen,
       activeTab,
       editingOffer,
       userOffers,
       businessStats,
       categories,
       offerForm,
-      closeModal,
+      closePanel,
       submitOffer,
       editOffer,
-      // ИСПРАВЛЕНИЕ: Используем переименованные функции
       deleteOffer: handleDeleteOffer,
       toggleOfferStatus: handleToggleStatus,
       getCategoryName,
@@ -481,9 +484,45 @@ export default {
 </script>
 
 <style scoped>
-.business-modal {
-  max-width: 800px;
-  max-height: 90vh;
+/* Стили для вкладок */
+.tabs {
+  display: flex;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 0.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-btn:hover:not(.active) {
+  background: var(--bg-tertiary);
+}
+
+.tab-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.create-form, .my-offers, .stats {
+  padding: 0;
 }
 
 .section-header {
@@ -491,10 +530,6 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
-}
-
-.create-form {
-  padding: 1rem 0;
 }
 
 .features-grid {
@@ -546,7 +581,7 @@ export default {
 }
 
 .offer-card {
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
@@ -637,7 +672,7 @@ export default {
 }
 
 .feature-more {
-  background: var(--accent-color);
+  background: var(--primary);
   color: white;
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
@@ -662,7 +697,7 @@ export default {
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
 }
@@ -678,7 +713,7 @@ export default {
 .stat-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--accent-color);
+  color: var(--primary);
   display: block;
 }
 
@@ -688,7 +723,7 @@ export default {
 }
 
 .chart-card {
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
@@ -735,6 +770,40 @@ export default {
   color: var(--text-secondary);
 }
 
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-secondary);
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+
 .btn-warning {
   background: #ffc107;
   color: #212529;
@@ -753,11 +822,60 @@ export default {
   background: #218838;
 }
 
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Адаптивность */
 @media (max-width: 768px) {
-  .business-modal {
-    width: 95%;
-  }
-  
   .tabs {
     flex-direction: column;
   }
@@ -791,6 +909,18 @@ export default {
   
   .bar-label {
     min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-form, .my-offers, .stats {
+    padding: 0;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
   }
 }
 </style>
