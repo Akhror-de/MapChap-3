@@ -1,3 +1,82 @@
+<template>
+  <div v-if="isOpen" class="modal-overlay" @click="closeModal">
+    <div class="modal-content" @click.stop>
+      <!-- Заголовок -->
+      <div class="modal-header">
+        <h2>👤 Мой профиль</h2>
+        <button class="close-btn" @click="closeModal">✕</button>
+      </div>
+
+      <!-- Информация профиля -->
+      <div class="profile-section">
+        <div class="avatar-large">
+          {{ user.avatar }}
+        </div>
+        <h3 class="user-name">{{ user.name }}</h3>
+        <p class="user-email">{{ user.email }}</p>
+      </div>
+
+      <!-- Любимые категории -->
+      <div class="section">
+        <h4>❤️ Любимые категории</h4>
+        <div class="categories-list">
+          <span 
+            v-for="category in user.favoriteCategories" 
+            :key="category"
+            class="category-tag"
+          >
+            {{ category }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Избранные -->
+      <div class="section">
+        <h4>⭐ Избранные объявления</h4>
+        <div class="favorites-list">
+          <div 
+            v-for="favorite in user.favorites" 
+            :key="favorite"
+            class="favorite-item"
+          >
+            <span class="favorite-icon">📍</span>
+            <span class="favorite-text">{{ favorite }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Действия -->
+      <div class="modal-actions">
+        <button class="btn btn-primary">Редактировать профиль</button>
+        <button class="btn btn-secondary">Выйти</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { useUIStore } from '../stores/uiStore'
+import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
+
+export default {
+  name: 'ProfileModal',
+  setup() {
+    const uiStore = useUIStore()
+    const { activeModal, user } = storeToRefs(uiStore)
+    const { closeModal } = uiStore
+
+    const isOpen = computed(() => activeModal.value === 'profile')
+
+    return {
+      isOpen,
+      user,
+      closeModal
+    }
+  }
+}
+</script>
+
 <style scoped>
 .modal-overlay {
   position: fixed;
@@ -7,7 +86,7 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
-  z-index: 10000; /* УВЕЛИЧИЛИ */
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,10 +105,9 @@
   overflow-y: auto;
   animation: slideIn 0.3s ease;
   box-shadow: var(--shadow-xl);
-  z-index: 10001; /* УВЕЛИЧИЛИ */
+  z-index: 10001;
 }
 
-/* Остальные стили без изменений */
 .modal-header {
   display: flex;
   justify-content: space-between;
