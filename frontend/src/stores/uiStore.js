@@ -26,6 +26,7 @@ export const useUIStore = defineStore('ui', () => {
   const openArticle = (article) => {
     currentArticle.value = article
     activePanel.value = 'article'
+    isBurgerMenuOpen.value = false
   }
 
   const showNotification = (message, type = 'info') => {
