@@ -2,20 +2,29 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export const useUIStore = defineStore('ui', () => {
+  // State
   const isBurgerMenuOpen = ref(false)
-  const activePanel = ref(null) // 'profile', 'business', 'blog', 'about', 'article'
   const isDarkTheme = ref(false)
+  const activePanel = ref(null)
   const currentArticle = ref(null)
   const notification = ref(null)
+  const isLoading = ref(false)
 
-  // Действия
+  // Computed
+  const isAnyPanelOpen = computed(() => isBurgerMenuOpen.value || activePanel.value !== null)
+
+  // Actions
   const toggleBurgerMenu = () => {
     isBurgerMenuOpen.value = !isBurgerMenuOpen.value
+    if (!isBurgerMenuOpen.value) {
+      activePanel.value = null
+      currentArticle.value = null
+    }
   }
 
   const openPanel = (panelName) => {
     activePanel.value = panelName
-    isBurgerMenuOpen.value = false
+    isBurgerMenuOpen.value = true
   }
 
   const closePanel = () => {
@@ -26,53 +35,45 @@ export const useUIStore = defineStore('ui', () => {
   const openArticle = (article) => {
     currentArticle.value = article
     activePanel.value = 'article'
-    isBurgerMenuOpen.value = false
   }
 
-  const showNotification = (message, type = 'info') => {
+  const showNotification = (message, type = 'info', duration = 3000) => {
     notification.value = { message, type }
     setTimeout(() => {
       notification.value = null
-    }, 3000)
+    }, duration)
+  }
+
+  const initTheme = () => {
+    const saved = localStorage.getItem('mapchap-theme')
+    isDarkTheme.value = saved === 'dark'
+    document.documentElement.classList.toggle('dark-theme', isDarkTheme.value)
   }
 
   const toggleTheme = () => {
     isDarkTheme.value = !isDarkTheme.value
     localStorage.setItem('mapchap-theme', isDarkTheme.value ? 'dark' : 'light')
-    
-    if (isDarkTheme.value) {
-      document.body.classList.add('dark-theme')
-    } else {
-      document.body.classList.remove('dark-theme')
-    }
+    document.documentElement.classList.toggle('dark-theme', isDarkTheme.value)
   }
 
-  // Инициализация темы
-  const initTheme = () => {
-    const savedTheme = localStorage.getItem('mapchap-theme')
-    if (savedTheme) {
-      isDarkTheme.value = savedTheme === 'dark'
-      if (isDarkTheme.value) {
-        document.body.classList.add('dark-theme')
-      }
-    }
+  const setLoading = (loading) => {
+    isLoading.value = loading
   }
 
-  // Computed
-  const isPanelOpen = computed(() => activePanel.value !== null)
-  const currentPanel = computed(() => activePanel.value)
+  // Инициализация
+  initTheme()
 
   return {
     // State
     isBurgerMenuOpen,
-    activePanel,
     isDarkTheme,
+    activePanel,
     currentArticle,
     notification,
+    isLoading,
     
     // Computed
-    isPanelOpen,
-    currentPanel,
+    isAnyPanelOpen,
     
     // Actions
     toggleBurgerMenu,
@@ -81,6 +82,7 @@ export const useUIStore = defineStore('ui', () => {
     openArticle,
     showNotification,
     toggleTheme,
-    initTheme
+    initTheme,
+    setLoading
   }
 })
