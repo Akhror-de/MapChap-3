@@ -112,6 +112,27 @@ export class YandexMapsService {
   setZoom(zoom) {
     this.map.setZoom(zoom)
   }
+
+  // Поиск по адресу
+  geocode(address) {
+    return new Promise((resolve, reject) => {
+      this.ymaps.geocode(address)
+        .then((result) => {
+          const firstGeoObject = result.geoObjects.get(0)
+          if (firstGeoObject) {
+            const coordinates = firstGeoObject.geometry.getCoordinates()
+            resolve({
+              coordinates,
+              address: firstGeoObject.getAddressLine(),
+              bounds: firstGeoObject.properties.get('boundedBy')
+            })
+          } else {
+            reject(new Error('Адрес не найден'))
+          }
+        })
+        .catch(reject)
+    })
+  }
 }
 
 // Создаем singleton экземпляр
