@@ -166,7 +166,54 @@ class MockApiService {
     }
   }
 
-  // Other methods return mock data...
+  // Auth methods
+  async telegramAuth(authData) {
+    await this.delay(800)
+    return {
+      user: {
+        id: authData.id,
+        name: `${authData.firstName} ${authData.lastName || ''}`.trim(),
+        username: authData.username,
+        avatar: '👤',
+        email: `${authData.username}@telegram.org`,
+        phone: 'Не указан',
+        role: 'user',
+        registrationDate: new Date().toISOString(),
+        stats: {
+          offers: 0,
+          articles: 0,
+          favorites: 0
+        }
+      },
+      token: 'mock-jwt-token'
+    }
+  }
+
+  async registerBusiness(userId, businessData) {
+    await this.delay(800)
+    return {
+      success: true,
+      user: {
+        role: 'business_owner',
+        businessInfo: businessData
+      }
+    }
+  }
+
+  // Articles methods
+  async getArticles() {
+    await this.delay(500)
+    return { articles: [] }
+  }
+
+  async createArticle(articleData) {
+    await this.delay(800)
+    return {
+      id: Date.now(),
+      ...articleData,
+      createdAt: new Date().toISOString()
+    }
+  }
 }
 
 // Export appropriate service based on environment
