@@ -298,7 +298,7 @@ export default {
       incrementArticleViews, 
       toggleArticleLike, 
       addComment: addCommentToStore,
-      toggleCommentLike 
+      toggleCommentLike: toggleCommentLikeStore 
     } = blogStore
 
     // State
@@ -407,7 +407,7 @@ export default {
       }
       isBookmarked.value = !isBookmarked.value
       showNotification(
-        isBookmarked.value ? 'Статья добавлена в закладки' : 'Статья удалена из закладок',
+        isBookmarked.value ? 'Статья добавлена в закладки' : 'Статья удалена из закладки',
         'success'
       )
     }
@@ -473,7 +473,7 @@ export default {
         showNotification('Войдите в аккаунт, чтобы ставить лайки', 'info')
         return
       }
-      toggleCommentLike(commentId)
+      toggleCommentLikeStore(commentId)
     }
 
     const replyToComment = (comment) => {
