@@ -123,29 +123,30 @@ export default {
 
 <style scoped>
 .offers-list {
-  background: white;
+  background: var(--bg-primary);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
   height: 600px;
   overflow-y: auto;
+  border: 1px solid var(--border-color);
 }
 
 .list-header {
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 1rem;
 }
 
 .section-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin: 0;
 }
 
 .offers-count {
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 400;
   font-size: 0.9em;
 }
@@ -153,14 +154,14 @@ export default {
 .loading-state {
   text-align: center;
   padding: 3rem 1rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  border: 4px solid var(--border-color);
+  border-top: 4px solid var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -169,7 +170,7 @@ export default {
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .empty-icon {
@@ -181,6 +182,7 @@ export default {
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: var(--text-primary);
 }
 
 .empty-desc {
@@ -195,23 +197,23 @@ export default {
 }
 
 .offer-card {
-  border: 2px solid #e9ecef;
+  border: 2px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: white;
+  background: var(--bg-primary);
 }
 
 .offer-card:hover {
-  border-color: #667eea;
+  border-color: var(--primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+  box-shadow: var(--shadow-lg);
 }
 
 .offer-card.active {
-  border-color: #667eea;
-  background: #f8f9ff;
+  border-color: var(--primary);
+  background: var(--bg-secondary);
 }
 
 .offer-image {
@@ -248,12 +250,12 @@ export default {
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0 0 0.5rem 0;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .offer-description {
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-secondary);
   margin: 0 0 1rem 0;
   line-height: 1.4;
 }
@@ -265,7 +267,7 @@ export default {
 .offer-address,
 .offer-hours {
   font-size: 0.8rem;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 0.25rem;
 }
 
@@ -277,12 +279,12 @@ export default {
 }
 
 .offer-rating {
-  color: #ffc107;
+  color: var(--accent);
   font-weight: 600;
 }
 
 .offer-phone {
-  color: #667eea;
+  color: var(--primary);
   font-weight: 500;
 }
 
