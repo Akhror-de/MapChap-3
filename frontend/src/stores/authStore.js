@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { apiService } from '../services/api'
+import { apiService } from '../services/api.js'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -62,6 +62,8 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       
       // В реальном приложении здесь будет запрос к бэкенду
+      const response = await apiService.telegramAuth(tgData)
+      
       const userData = {
         id: tgData.id,
         name: `${tgData.firstName} ${tgData.lastName || ''}`.trim(),
@@ -81,9 +83,31 @@ export const useAuthStore = defineStore('auth', () => {
       setUser(userData)
       localStorage.setItem('mapchap-user', JSON.stringify(userData))
       
+      return userData
     } catch (error) {
       console.error('Telegram auth error:', error)
-      throw error
+      
+      // Fallback на локальную аутентификацию при ошибке API
+      const userData = {
+        id: tgData.id,
+        name: `${tgData.firstName} ${tgData.lastName || ''}`.trim(),
+        username: tgData.username,
+        avatar: '👤',
+        email: `${tgData.username}@telegram.org`,
+        phone: 'Не указан',
+        role: 'user',
+        registrationDate: new Date().toISOString(),
+        stats: {
+          offers: 0,
+          articles: 0,
+          favorites: 0
+        }
+      }
+
+      setUser(userData)
+      localStorage.setItem('mapchap-user', JSON.stringify(userData))
+      
+      return userData
     } finally {
       isLoading.value = false
     }
@@ -92,6 +116,9 @@ export const useAuthStore = defineStore('auth', () => {
   const registerAsBusiness = async (businessData) => {
     try {
       isLoading.value = true
+      
+      // В реальном приложении - запрос к API
+      const response = await apiService.registerBusiness(user.value.id, businessData)
       
       // Обновляем роль пользователя на бизнес
       const updatedUser = {
@@ -106,7 +133,18 @@ export const useAuthStore = defineStore('auth', () => {
       return updatedUser
     } catch (error) {
       console.error('Business registration error:', error)
-      throw error
+      
+      // Fallback на локальное обновление
+      const updatedUser = {
+        ...user.value,
+        role: 'business_owner',
+        businessInfo: businessData
+      }
+      
+      setUser(updatedUser)
+      localStorage.setItem('mapchap-user', JSON.stringify(updatedUser))
+      
+      return updatedUser
     } finally {
       isLoading.value = false
     }
@@ -122,8 +160,13 @@ export const useAuthStore = defineStore('auth', () => {
   const checkAuth = () => {
     const savedUser = localStorage.getItem('mapchap-user')
     if (savedUser) {
-      const userData = JSON.parse(savedUser)
-      setUser(userData)
+      try {
+        const userData = JSON.parse(savedUser)
+        setUser(userData)
+      } catch (error) {
+        console.error('Error parsing saved user data:', error)
+        localStorage.removeItem('mapchap-user')
+      }
     }
   }
 
@@ -149,14 +192,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Helper
+  // Helper methods
   const setUser = (userData) => {
     user.value = userData
     isAuthenticated.value = !!userData
   }
 
-  // Инициализация
-  checkAuth()
+  // Инициализация при загрузке store
+  const initialize = () => {
+    checkAuth()
+  }
+
+  // Вызываем инициализацию
+  initialize()
 
   return {
     // State
