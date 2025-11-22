@@ -94,11 +94,12 @@ export default {
 
 <style scoped>
 .category-filter {
-  background: white;
+  background: var(--bg-primary);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
   height: fit-content;
+  border: 1px solid var(--border-color);
 }
 
 .search-section {
@@ -113,20 +114,22 @@ export default {
 .search-input {
   flex: 1;
   padding: 0.75rem 1rem;
-  border: 2px solid #e9ecef;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 14px;
   transition: border-color 0.3s ease;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--primary);
 }
 
 .search-btn {
   padding: 0.75rem 1rem;
-  background: #667eea;
+  background: var(--primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -135,14 +138,14 @@ export default {
 }
 
 .search-btn:hover {
-  background: #5a6fd8;
+  background: var(--primary-dark);
 }
 
 .section-title {
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .categories-grid {
@@ -156,23 +159,23 @@ export default {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  border: 2px solid #e9ecef;
+  border: 2px solid var(--border-color);
   border-radius: 8px;
-  background: white;
+  background: var(--bg-primary);
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
 }
 
 .category-btn:hover {
-  border-color: #667eea;
+  border-color: var(--primary);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  box-shadow: var(--shadow-sm);
 }
 
 .category-btn.active {
-  border-color: #667eea;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-color: var(--primary);
+  background: var(--primary);
   color: white;
 }
 
@@ -188,23 +191,24 @@ export default {
 .location-section {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--border-color);
 }
 
 .location-btn {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.3s ease;
+  color: var(--text-primary);
 }
 
 .location-btn:hover {
-  border-color: #667eea;
-  background: #667eea;
+  border-color: var(--primary);
+  background: var(--primary);
   color: white;
 }
 
