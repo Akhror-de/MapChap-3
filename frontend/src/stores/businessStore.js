@@ -1,132 +1,183 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { useAuthStore } from './authStore'
+import { apiService } from '../services/api'
 
 export const useBusinessStore = defineStore('business', () => {
+  const authStore = useAuthStore()
+  
+  // State
   const offers = ref([])
-  const categories = ref([
-    { id: 'food', name: '🍕 Еда и рестораны', icon: '🍕', color: '#FF6B6B' },
-    { id: 'shopping', name: '🛍️ Покупки', icon: '🛍️', color: '#4ECDC4' },
-    { id: 'beauty', name: '💄 Салоны красоты', icon: '💄', color: '#FFD93D' },
-    { id: 'services', name: '🔧 Услуги', icon: '🔧', color: '#6BCF7F' },
-    { id: 'medical', name: '⚕️ Медицина', icon: '⚕️', color: '#4D96FF' },
-    { id: 'furniture', name: '🛋️ Мебель', icon: '🛋️', color: '#9B5DE5' },
-    { id: 'pharmacy', name: '💊 Аптеки', icon: '💊', color: '#F15BB5' },
-    { id: 'education', name: '🎓 Образование', icon: '🎓', color: '#00BBF9' },
-    { id: 'entertainment', name: '🎭 Развлечения', icon: '🎭', color: '#FB5607' },
-    { id: 'sports', name: '⚽ Спорт', icon: '⚽', color: '#8338EC' }
-  ])
+  const categories = ref([])
+  const isLoading = ref(false)
+  const stats = ref({
+    totalOffers: 0,
+    activeOffers: 0,
+    totalViews: 0,
+    totalLikes: 0,
+    categoryStats: {}
+  })
 
-  // Загрузка данных из localStorage
-  const loadOffers = () => {
-    const saved = localStorage.getItem('business_offers')
-    if (saved) {
-      offers.value = JSON.parse(saved)
+  // Computed
+  const getUserOffers = computed(() => {
+    if (!authStore.isAuthenticated) return []
+    return offers.value.filter(offer => offer.userId === authStore.user.id)
+  })
+
+  const getBusinessStats = computed(() => {
+    const userOffers = getUserOffers.value
+    const categoryStats = {}
+    
+    userOffers.forEach(offer => {
+      categoryStats[offer.category] = (categoryStats[offer.category] || 0) + offer.views
+    })
+
+    return {
+      totalOffers: userOffers.length,
+      activeOffers: userOffers.filter(o => o.status === 'active').length,
+      totalViews: userOffers.reduce((sum, offer) => sum + offer.views, 0),
+      totalLikes: userOffers.reduce((sum, offer) => sum + offer.likes, 0),
+      categoryStats
     }
-  }
+  })
 
-  // Сохранение данных в localStorage
-  const saveOffers = () => {
-    localStorage.setItem('business_offers', JSON.stringify(offers.value))
-  }
+  const getActiveOffers = computed(() => {
+    return offers.value.filter(offer => offer.status === 'active')
+  })
 
-  // Инициализация демо-данных
-  const initDemoData = () => {
-    if (offers.value.length === 0) {
+  // Actions
+  const loadInitialData = () => {
+    // Загрузка категорий
+    categories.value = [
+      { id: 'food', name: '🍕 Рестораны и кафе', icon: '🍕', color: '#FF6B6B' },
+      { id: 'shopping', name: '🛍️ Магазины', icon: '🛍️', color: '#4ECDC4' },
+      { id: 'beauty', name: '💄 Красота и здоровье', icon: '💄', color: '#FFD166' },
+      { id: 'services', name: '🔧 Услуги', icon: '🔧', color: '#06D6A0' },
+      { id: 'medical', name: '⚕️ Медицина', icon: '⚕️', color: '#118AB2' },
+      { id: 'furniture', name: '🛋️ Мебель и декор', icon: '🛋️', color: '#073B4C' },
+      { id: 'pharmacy', name: '💊 Аптеки', icon: '💊', color: '#EF476F' },
+      { id: 'entertainment', name: '🎭 Развлечения', icon: '🎭', color: '#7209B7' },
+      { id: 'education', name: '📚 Образование', icon: '📚', color: '#F72585' },
+      { id: 'auto', name: '🚗 Автосервисы', icon: '🚗', color: '#4361EE' }
+    ]
+
+    // Загрузка демо-предложений
+    const savedOffers = localStorage.getItem('mapchap-offers')
+    if (savedOffers) {
+      offers.value = JSON.parse(savedOffers)
+    } else {
+      // Демо данные
       offers.value = [
         {
           id: 1,
+          userId: 1,
           title: 'Кофейня "Уютный уголок"',
           category: 'food',
-          description: 'Лучший кофе в городе, свежая выпечка и уютная атмосфера. Работаем с 2018 года.',
-          address: 'г. Москва, ул. Арбат, 25',
+          description: 'Лучший кофе в городе, свежая выпечка, уютная атмосфера. Работаем с 2018 года.',
+          address: 'ул. Примерная, 123',
           phone: '+7 (999) 123-45-67',
           email: 'coffee@example.com',
-          website: 'https://coffee.example.com',
-          coords: [55.751244, 37.618423],
+          website: 'https://coffee-example.com',
           priceLevel: 'medium',
-          hours: '08:00-23:00',
-          images: [],
+          hours: '8:00-23:00',
+          features: ['wi-fi', 'takeaway', 'outdoor'],
+          coordinates: [55.751244, 37.618423],
           status: 'active',
-          views: 156,
-          likes: 23,
-          rating: 4.5,
-          features: ['wi-fi', 'takeaway', 'breakfast'],
+          views: 1245,
+          likes: 89,
+          rating: 4.8,
+          reviews: 34,
+          images: ['https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400'],
           createdAt: new Date('2024-01-15').toISOString(),
           updatedAt: new Date('2024-01-15').toISOString()
-        },
-        {
-          id: 2,
-          title: 'Салон красоты "Элегант"',
-          category: 'beauty',
-          description: 'Полный спектр парикмахерских услуг, маникюр, педикюр, визаж. Профессиональные мастера.',
-          address: 'г. Москва, пр. Мира, 42',
-          phone: '+7 (999) 765-43-21',
-          email: 'elegant@example.com',
-          website: '',
-          coords: [55.781244, 37.628423],
-          priceLevel: 'premium',
-          hours: '10:00-20:00',
-          images: [],
-          status: 'active',
-          views: 89,
-          likes: 15,
-          rating: 4.8,
-          features: ['parking', 'online_booking'],
-          createdAt: new Date('2024-01-10').toISOString(),
-          updatedAt: new Date('2024-01-10').toISOString()
         }
       ]
       saveOffers()
     }
   }
 
-  // Методы для работы с объявлениями
-  const createOffer = (offerData) => {
-    const newOffer = {
-      id: Date.now(),
-      ...offerData,
-      status: 'active',
-      views: 0,
-      likes: 0,
-      rating: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-    
-    offers.value.unshift(newOffer)
-    saveOffers()
-    return newOffer
-  }
-
-  const updateOffer = (offerId, offerData) => {
-    const index = offers.value.findIndex(offer => offer.id === offerId)
-    if (index !== -1) {
-      offers.value[index] = {
-        ...offers.value[index],
+  const createOffer = async (offerData) => {
+    try {
+      isLoading.value = true
+      
+      const newOffer = {
+        id: Date.now(),
+        userId: authStore.user.id,
         ...offerData,
+        coordinates: [55.751244, 37.618423], // В реальном приложении геокодирование
+        status: 'active',
+        views: 0,
+        likes: 0,
+        rating: 0,
+        reviews: 0,
+        images: [],
+        createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
-      saveOffers()
-      return offers.value[index]
-    }
-    return null
-  }
 
-  const deleteOffer = (offerId) => {
-    offers.value = offers.value.filter(offer => offer.id !== offerId)
-    saveOffers()
-  }
-
-  const toggleOfferStatus = (offerId) => {
-    const offer = offers.value.find(offer => offer.id === offerId)
-    if (offer) {
-      offer.status = offer.status === 'active' ? 'paused' : 'active'
-      offer.updatedAt = new Date().toISOString()
+      offers.value.unshift(newOffer)
       saveOffers()
+      
+      return newOffer
+    } catch (error) {
+      console.error('Create offer error:', error)
+      throw error
+    } finally {
+      isLoading.value = false
     }
   }
 
-  const incrementViews = (offerId) => {
+  const updateOffer = async (offerId, offerData) => {
+    try {
+      isLoading.value = true
+      
+      const index = offers.value.findIndex(offer => offer.id === offerId)
+      if (index !== -1) {
+        offers.value[index] = {
+          ...offers.value[index],
+          ...offerData,
+          updatedAt: new Date().toISOString()
+        }
+        saveOffers()
+        return offers.value[index]
+      }
+      throw new Error('Offer not found')
+    } catch (error) {
+      console.error('Update offer error:', error)
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const deleteOffer = async (offerId) => {
+    try {
+      isLoading.value = true
+      offers.value = offers.value.filter(offer => offer.id !== offerId)
+      saveOffers()
+    } catch (error) {
+      console.error('Delete offer error:', error)
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const toggleOfferStatus = async (offerId) => {
+    try {
+      const offer = offers.value.find(offer => offer.id === offerId)
+      if (offer) {
+        offer.status = offer.status === 'active' ? 'paused' : 'active'
+        offer.updatedAt = new Date().toISOString()
+        saveOffers()
+      }
+    } catch (error) {
+      console.error('Toggle offer status error:', error)
+      throw error
+    }
+  }
+
+  const incrementOfferViews = (offerId) => {
     const offer = offers.value.find(offer => offer.id === offerId)
     if (offer) {
       offer.views++
@@ -134,7 +185,7 @@ export const useBusinessStore = defineStore('business', () => {
     }
   }
 
-  const toggleLike = (offerId) => {
+  const toggleOfferLike = (offerId) => {
     const offer = offers.value.find(offer => offer.id === offerId)
     if (offer) {
       offer.likes += offer.isLiked ? -1 : 1
@@ -144,60 +195,36 @@ export const useBusinessStore = defineStore('business', () => {
   }
 
   const getCategoryById = (categoryId) => {
-    return categories.value.find(cat => cat.id === categoryId) || categories.value[0]
+    return categories.value.find(cat => cat.id === categoryId)
   }
 
-  const getUserOffers = computed(() => {
-    // В реальном приложении здесь будет фильтрация по пользователю
-    return offers.value
-  })
-
-  const getActiveOffers = computed(() => {
-    return offers.value.filter(offer => offer.status === 'active')
-  })
-
-  // Статистика
-  const getBusinessStats = computed(() => {
-    const userOffers = getUserOffers.value
-    const totalViews = userOffers.reduce((sum, offer) => sum + offer.views, 0)
-    const totalLikes = userOffers.reduce((sum, offer) => sum + offer.likes, 0)
-    const activeOffers = userOffers.filter(offer => offer.status === 'active').length
-    
-    const categoryStats = {}
-    userOffers.forEach(offer => {
-      if (!categoryStats[offer.category]) {
-        categoryStats[offer.category] = 0
-      }
-      categoryStats[offer.category] += offer.views
-    })
-
-    return {
-      totalViews,
-      totalLikes,
-      activeOffers,
-      totalOffers: userOffers.length,
-      categoryStats
-    }
-  })
+  // Helpers
+  const saveOffers = () => {
+    localStorage.setItem('mapchap-offers', JSON.stringify(offers.value))
+  }
 
   // Инициализация
-  loadOffers()
-  if (offers.value.length === 0) {
-    initDemoData()
-  }
+  loadInitialData()
 
   return {
+    // State
     offers,
     categories,
+    isLoading,
+    stats,
+    
+    // Computed
     getUserOffers,
-    getActiveOffers,
     getBusinessStats,
+    getActiveOffers,
+    
+    // Actions
     createOffer,
     updateOffer,
     deleteOffer,
     toggleOfferStatus,
-    incrementViews,
-    toggleLike,
+    incrementOfferViews,
+    toggleOfferLike,
     getCategoryById
   }
 })
