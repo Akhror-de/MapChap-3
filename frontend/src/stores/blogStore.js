@@ -3,14 +3,47 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from './authStore'
 
 export const useBlogStore = defineStore('blog', () => {
+  const authStore = useAuthStore()
+  
+  // State
   const articles = ref([])
   const comments = ref([])
-  const authStore = useAuthStore()
+  const isLoading = ref(false)
+  const categories = ref([
+    { id: 'business', name: '💼 Бизнес-советы', icon: '💼' },
+    { id: 'success', name: '🚀 Истории успеха', icon: '🚀' },
+    { id: 'marketing', name: '📈 Маркетинг', icon: '📈' },
+    { id: 'technology', name: '🤖 Технологии', icon: '🤖' },
+    { id: 'news', name: '📢 Новости платформы', icon: '📢' },
+    { id: 'review', name: '⭐ Обзоры', icon: '⭐' },
+    { id: 'other', name: '🔮 Другое', icon: '🔮' }
+  ])
 
-  // Загрузка данных
-  const loadData = () => {
-    const savedArticles = localStorage.getItem('blog_articles')
-    const savedComments = localStorage.getItem('blog_comments')
+  // Computed
+  const getArticles = computed(() => {
+    return articles.value.filter(article => article.isPublished)
+  })
+
+  const getDeveloperArticles = computed(() => {
+    return getArticles.value.filter(article => article.author.role !== 'user')
+  })
+
+  const getUserArticles = computed(() => {
+    return getArticles.value.filter(article => article.author.role === 'user')
+  })
+
+  const getArticleById = computed(() => (articleId) => {
+    return articles.value.find(article => article.id === parseInt(articleId))
+  })
+
+  const getCommentsByArticleId = computed(() => (articleId) => {
+    return comments.value.filter(comment => comment.articleId === parseInt(articleId))
+  })
+
+  // Actions
+  const loadInitialData = () => {
+    const savedArticles = localStorage.getItem('mapchap-articles')
+    const savedComments = localStorage.getItem('mapchap-comments')
     
     if (savedArticles) {
       articles.value = JSON.parse(savedArticles)
@@ -18,16 +51,8 @@ export const useBlogStore = defineStore('blog', () => {
     if (savedComments) {
       comments.value = JSON.parse(savedComments)
     }
-  }
 
-  // Сохранение данных
-  const saveData = () => {
-    localStorage.setItem('blog_articles', JSON.stringify(articles.value))
-    localStorage.setItem('blog_comments', JSON.stringify(comments.value))
-  }
-
-  // Инициализация демо-данных
-  const initDemoData = () => {
+    // Демо данные если нет сохраненных
     if (articles.value.length === 0) {
       articles.value = [
         {
@@ -81,62 +106,11 @@ export const useBlogStore = defineStore('blog', () => {
           isPublished: true,
           createdAt: new Date('2024-01-15').toISOString(),
           updatedAt: new Date('2024-01-15').toISOString()
-        },
-        {
-          id: 2,
-          title: 'Как эффективно продвигать бизнес на картах',
-          excerpt: 'Практическое руководство по привлечению клиентов через картографические сервисы и увеличения видимости вашего бизнеса.',
-          content: `# Как эффективно продвигать бизнес на картах
-
-Картографические сервисы стали мощным инструментом для привлечения клиентов. В этой статье мы расскажем, как максимально эффективно использовать MapChap для продвижения вашего бизнеса.
-
-## 📍 Оптимизация профиля бизнеса
-
-### Полное заполнение информации
-- Добавьте качественные фотографии
-- Укажите точные часы работы
-- Заполните все доступные поля
-
-### Ключевые слова и категории
-- Используйте релевантные категории
-- Добавьте ключевые слова в описание
-- Укажите специфические услуги
-
-## 🎯 Привлечение клиентов
-
-### Акции и специальные предложения
-- Создавайте временные акции
-- Предлагайте бонусы новым клиентам
-- Используйте сезонные предложения
-
-### Отзывы и рейтинги
-- Поощряйте клиентов оставлять отзывы
-- Быстро реагируйте на обратную связь
-- Используйте отзывы для улучшения сервиса
-
-## 📊 Анализ эффективности
-
-Отслеживайте статистику просмотров и используйте эти данные для оптимизации вашей стратегии продвижения.`,
-          author: {
-            id: 2,
-            name: 'Яна Ивченко',
-            avatar: '👩‍💼',
-            role: 'finance_director'
-          },
-          category: 'marketing',
-          tags: ['маркетинг', 'продвижение', 'советы', 'бизнес'],
-          image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800',
-          views: 876,
-          likes: 67,
-          commentsCount: 15,
-          readTime: 4,
-          isLiked: false,
-          isPublished: true,
-          createdAt: new Date('2024-01-10').toISOString(),
-          updatedAt: new Date('2024-01-10').toISOString()
         }
       ]
-      
+    }
+
+    if (comments.value.length === 0) {
       comments.value = [
         {
           id: 1,
@@ -150,66 +124,84 @@ export const useBlogStore = defineStore('blog', () => {
           likes: 5,
           isLiked: false,
           createdAt: new Date('2024-01-16').toISOString()
-        },
-        {
-          id: 2,
-          articleId: 1,
-          author: {
-            id: 4,
-            name: 'Анна Смирнова',
-            avatar: '👩'
-          },
-          content: 'Жду мобильное приложение! Будет очень удобно управлять объявлениями с телефона.',
-          likes: 3,
-          isLiked: false,
-          createdAt: new Date('2024-01-16').toISOString()
         }
       ]
-      
-      saveData()
     }
-  }
 
-  // Методы для статей
-  const getArticles = computed(() => {
-    return articles.value.filter(article => article.isPublished)
-  })
-
-  const getDeveloperArticles = computed(() => {
-    return getArticles.value.filter(article => article.author.role !== 'user')
-  })
-
-  const getUserArticles = computed(() => {
-    return getArticles.value.filter(article => article.author.role === 'user')
-  })
-
-  const getArticleById = (articleId) => {
-    return articles.value.find(article => article.id === parseInt(articleId))
-  }
-
-  const createArticle = (articleData) => {
-    const newArticle = {
-      id: Date.now(),
-      ...articleData,
-      author: {
-        id: authStore.user?.id || 0,
-        name: authStore.user?.name || 'Пользователь',
-        avatar: authStore.user?.avatar || '👤',
-        role: 'user'
-      },
-      views: 0,
-      likes: 0,
-      commentsCount: 0,
-      readTime: Math.ceil(articleData.content.length / 1200),
-      isLiked: false,
-      isPublished: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-    
-    articles.value.unshift(newArticle)
     saveData()
-    return newArticle
+  }
+
+  const createArticle = async (articleData) => {
+    try {
+      isLoading.value = true
+      
+      const newArticle = {
+        id: Date.now(),
+        ...articleData,
+        author: {
+          id: authStore.user?.id || 0,
+          name: authStore.user?.name || 'Пользователь',
+          avatar: authStore.user?.avatar || '👤',
+          role: 'user'
+        },
+        views: 0,
+        likes: 0,
+        commentsCount: 0,
+        readTime: Math.ceil(articleData.content.length / 1200),
+        isLiked: false,
+        isPublished: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      
+      articles.value.unshift(newArticle)
+      saveData()
+      
+      return newArticle
+    } catch (error) {
+      console.error('Create article error:', error)
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const updateArticle = async (articleId, articleData) => {
+    try {
+      isLoading.value = true
+      
+      const index = articles.value.findIndex(article => article.id === articleId)
+      if (index !== -1) {
+        articles.value[index] = {
+          ...articles.value[index],
+          ...articleData,
+          updatedAt: new Date().toISOString()
+        }
+        saveData()
+        return articles.value[index]
+      }
+      throw new Error('Article not found')
+    } catch (error) {
+      console.error('Update article error:', error)
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const deleteArticle = async (articleId) => {
+    try {
+      isLoading.value = true
+      articles.value = articles.value.filter(article => article.id !== articleId)
+      // Также удаляем комментарии к статье
+      comments.value = comments.value.filter(comment => comment.articleId !== articleId)
+      saveData()
+    } catch (error) {
+      console.error('Delete article error:', error)
+      throw error
+    } finally {
+      isLoading.value = false
+    }
   }
 
   const incrementArticleViews = (articleId) => {
@@ -229,36 +221,36 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  // Методы для комментариев
-  const getCommentsByArticleId = computed(() => (articleId) => {
-    return comments.value.filter(comment => comment.articleId === parseInt(articleId))
-  })
-
-  const addComment = (articleId, content) => {
-    const newComment = {
-      id: Date.now(),
-      articleId: parseInt(articleId),
-      author: {
-        id: authStore.user?.id || 0,
-        name: authStore.user?.name || 'Пользователь',
-        avatar: authStore.user?.avatar || '👤'
-      },
-      content,
-      likes: 0,
-      isLiked: false,
-      createdAt: new Date().toISOString()
+  const addComment = async (articleId, content) => {
+    try {
+      const newComment = {
+        id: Date.now(),
+        articleId: parseInt(articleId),
+        author: {
+          id: authStore.user?.id || 0,
+          name: authStore.user?.name || 'Пользователь',
+          avatar: authStore.user?.avatar || '👤'
+        },
+        content,
+        likes: 0,
+        isLiked: false,
+        createdAt: new Date().toISOString()
+      }
+      
+      comments.value.unshift(newComment)
+      
+      // Обновляем счетчик комментариев в статье
+      const article = articles.value.find(article => article.id === parseInt(articleId))
+      if (article) {
+        article.commentsCount++
+        saveData()
+      }
+      
+      return newComment
+    } catch (error) {
+      console.error('Add comment error:', error)
+      throw error
     }
-    
-    comments.value.unshift(newComment)
-    
-    // Обновляем счетчик комментариев в статье
-    const article = articles.value.find(article => article.id === parseInt(articleId))
-    if (article) {
-      article.commentsCount++
-      saveData()
-    }
-    
-    return newComment
   }
 
   const toggleCommentLike = (commentId) => {
@@ -270,26 +262,33 @@ export const useBlogStore = defineStore('blog', () => {
     }
   }
 
-  // Инициализация
-  loadData()
-  if (articles.value.length === 0) {
-    initDemoData()
+  // Helpers
+  const saveData = () => {
+    localStorage.setItem('mapchap-articles', JSON.stringify(articles.value))
+    localStorage.setItem('mapchap-comments', JSON.stringify(comments.value))
   }
+
+  // Инициализация
+  loadInitialData()
 
   return {
     // State
     articles,
     comments,
+    isLoading,
+    categories,
     
     // Computed
     getArticles,
     getDeveloperArticles,
     getUserArticles,
+    getArticleById,
     getCommentsByArticleId,
     
     // Actions
-    getArticleById,
     createArticle,
+    updateArticle,
+    deleteArticle,
     incrementArticleViews,
     toggleArticleLike,
     addComment,
