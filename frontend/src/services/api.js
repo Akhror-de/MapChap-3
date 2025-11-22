@@ -221,4 +221,5 @@ export const apiService = import.meta.env.PROD
   ? new ApiService() 
   : new MockApiService()
 
-export { SUPPORT_CONTACTS }
+// УДАЛИТЬ ЭТУ СТРОКУ - она вызывает дублирование экспорта
+// export { SUPPORT_CONTACTS }
