@@ -237,7 +237,7 @@
                 <div class="comment-actions">
                   <button 
                     class="action-btn like-btn" 
-                    @click="toggleCommentLike(comment.id)"
+                    @click="handleToggleCommentLike(comment.id)"
                     :class="{ liked: comment.isLiked }"
                   >
                     <span class="action-icon">{{ comment.isLiked ? '❤️' : '🤍' }}</span>
@@ -468,7 +468,7 @@ export default {
       }
     }
 
-    const toggleCommentLike = (commentId) => {
+    const handleToggleCommentLike = (commentId) => {
       if (!isAuthenticated.value) {
         showNotification('Войдите в аккаунт, чтобы ставить лайки', 'info')
         return
@@ -527,7 +527,7 @@ export default {
       scrollToComments,
       focusCommentInput,
       addComment,
-      toggleCommentLike,
+      handleToggleCommentLike,
       replyToComment,
       readArticle,
       initAuth
