@@ -15,6 +15,7 @@ export const useUIStore = defineStore('ui', () => {
 
   // Actions
   const toggleBurgerMenu = () => {
+    console.log('Toggling burger menu, current state:', isBurgerMenuOpen.value)
     isBurgerMenuOpen.value = !isBurgerMenuOpen.value
     if (!isBurgerMenuOpen.value) {
       activePanel.value = null
@@ -23,16 +24,19 @@ export const useUIStore = defineStore('ui', () => {
   }
 
   const openPanel = (panelName) => {
+    console.log('Opening panel:', panelName)
     activePanel.value = panelName
     isBurgerMenuOpen.value = true
   }
 
   const closePanel = () => {
+    console.log('Closing panel')
     activePanel.value = null
     currentArticle.value = null
   }
 
   const openArticle = (article) => {
+    console.log('Opening article:', article?.title)
     currentArticle.value = article
     activePanel.value = 'article'
   }
