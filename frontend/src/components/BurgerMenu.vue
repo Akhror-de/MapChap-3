@@ -12,13 +12,13 @@
     <div class="burger-menu" :class="{ open: isMenuOpen }">
       <!-- Header -->
       <div class="menu-header">
-        <div class="user-section" v-if="isAuthenticated">
+        <div class="user-section" v-if="authStore.isAuthenticated">
           <div class="user-avatar large">
-            {{ user.avatar }}
+            {{ authStore.user?.avatar || '👤' }}
           </div>
           <div class="user-info">
-            <h3 class="user-name">{{ user.name }}</h3>
-            <p class="user-role">{{ user.role === 'business_owner' ? 'Владелец бизнеса' : 'Пользователь' }}</p>
+            <h3 class="user-name">{{ authStore.user?.name || 'Пользователь' }}</h3>
+            <p class="user-role">{{ authStore.user?.role === 'business_owner' ? 'Владелец бизнеса' : 'Пользователь' }}</p>
           </div>
         </div>
         <div class="auth-section" v-else>
@@ -35,19 +35,19 @@
         <div class="nav-section">
           <h4 class="section-title">Основное</h4>
           <div class="nav-items">
-            <button class="nav-item" @click="openPanelWithClose('profile')" :class="{ active: currentPanel === 'profile' }">
+            <button class="nav-item" @click="openPanel('profile')" :class="{ active: currentPanel === 'profile' }">
               <span class="nav-icon">👤</span>
               <span class="nav-text">Мой профиль</span>
-              <span class="nav-badge" v-if="!isAuthenticated">Войти</span>
+              <span class="nav-badge" v-if="!authStore.isAuthenticated">Войти</span>
             </button>
 
-            <button class="nav-item" @click="openPanelWithClose('business')" :class="{ active: currentPanel === 'business' }">
+            <button class="nav-item" @click="openPanel('business')" :class="{ active: currentPanel === 'business' }">
               <span class="nav-icon">💼</span>
               <span class="nav-text">Для бизнеса</span>
               <span class="nav-badge" v-if="businessStats.activeOffers > 0">{{ businessStats.activeOffers }}</span>
             </button>
 
-            <button class="nav-item" @click="openPanelWithClose('blog')" :class="{ active: currentPanel === 'blog' }">
+            <button class="nav-item" @click="openPanel('blog')" :class="{ active: currentPanel === 'blog' }">
               <span class="nav-icon">📝</span>
               <span class="nav-text">Блог MapChap</span>
             </button>
@@ -57,7 +57,7 @@
         <div class="nav-section">
           <h4 class="section-title">О проекте</h4>
           <div class="nav-items">
-            <button class="nav-item" @click="openPanelWithClose('about')" :class="{ active: currentPanel === 'about' }">
+            <button class="nav-item" @click="openPanel('about')" :class="{ active: currentPanel === 'about' }">
               <span class="nav-icon">ℹ️</span>
               <span class="nav-text">О приложении</span>
             </button>
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Auth Button -->
-        <div class="auth-actions" v-if="!isAuthenticated">
+        <div class="auth-actions" v-if="!authStore.isAuthenticated">
           <button class="auth-button" @click="initAuth">
             <span class="auth-icon">🔗</span>
             <span class="auth-text">Войти через Telegram</span>
@@ -136,38 +136,47 @@ export default {
       currentArticle 
     } = storeToRefs(uiStore)
     
-    const { isAuthenticated, user } = storeToRefs(authStore)
     const { getBusinessStats } = storeToRefs(businessStore)
 
     const { 
       toggleBurgerMenu, 
       openPanel, 
       closePanel,
-      openArticle,
       showNotification
     } = uiStore
     
     const { initTelegramAuth, logout } = authStore
 
-    const businessStats = computed(() => getBusinessStats.value)
+    const businessStats = computed(() => getBusinessStats.value || {
+      activeOffers: 0,
+      totalOffers: 0,
+      totalViews: 0,
+      totalLikes: 0,
+      categoryStats: {}
+    })
+
     const isPanelOpen = computed(() => currentPanel.value !== null)
 
-    const openPanelWithClose = (panelName) => {
+    const openPanelHandler = (panelName) => {
+      console.log('Opening panel:', panelName)
       openPanel(panelName)
     }
 
     const closeAll = () => {
+      console.log('Closing all panels')
       closePanel()
       toggleBurgerMenu()
     }
 
     const initAuth = () => {
+      console.log('Initializing auth')
       initTelegramAuth()
       showNotification('Успешная авторизация через Telegram!', 'success')
     }
 
     const handleLogout = () => {
       if (confirm('Вы уверены, что хотите выйти из аккаунта?')) {
+        console.log('Logging out')
         logout()
         closeAll()
         showNotification('Вы успешно вышли из аккаунта', 'success')
@@ -175,16 +184,20 @@ export default {
     }
 
     return {
+      // Stores
+      authStore,
+      businessStore,
+      
+      // State
       isMenuOpen,
       isPanelOpen,
       currentPanel,
       currentArticle,
-      user,
-      isAuthenticated,
       businessStats,
+      
+      // Methods
       toggleBurgerMenu,
-      openPanel: openPanelWithClose,
-      openArticle,
+      openPanel: openPanelHandler,
       closeAll,
       initAuth,
       logout: handleLogout
