@@ -137,4 +137,3 @@ export class YandexMapsService {
 
 // Создаем singleton экземпляр
 export const yandexMapsService = new YandexMapsService()
-
