@@ -15,6 +15,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Actions
   const initTelegramAuth = () => {
+    console.log('Initializing Telegram auth')
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp
       tg.ready()
@@ -38,6 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } else {
       // Fallback для разработки
+      console.log('Telegram WebApp not available, using demo mode')
       const mockUser = {
         id: 1,
         name: 'Демо Пользователь',
@@ -60,6 +62,7 @@ export const useAuthStore = defineStore('auth', () => {
   const loginWithTelegram = async (tgData) => {
     try {
       isLoading.value = true
+      console.log('Logging in with Telegram:', tgData)
       
       // В реальном приложении здесь будет запрос к бэкенду
       const response = await apiService.telegramAuth(tgData)
@@ -82,6 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       setUser(userData)
       localStorage.setItem('mapchap-user', JSON.stringify(userData))
+      console.log('User logged in successfully:', userData)
       
       return userData
     } catch (error) {
@@ -106,6 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       setUser(userData)
       localStorage.setItem('mapchap-user', JSON.stringify(userData))
+      console.log('User logged in with fallback:', userData)
       
       return userData
     } finally {
@@ -116,6 +121,7 @@ export const useAuthStore = defineStore('auth', () => {
   const registerAsBusiness = async (businessData) => {
     try {
       isLoading.value = true
+      console.log('Registering as business:', businessData)
       
       // В реальном приложении - запрос к API
       const response = await apiService.registerBusiness(user.value.id, businessData)
@@ -129,6 +135,7 @@ export const useAuthStore = defineStore('auth', () => {
       
       setUser(updatedUser)
       localStorage.setItem('mapchap-user', JSON.stringify(updatedUser))
+      console.log('Business registration successful:', updatedUser)
       
       return updatedUser
     } catch (error) {
@@ -143,6 +150,7 @@ export const useAuthStore = defineStore('auth', () => {
       
       setUser(updatedUser)
       localStorage.setItem('mapchap-user', JSON.stringify(updatedUser))
+      console.log('Business registration fallback successful:', updatedUser)
       
       return updatedUser
     } finally {
@@ -151,6 +159,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const logout = () => {
+    console.log('Logging out user')
     user.value = null
     isAuthenticated.value = false
     telegramAuthData.value = null
@@ -158,11 +167,13 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const checkAuth = () => {
+    console.log('Checking auth')
     const savedUser = localStorage.getItem('mapchap-user')
     if (savedUser) {
       try {
         const userData = JSON.parse(savedUser)
         setUser(userData)
+        console.log('User restored from localStorage:', userData)
       } catch (error) {
         console.error('Error parsing saved user data:', error)
         localStorage.removeItem('mapchap-user')
@@ -182,6 +193,7 @@ export const useAuthStore = defineStore('auth', () => {
       
       setUser(updatedUser)
       localStorage.setItem('mapchap-user', JSON.stringify(updatedUser))
+      console.log('Profile updated:', updatedUser)
       
       return updatedUser
     } catch (error) {
@@ -196,10 +208,12 @@ export const useAuthStore = defineStore('auth', () => {
   const setUser = (userData) => {
     user.value = userData
     isAuthenticated.value = !!userData
+    console.log('User set:', userData, 'Authenticated:', !!userData)
   }
 
   // Инициализация при загрузке store
   const initialize = () => {
+    console.log('Initializing auth store')
     checkAuth()
   }
 
