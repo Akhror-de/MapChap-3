@@ -4,79 +4,55 @@
 
 <script>
 import { onMounted, ref, onUnmounted } from 'vue'
+import { yandexMapsService } from '../services/yandexMaps.js'
 
 export default {
   name: 'YandexMap',
   setup() {
     const mapContainer = ref(null)
     let map = null
-    let ymaps = null
 
-    const initMap = () => {
-      // Проверяем, загружены ли Яндекс.Карты
-      if (typeof window.ymaps === 'undefined') {
-        console.error('Yandex Maps API not loaded')
-        setTimeout(initMap, 100)
-        return
+    const initMap = async () => {
+      try {
+        // Загружаем Яндекс.Карты API
+        if (!window.ymaps) {
+          await loadYandexMaps()
+        }
+
+        // Инициализируем карту
+        map = await yandexMapsService.init('yandex-map', {
+          center: [55.751244, 37.618423], // Москва
+          zoom: 10
+        })
+
+        // Добавляем тестовые метки
+        addTestPlacemarks()
+
+        console.log('Yandex Map initialized successfully')
+
+      } catch (error) {
+        console.error('Error initializing Yandex Map:', error)
       }
+    }
 
-      ymaps = window.ymaps
-
-      ymaps.ready(() => {
-        if (!mapContainer.value) {
-          console.error('Map container not found')
+    const loadYandexMaps = () => {
+      return new Promise((resolve, reject) => {
+        if (window.ymaps) {
+          resolve()
           return
         }
 
-        try {
-          // Создаем карту
-          map = new ymaps.Map(mapContainer.value, {
-            center: [55.751244, 37.618423], // Москва
-            zoom: 10,
-            controls: [
-              'zoomControl',
-              'fullscreenControl'
-            ]
-          })
-
-          // Добавляем кастомные элементы управления
-          addCustomControls(map, ymaps)
-          
-          // Загружаем тестовые метки
-          addTestPlacemarks(map, ymaps)
-
-          console.log('Yandex Map initialized successfully')
-
-        } catch (error) {
-          console.error('Error initializing Yandex Map:', error)
+        const script = document.createElement('script')
+        script.src = `https://api-maps.yandex.ru/2.1/?apikey=${import.meta.env.VITE_YANDEX_MAPS_API_KEY}&lang=ru_RU`
+        script.onload = () => {
+          window.ymaps.ready(resolve)
         }
+        script.onerror = reject
+        document.head.appendChild(script)
       })
     }
 
-    const addCustomControls = (map, ymaps) => {
-      // Кастомная кнопка для поиска
-      const searchButton = new ymaps.control.Button({
-        data: {
-          content: '🔍 Поиск',
-          title: 'Поиск мест'
-        },
-        options: {
-          selectOnClick: false,
-          maxWidth: 120
-        }
-      })
-      
-      searchButton.events.add('press', function () {
-        alert('Функция поиска будет реализована позже')
-      })
-
-      map.controls.add(searchButton, {
-        float: 'right',
-        floatIndex: 0
-      })
-    }
-
-    const addTestPlacemarks = (map, ymaps) => {
+    const addTestPlacemarks = () => {
       // Тестовые метки
       const placemarks = [
         {
@@ -100,7 +76,7 @@ export default {
       ]
 
       placemarks.forEach(placemark => {
-        const marker = new ymaps.Placemark(
+        yandexMapsService.addMarker(
           placemark.coords,
           {
             balloonContent: `
@@ -118,29 +94,20 @@ export default {
             hideIconOnBalloonOpen: false
           }
         )
-
-        map.geoObjects.add(marker)
       })
     }
 
     onMounted(() => {
       console.log('YandexMap component mounted')
-      
-      // Загружаем Яндекс.Карты API
-      const script = document.createElement('script')
-      script.src = 'https://api-maps.yandex.ru/2.1/?apikey=07b74146-5f5a-46bf-a2b1-cf6d052a41bb&lang=ru_RU'
-      script.onload = () => {
-        // Даем время на рендеринг DOM
-        setTimeout(() => {
-          initMap()
-        }, 500)
-      }
-      document.head.appendChild(script)
+      // Даем время на рендеринг DOM
+      setTimeout(() => {
+        initMap()
+      }, 500)
     })
 
     onUnmounted(() => {
       if (map) {
-        map.destroy()
+        // yandexMapsService уже управляет картой
       }
     })
 
