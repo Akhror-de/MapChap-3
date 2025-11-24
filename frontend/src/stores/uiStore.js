@@ -11,12 +11,14 @@ export const useUIStore = defineStore('ui', () => {
   const isLoading = ref(false)
 
   // Computed
-  const isAnyPanelOpen = computed(() => isBurgerMenuOpen.value || activePanel.value !== null)
+  const isAnyPanelOpen = computed(() => activePanel.value !== null)
 
   // Actions
   const toggleBurgerMenu = () => {
     console.log('Toggling burger menu, current state:', isBurgerMenuOpen.value)
     isBurgerMenuOpen.value = !isBurgerMenuOpen.value
+    
+    // Если закрываем меню, сбрасываем активную панель
     if (!isBurgerMenuOpen.value) {
       activePanel.value = null
       currentArticle.value = null
@@ -26,13 +28,21 @@ export const useUIStore = defineStore('ui', () => {
   const openPanel = (panelName) => {
     console.log('Opening panel:', panelName)
     activePanel.value = panelName
-    isBurgerMenuOpen.value = true
+    // НЕ меняем состояние бургер-меню при открытии панели
+    console.log('Current panel after open:', activePanel.value)
   }
 
   const closePanel = () => {
     console.log('Closing panel')
     activePanel.value = null
     currentArticle.value = null
+  }
+
+  const closePanelOnly = () => {
+    console.log('Closing panel only')
+    activePanel.value = null
+    currentArticle.value = null
+    // НЕ закрываем бургер-меню
   }
 
   const openArticle = (article) => {
@@ -83,6 +93,7 @@ export const useUIStore = defineStore('ui', () => {
     toggleBurgerMenu,
     openPanel,
     closePanel,
+    closePanelOnly,
     openArticle,
     showNotification,
     toggleTheme,
