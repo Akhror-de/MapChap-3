@@ -141,7 +141,7 @@ export default {
     const { 
       toggleBurgerMenu, 
       openPanel, 
-      closePanel,
+      closePanelOnly,
       showNotification
     } = uiStore
     
@@ -158,20 +158,31 @@ export default {
     const isPanelOpen = computed(() => currentPanel.value !== null)
 
     const openPanelHandler = (panelName) => {
-      console.log('Opening panel:', panelName)
+      console.log('Opening panel from burger menu:', panelName)
       openPanel(panelName)
+      // Закрываем меню после выбора пункта для лучшего UX
+      toggleBurgerMenu()
     }
 
     const closeAll = () => {
-      console.log('Closing all panels')
-      closePanel()
-      toggleBurgerMenu()
+      console.log('Closing all panels and menu')
+      closePanelOnly()
+      if (isMenuOpen.value) {
+        toggleBurgerMenu()
+      }
+    }
+
+    const closePanelHandler = () => {
+      console.log('Closing panel only')
+      closePanelOnly()
     }
 
     const initAuth = () => {
       console.log('Initializing auth')
       initTelegramAuth()
       showNotification('Успешная авторизация через Telegram!', 'success')
+      // Закрываем меню после авторизации
+      toggleBurgerMenu()
     }
 
     const handleLogout = () => {
@@ -198,6 +209,7 @@ export default {
       // Methods
       toggleBurgerMenu,
       openPanel: openPanelHandler,
+      closePanel: closePanelHandler,
       closeAll,
       initAuth,
       logout: handleLogout
@@ -340,6 +352,7 @@ export default {
 .nav-item.active {
   background: var(--primary);
   color: white;
+  transform: translateX(5px);
 }
 
 .nav-item.active::before {
@@ -349,7 +362,7 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   width: 4px;
-  height: 20px;
+  height: 80%;
   background: var(--accent);
   border-radius: 0 2px 2px 0;
 }
@@ -448,12 +461,42 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
   z-index: 1003;
   pointer-events: none;
 }
 
 .side-panels > * {
   pointer-events: auto;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* Анимация для плавного открытия */
+.burger-menu {
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.burger-menu.open {
+  transform: translateX(0);
+}
+
+/* Улучшаем видимость оверлея */
+.menu-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.menu-overlay.panel-open {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
 }
 
 /* Animations */
@@ -466,14 +509,16 @@ export default {
 @media (max-width: 768px) {
   .burger-menu {
     width: 280px;
-    left: -280px;
+  }
+  
+  .side-panels > * {
+    width: 100%;
   }
 }
 
 @media (max-width: 480px) {
   .burger-menu {
     width: 260px;
-    left: -260px;
   }
   
   .menu-header {
