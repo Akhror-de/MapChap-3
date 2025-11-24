@@ -4,56 +4,46 @@
 
 <script>
 import { onMounted, ref, onUnmounted } from 'vue'
-import { yandexMapsService } from '../services/yandexMaps.js'
 
 export default {
   name: 'YandexMap',
   setup() {
     const mapContainer = ref(null)
     let map = null
+    let ymaps = null
 
-    const initMap = async () => {
-      try {
-        // Загружаем Яндекс.Карты API
-        if (!window.ymaps) {
-          await loadYandexMaps()
-        }
-
-        // Инициализируем карту
-        map = await yandexMapsService.init('yandex-map', {
-          center: [55.751244, 37.618423], // Москва
-          zoom: 10
-        })
-
-        // Добавляем тестовые метки
-        addTestPlacemarks()
-
-        console.log('Yandex Map initialized successfully')
-
-      } catch (error) {
-        console.error('Error initializing Yandex Map:', error)
+    const initMap = () => {
+      if (typeof window.ymaps === 'undefined') {
+        console.error('Yandex Maps API not loaded')
+        setTimeout(initMap, 100)
+        return
       }
-    }
 
-    const loadYandexMaps = () => {
-      return new Promise((resolve, reject) => {
-        if (window.ymaps) {
-          resolve()
+      ymaps = window.ymaps
+
+      ymaps.ready(() => {
+        if (!mapContainer.value) {
+          console.error('Map container not found')
           return
         }
 
-        const script = document.createElement('script')
-        script.src = `https://api-maps.yandex.ru/2.1/?apikey=${import.meta.env.VITE_YANDEX_MAPS_API_KEY}&lang=ru_RU`
-        script.onload = () => {
-          window.ymaps.ready(resolve)
+        try {
+          map = new ymaps.Map(mapContainer.value, {
+            center: [55.751244, 37.618423],
+            zoom: 10,
+            controls: ['zoomControl', 'fullscreenControl']
+          })
+
+          addTestPlacemarks(map, ymaps)
+          console.log('Yandex Map initialized successfully')
+
+        } catch (error) {
+          console.error('Error initializing Yandex Map:', error)
         }
-        script.onerror = reject
-        document.head.appendChild(script)
       })
     }
 
-    const addTestPlacemarks = () => {
-      // Тестовые метки
+    const addTestPlacemarks = (map, ymaps) => {
       const placemarks = [
         {
           coords: [55.751244, 37.618423],
@@ -76,7 +66,7 @@ export default {
       ]
 
       placemarks.forEach(placemark => {
-        yandexMapsService.addMarker(
+        const marker = new ymaps.Placemark(
           placemark.coords,
           {
             balloonContent: `
@@ -94,20 +84,34 @@ export default {
             hideIconOnBalloonOpen: false
           }
         )
+
+        map.geoObjects.add(marker)
       })
     }
 
     onMounted(() => {
       console.log('YandexMap component mounted')
-      // Даем время на рендеринг DOM
-      setTimeout(() => {
-        initMap()
-      }, 500)
+      
+      // Загружаем Яндекс.Карты API если еще не загружены
+      if (!window.ymaps) {
+        const script = document.createElement('script')
+        script.src = `https://api-maps.yandex.ru/2.1/?apikey=${import.meta.env.VITE_YANDEX_MAPS_API_KEY}&lang=ru_RU`
+        script.onload = () => {
+          setTimeout(() => {
+            initMap()
+          }, 500)
+        }
+        document.head.appendChild(script)
+      } else {
+        setTimeout(() => {
+          initMap()
+        }, 500)
+      }
     })
 
     onUnmounted(() => {
       if (map) {
-        // yandexMapsService уже управляет картой
+        map.destroy()
       }
     })
 
