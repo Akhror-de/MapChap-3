@@ -1,6 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://your-production-api.com'
 
-export const SUPPORT_CONTACTS = {
+// Контактные данные для поддержки (2024 год)
+const SUPPORT_CONTACTS = {
   email: 'khabibullaevakhrorjon@gmail.com',
   phone: '+7 (999) 821-47-58',
   founder: 'Хабибуллаев Ахрор',
@@ -39,15 +40,19 @@ class ApiService {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      return await response.json()
+      const data = await response.json()
+      return data
     } catch (error) {
       console.error('API request failed:', error)
       throw error
     }
   }
 
+  // Offers
   async getOffers(filters = {}) {
-    return this.request('/api/offers', { method: 'GET' })
+    return this.request('/api/offers', {
+      method: 'GET',
+    })
   }
 
   async createOffer(offerData) {
@@ -57,6 +62,36 @@ class ApiService {
     })
   }
 
+  async updateOffer(offerId, offerData) {
+    return this.request(`/api/offers/${offerId}`, {
+      method: 'PUT',
+      body: offerData,
+    })
+  }
+
+  async deleteOffer(offerId) {
+    return this.request(`/api/offers/${offerId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  // Articles
+  async getArticles() {
+    return this.request('/api/articles')
+  }
+
+  async createArticle(articleData) {
+    return this.request('/api/articles', {
+      method: 'POST',
+      body: articleData,
+    })
+  }
+
+  async getArticle(articleId) {
+    return this.request(`/api/articles/${articleId}`)
+  }
+
+  // Auth
   async telegramAuth(authData) {
     return this.request('/api/auth/telegram', {
       method: 'POST',
@@ -70,8 +105,40 @@ class ApiService {
       body: businessData,
     })
   }
+
+  // Upload
+  async uploadImage(file) {
+    const formData = new FormData()
+    formData.append('image', file)
+
+    return this.request('/api/upload', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        // Note: Don't set Content-Type for FormData, browser will set it with boundary
+      },
+    })
+  }
+
+  // Analytics
+  async getBusinessStats(userId) {
+    return this.request(`/api/users/${userId}/stats`)
+  }
+
+  async trackView(offerId) {
+    return this.request(`/api/offers/${offerId}/view`, {
+      method: 'POST',
+    })
+  }
+
+  async trackLike(offerId) {
+    return this.request(`/api/offers/${offerId}/like`, {
+      method: 'POST',
+    })
+  }
 }
 
+// Mock service for development
 class MockApiService {
   constructor() {
     this.delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
@@ -91,6 +158,15 @@ class MockApiService {
     }
   }
 
+  async uploadImage(file) {
+    await this.delay(1000)
+    return { 
+      url: URL.createObjectURL(file),
+      filename: file.name
+    }
+  }
+
+  // Auth methods
   async telegramAuth(authData) {
     await this.delay(800)
     return {
@@ -123,10 +199,26 @@ class MockApiService {
       }
     }
   }
+
+  // Articles methods
+  async getArticles() {
+    await this.delay(500)
+    return { articles: [] }
+  }
+
+  async createArticle(articleData) {
+    await this.delay(800)
+    return {
+      id: Date.now(),
+      ...articleData,
+      createdAt: new Date().toISOString()
+    }
+  }
 }
 
-export const apiService = import.meta.env.PROD 
+// Export appropriate service based on environment
+const apiService = import.meta.env.PROD 
   ? new ApiService() 
   : new MockApiService()
 
-export { SUPPORT_CONTACTS }
+export { apiService, SUPPORT_CONTACTS }
