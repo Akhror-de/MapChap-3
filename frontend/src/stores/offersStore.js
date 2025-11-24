@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { yandexMapsService, MapUtils, MAP_CONSTANTS } from '../services/yandexMaps.js'
 
 export const useOffersStore = defineStore('offers', () => {
   // State
@@ -29,6 +28,37 @@ export const useOffersStore = defineStore('offers', () => {
     { id: 'auto', name: '🚗 Автосервисы', icon: '🚗', color: '#4361EE' },
     { id: 'hotel', name: '🏨 Отели', icon: '🏨', color: '#4CC9F0' }
   ])
+
+  // Utils functions (copied from yandexMaps.js to avoid import issues)
+  const MapUtils = {
+    calculateDistance(coords1, coords2) {
+      const [lat1, lon1] = coords1
+      const [lat2, lon2] = coords2
+
+      const R = 6371 // Радиус Земли в км
+      const dLat = (lat2 - lat1) * Math.PI / 180
+      const dLon = (lon2 - lon1) * Math.PI / 180
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2)
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+      return R * c
+    },
+
+    isPointInBounds(point, bounds) {
+      if (!bounds || !point) return false
+      const [[south, west], [north, east]] = bounds
+      const [lat, lng] = point
+      
+      return (
+        lat >= south &&
+        lat <= north &&
+        lng >= west &&
+        lng <= east
+      )
+    }
+  }
 
   // Computed
   const filteredOffers = computed(() => {
@@ -179,52 +209,6 @@ export const useOffersStore = defineStore('offers', () => {
           verified: false,
           createdAt: new Date('2024-01-20').toISOString(),
           updatedAt: new Date('2024-01-20').toISOString()
-        },
-        {
-          id: 4,
-          title: 'Автосервис "Профи"',
-          description: 'Качественный ремонт автомобилей всех марок. Гарантия на работы.',
-          category: 'auto',
-          address: 'ул. Автомобильная, 321',
-          phone: '+7 (999) 456-78-90',
-          workingHours: '8:00-20:00',
-          priceLevel: 'medium',
-          rating: 4.7,
-          reviews: 67,
-          views: 890,
-          likes: 78,
-          image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400',
-          coordinates: [55.758142, 37.625894],
-          tags: ['автосервис', 'ремонт', 'техобслуживание'],
-          features: ['parking'],
-          status: 'active',
-          featured: false,
-          verified: true,
-          createdAt: new Date('2024-01-05').toISOString(),
-          updatedAt: new Date('2024-01-05').toISOString()
-        },
-        {
-          id: 5,
-          title: 'Аптека "Здоровье"',
-          description: 'Широкий ассортимент лекарств и медицинских товаров. Работаем круглосуточно.',
-          category: 'pharmacy',
-          address: 'ул. Медицинская, 654',
-          phone: '+7 (999) 567-89-01',
-          workingHours: 'круглосуточно',
-          priceLevel: 'budget',
-          rating: 4.6,
-          reviews: 45,
-          views: 678,
-          likes: 34,
-          image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400',
-          coordinates: [55.746325, 37.619843],
-          tags: ['аптека', 'лекарства', 'медицина'],
-          features: ['24/7'],
-          status: 'active',
-          featured: false,
-          verified: true,
-          createdAt: new Date('2024-01-12').toISOString(),
-          updatedAt: new Date('2024-01-12').toISOString()
         }
       ]
 
@@ -261,7 +245,6 @@ export const useOffersStore = defineStore('offers', () => {
 
   const setSelectedCategory = (categoryId) => {
     selectedCategory.value = categoryId
-    updateMapMarkers()
   }
 
   const setSearchQuery = (query) => {
@@ -270,23 +253,10 @@ export const useOffersStore = defineStore('offers', () => {
 
   const setSelectedOffer = (offer) => {
     selectedOffer.value = offer
-    
-    // Center map on selected offer
-    if (offer && offer.coordinates) {
-      yandexMapsService.setCenter(offer.coordinates, 15)
-    }
   }
 
   const setUserLocation = (location) => {
     userLocation.value = location
-    
-    // Add user marker to map
-    if (location && yandexMapsService.isLoaded) {
-      yandexMapsService.addUserMarker([location.latitude, location.longitude])
-      
-      // Center map on user location
-      yandexMapsService.setCenter([location.latitude, location.longitude], 14)
-    }
   }
 
   const setMapBounds = (bounds) => {
@@ -300,52 +270,40 @@ export const useOffersStore = defineStore('offers', () => {
   const searchByAddress = async (address) => {
     isLoading.value = true
     try {
-      if (!yandexMapsService.isLoaded) {
-        await yandexMapsService.init('yandex-map')
+      // Simulate geocoding
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Mock geocoding result for common addresses
+      const mockGeocoding = {
+        'москва': [55.7558, 37.6173],
+        'санкт-петербург': [59.9343, 30.3351],
+        'казань': [55.8304, 49.0661]
       }
       
-      const result = await yandexMapsService.geocode(address)
+      const normalizedAddress = address.toLowerCase()
+      let coordinates = [55.7558, 37.6173] // Default to Moscow
       
-      // Center map on found location
-      yandexMapsService.setCenter(result.coordinates, 15)
+      for (const [key, coords] of Object.entries(mockGeocoding)) {
+        if (normalizedAddress.includes(key)) {
+          coordinates = coords
+          break
+        }
+      }
       
       // Update search query
       searchQuery.value = address
       
-      return result
+      return {
+        coordinates,
+        address: address,
+        bounds: [[coordinates[0]-0.1, coordinates[1]-0.1], [coordinates[0]+0.1, coordinates[1]+0.1]]
+      }
     } catch (error) {
       console.error('Error searching by address:', error)
       throw error
     } finally {
       isLoading.value = false
     }
-  }
-
-  const updateMapMarkers = () => {
-    if (!yandexMapsService.isLoaded) return
-
-    // Clear existing markers
-    yandexMapsService.clearMarkers()
-    mapMarkers.value = []
-
-    // Add markers for filtered offers
-    filteredOffers.value.forEach(offer => {
-      if (offer.coordinates) {
-        const marker = yandexMapsService.addMarker(
-          offer.coordinates,
-          {
-            balloonContent: createBalloonContent(offer),
-            hintContent: offer.title
-          },
-          {
-            preset: getPresetForCategory(offer.category),
-            balloonCloseButton: true
-          }
-        )
-        
-        mapMarkers.value.push(marker)
-      }
-    })
   }
 
   const createBalloonContent = (offer) => {
@@ -364,23 +322,6 @@ export const useOffersStore = defineStore('offers', () => {
         </div>
       </div>
     `
-  }
-
-  const getPresetForCategory = (category) => {
-    const presets = {
-      food: 'islands#redFoodIcon',
-      shopping: 'islands#blueShoppingIcon',
-      beauty: 'islands#violetBeautyIcon',
-      services: 'islands#darkOrangeServiceIcon',
-      medical: 'islands#greenMedicineIcon',
-      furniture: 'islands#brownFurnitureIcon',
-      pharmacy: 'islands#orangePharmacyIcon',
-      entertainment: 'islands#nightClubIcon',
-      education: 'islands#educationIcon',
-      auto: 'islands#autoRepairShopIcon',
-      hotel: 'islands#hotelIcon'
-    }
-    return presets[category] || 'islands#blueIcon'
   }
 
   const getCategoryName = (categoryId) => {
@@ -411,7 +352,6 @@ export const useOffersStore = defineStore('offers', () => {
 
       offers.value.unshift(newOffer)
       saveOffersToStorage()
-      updateMapMarkers()
 
       return newOffer
     } catch (error) {
@@ -430,7 +370,6 @@ export const useOffersStore = defineStore('offers', () => {
           updatedAt: new Date().toISOString()
         }
         saveOffersToStorage()
-        updateMapMarkers()
         return offers.value[index]
       }
       throw new Error('Offer not found')
@@ -444,7 +383,6 @@ export const useOffersStore = defineStore('offers', () => {
     try {
       offers.value = offers.value.filter(offer => offer.id !== offerId)
       saveOffersToStorage()
-      updateMapMarkers()
     } catch (error) {
       console.error('Error deleting offer:', error)
       throw error
@@ -498,28 +436,6 @@ export const useOffersStore = defineStore('offers', () => {
     mapBounds.value = null
   }
 
-  const initMap = async (containerId) => {
-    try {
-      await yandexMapsService.init(containerId)
-      
-      // Add event listeners for map changes
-      yandexMapsService.on('boundschange', (e) => {
-        setMapBounds(e.get('newBounds'))
-      })
-      
-      yandexMapsService.on('actionend', (e) => {
-        const state = yandexMapsService.getState()
-        setCurrentZoom(state.zoom)
-      })
-      
-      // Initial markers update
-      updateMapMarkers()
-      
-    } catch (error) {
-      console.error('Error initializing map:', error)
-    }
-  }
-
   // Initialize store
   const initialize = () => {
     fetchOffers()
@@ -568,7 +484,6 @@ export const useOffersStore = defineStore('offers', () => {
     setMapBounds,
     setCurrentZoom,
     searchByAddress,
-    updateMapMarkers,
     addOffer,
     updateOffer,
     deleteOffer,
@@ -578,7 +493,6 @@ export const useOffersStore = defineStore('offers', () => {
     getFeaturedOffers,
     getNearbyOffers,
     clearFilters,
-    initMap,
     getCategoryName,
     getCategoryColor
   }
