@@ -1,0 +1,67 @@
+/* Стили для балунов Яндекс.Карт */
+.map-balloon {
+  padding: 12px;
+  max-width: 300px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.map-balloon h3 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.map-balloon p {
+  margin: 0 0 8px 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.map-balloon .balloon-category {
+  display: inline-block;
+  background: #667eea;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.map-balloon .balloon-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.map-balloon .balloon-btn {
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.map-balloon .balloon-btn:hover {
+  background: #5a67d8;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .map-balloon {
+    max-width: 250px;
+    padding: 10px;
+  }
+  
+  .map-balloon h3 {
+    font-size: 14px;
+  }
+  
+  .map-balloon p {
+    font-size: 12px;
+  }
+}
