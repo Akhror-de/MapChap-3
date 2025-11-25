@@ -4,7 +4,6 @@
     <div 
       v-if="isMenuOpen || isPanelOpen"
       class="menu-overlay"
-      :class="{ 'panel-open': isPanelOpen }"
       @click="closeAll"
     ></div>
 
@@ -88,22 +87,18 @@
       </div>
     </div>
 
-    <!-- Side Panels - ИСПРАВЛЕННАЯ СЕКЦИЯ -->
-    <div class="side-panels">
-      <div v-if="currentPanel === 'profile'" class="panel-container">
-        <ProfilePanel />
-      </div>
-      <div v-if="currentPanel === 'business'" class="panel-container">
-        <BusinessPanel />
-      </div>
-      <div v-if="currentPanel === 'blog'" class="panel-container">
-        <BlogPanel />
-      </div>
-      <div v-if="currentPanel === 'about'" class="panel-container">
-        <AboutPanel />
-      </div>
-      <div v-if="currentPanel === 'article' && currentArticle" class="panel-container">
-        <ArticlePanel :article="currentArticle" />
+    <!-- Side Panels -->
+    <div class="side-panels" v-if="isPanelOpen">
+      <div class="panel-backdrop" @click="closePanel"></div>
+      <div class="panel-container" :class="{ active: isPanelOpen }">
+        <ProfilePanel v-if="currentPanel === 'profile'" />
+        <BusinessPanel v-if="currentPanel === 'business'" />
+        <BlogPanel v-if="currentPanel === 'blog'" />
+        <AboutPanel v-if="currentPanel === 'about'" />
+        <ArticlePanel 
+          v-if="currentPanel === 'article' && currentArticle" 
+          :article="currentArticle" 
+        />
       </div>
     </div>
   </div>
@@ -207,6 +202,7 @@ export default {
       // Methods
       toggleBurgerMenu,
       openPanel: openPanelHandler,
+      closePanel,
       closeAll,
       initAuth,
       logout: handleLogout
@@ -235,11 +231,6 @@ export default {
   -webkit-backdrop-filter: blur(5px);
   animation: fadeIn 0.3s ease;
   z-index: 1001;
-}
-
-.menu-overlay.panel-open {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(2px);
 }
 
 /* Main Menu */
@@ -459,41 +450,45 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 10050; /* Очень высокий z-index */
-  pointer-events: none;
+  z-index: 10050;
+  display: flex;
+}
+
+.panel-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 10051;
 }
 
 .panel-container {
-  position: fixed;
+  position: absolute;
   top: 0;
   right: 0;
   width: 100%;
   max-width: 400px;
   height: 100vh;
-  z-index: 10051; /* Выше чем side-panels */
-  pointer-events: auto;
   background: var(--bg-primary);
   border-left: 1px solid var(--border-color);
   box-shadow: -5px 0 25px rgba(0, 0, 0, 0.3);
+  z-index: 10052;
   transform: translateX(100%);
-  animation: slideInRight 0.3s ease-out forwards;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.panel-container.active {
+  transform: translateX(0);
 }
 
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-@keyframes slideInRight {
-  from { 
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to { 
-    transform: translateX(0);
-    opacity: 1;
-  }
 }
 
 /* Responsive */
