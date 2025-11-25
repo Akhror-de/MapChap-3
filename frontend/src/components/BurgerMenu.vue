@@ -1,534 +1,301 @@
 <template>
-  <div class="burger-menu-system">
-    <!-- Overlay -->
-    <div 
-      v-if="isMenuOpen || isPanelOpen"
-      class="menu-overlay"
-      :class="{ 'panel-open': isPanelOpen }"
-      @click="closeAll"
-    ></div>
-
-    <!-- Main Burger Menu -->
-    <div class="burger-menu" :class="{ open: isMenuOpen }">
-      <!-- Header -->
-      <div class="menu-header">
-        <div class="user-section" v-if="authStore.isAuthenticated">
-          <div class="user-avatar large">
-            {{ authStore.user?.avatar || '👤' }}
+  <div id="app" :class="themeClass">
+    <BurgerMenu />
+    
+    <div class="main-content" :class="{ 'content-shifted': isAnyPanelOpen }">
+      <header class="app-header">
+        <div class="header-content">
+          <button class="burger-toggle" @click="toggleBurgerMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          
+          <div class="logo">
+            <h1>🗺️ MapChap</h1>
           </div>
-          <div class="user-info">
-            <h3 class="user-name">{{ authStore.user?.name || 'Пользователь' }}</h3>
-            <p class="user-role">{{ authStore.user?.role === 'business_owner' ? 'Владелец бизнеса' : 'Пользователь' }}</p>
-          </div>
-        </div>
-        <div class="auth-section" v-else>
-          <div class="auth-avatar">👤</div>
-          <div class="auth-info">
-            <h3>Гость</h3>
-            <p>Войдите для доступа ко всем функциям</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Navigation -->
-      <nav class="menu-nav">
-        <div class="nav-section">
-          <h4 class="section-title">Основное</h4>
-          <div class="nav-items">
-            <button class="nav-item" @click="openPanel('profile')" :class="{ active: currentPanel === 'profile' }">
-              <span class="nav-icon">👤</span>
-              <span class="nav-text">Мой профиль</span>
-              <span class="nav-badge" v-if="!authStore.isAuthenticated">Войти</span>
-            </button>
-
-            <button class="nav-item" @click="openPanel('business')" :class="{ active: currentPanel === 'business' }">
-              <span class="nav-icon">💼</span>
-              <span class="nav-text">Для бизнеса</span>
-              <span class="nav-badge" v-if="businessStats.activeOffers > 0">{{ businessStats.activeOffers }}</span>
-            </button>
-
-            <button class="nav-item" @click="openPanel('blog')" :class="{ active: currentPanel === 'blog' }">
-              <span class="nav-icon">📝</span>
-              <span class="nav-text">Блог MapChap</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="nav-section">
-          <h4 class="section-title">О проекте</h4>
-          <div class="nav-items">
-            <button class="nav-item" @click="openPanel('about')" :class="{ active: currentPanel === 'about' }">
-              <span class="nav-icon">ℹ️</span>
-              <span class="nav-text">О приложении</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Auth Button -->
-        <div class="auth-actions" v-if="!authStore.isAuthenticated">
-          <button class="auth-button" @click="initAuth">
-            <span class="auth-icon">🔗</span>
-            <span class="auth-text">Войти через Telegram</span>
+          
+          <button class="theme-toggle" @click="toggleTheme">
+            {{ isDarkTheme ? '☀️' : '🌙' }}
           </button>
         </div>
+      </header>
 
-        <!-- User Actions -->
-        <div class="user-actions" v-else>
-          <button class="logout-button" @click="logout">
-            <span class="logout-icon">🚪</span>
-            <span class="logout-text">Выйти</span>
-          </button>
+      <main class="app-main">
+        <div class="map-container">
+          <YandexMap />
         </div>
-      </nav>
-
-      <!-- Footer -->
-      <div class="menu-footer">
-        <p class="app-version">MapChap v3.0</p>
-        <p class="app-copyright">С любовью для бизнеса ❤️</p>
-      </div>
-    </div>
-
-    <!-- Side Panels -->
-    <div class="side-panels">
-      <ProfilePanel v-if="currentPanel === 'profile'" />
-      <BusinessPanel v-if="currentPanel === 'business'" />
-      <BlogPanel v-if="currentPanel === 'blog'" />
-      <AboutPanel v-if="currentPanel === 'about'" />
-      <ArticlePanel 
-        v-if="currentPanel === 'article' && currentArticle" 
-        :article="currentArticle" 
-      />
+        
+        <div class="floating-filters">
+          <div class="search-box">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Поиск бизнесов..."
+              class="search-input"
+              @keyup.enter="onSearch"
+            />
+            <button class="search-btn" @click="onSearch">🔍</button>
+          </div>
+          
+          <div class="quick-categories">
+            <button
+              v-for="category in quickCategories"
+              :key="category.id"
+              class="category-chip"
+              @click="selectCategory(category.id)"
+            >
+              <span class="chip-icon">{{ category.icon }}</span>
+            </button>
+          </div>
+        </div>
+      </main>
     </div>
   </div>
 </template>
 
 <script>
-import { useUIStore } from '../stores/uiStore'
-import { useAuthStore } from '../stores/authStore'
-import { useBusinessStore } from '../stores/businessStore'
+import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { computed } from 'vue'
-
-// Import all panel components
-import ProfilePanel from './ProfilePanel.vue'
-import BusinessPanel from './BusinessPanel.vue'
-import BlogPanel from './BlogPanel.vue'
-import AboutPanel from './AboutPanel.vue'
-import ArticlePanel from './ArticlePanel.vue'
+import { useOffersStore } from './stores/offersStore.js'
+import { useUIStore } from './stores/uiStore.js'
+import { useAuthStore } from './stores/authStore.js'
+import YandexMap from './components/YandexMap.vue'
+import BurgerMenu from './components/BurgerMenu.vue'
 
 export default {
-  name: 'BurgerMenu',
+  name: 'App',
   components: {
-    ProfilePanel,
-    BusinessPanel,
-    BlogPanel,
-    AboutPanel,
-    ArticlePanel
+    YandexMap,
+    BurgerMenu
   },
   setup() {
+    const offersStore = useOffersStore()
     const uiStore = useUIStore()
     const authStore = useAuthStore()
-    const businessStore = useBusinessStore()
-    
-    const { 
-      isBurgerMenuOpen: isMenuOpen, 
-      currentPanel, 
-      currentArticle 
-    } = storeToRefs(uiStore)
-    
-    const { getBusinessStats } = storeToRefs(businessStore)
+    const searchQuery = ref('')
 
-    const { 
-      toggleBurgerMenu, 
-      openPanel, 
-      closePanelOnly,
-      showNotification
-    } = uiStore
-    
-    const { initTelegramAuth, logout } = authStore
+    const { isDarkTheme, activePanel } = storeToRefs(uiStore)
+    const { toggleTheme, toggleBurgerMenu } = uiStore
+    const { setSelectedCategory, setSearchQuery } = offersStore
 
-    const businessStats = computed(() => getBusinessStats.value || {
-      activeOffers: 0,
-      totalOffers: 0,
-      totalViews: 0,
-      totalLikes: 0,
-      categoryStats: {}
+    onMounted(() => {
+      authStore.checkAuth()
     })
 
-    const isPanelOpen = computed(() => currentPanel.value !== null)
+    const quickCategories = [
+      { id: 'all', name: 'Все', icon: '🗺️' },
+      { id: 'food', name: 'Еда', icon: '🍕' },
+      { id: 'shopping', name: 'Магазины', icon: '🛍️' },
+      { id: 'beauty', name: 'Красота', icon: '💄' }
+    ]
 
-    const openPanelHandler = (panelName) => {
-      console.log('Opening panel from burger menu:', panelName)
-      openPanel(panelName)
-      // Закрываем меню после выбора пункта для лучшего UX
-      toggleBurgerMenu()
+    const themeClass = computed(() => isDarkTheme.value ? 'dark-theme' : 'light-theme')
+    const isAnyPanelOpen = computed(() => activePanel.value !== null)
+
+    const selectCategory = (categoryId) => {
+      setSelectedCategory(categoryId)
     }
 
-    const closeAll = () => {
-      console.log('Closing all panels and menu')
-      closePanelOnly()
-      if (isMenuOpen.value) {
-        toggleBurgerMenu()
-      }
-    }
-
-    const closePanelHandler = () => {
-      console.log('Closing panel only')
-      closePanelOnly()
-    }
-
-    const initAuth = () => {
-      console.log('Initializing auth')
-      initTelegramAuth()
-      showNotification('Успешная авторизация через Telegram!', 'success')
-      // Закрываем меню после авторизации
-      toggleBurgerMenu()
-    }
-
-    const handleLogout = () => {
-      if (confirm('Вы уверены, что хотите выйти из аккаунта?')) {
-        console.log('Logging out')
-        logout()
-        closeAll()
-        showNotification('Вы успешно вышли из аккаунта', 'success')
+    const onSearch = () => {
+      if (searchQuery.value.trim()) {
+        setSearchQuery(searchQuery.value)
       }
     }
 
     return {
-      // Stores
-      authStore,
-      businessStore,
-      
-      // State
-      isMenuOpen,
-      isPanelOpen,
-      currentPanel,
-      currentArticle,
-      businessStats,
-      
-      // Methods
+      searchQuery,
+      quickCategories,
+      isDarkTheme,
+      themeClass,
+      isAnyPanelOpen,
+      toggleTheme,
       toggleBurgerMenu,
-      openPanel: openPanelHandler,
-      closePanel: closePanelHandler,
-      closeAll,
-      initAuth,
-      logout: handleLogout
+      selectCategory,
+      onSearch
     }
   }
 }
 </script>
 
-<style scoped>
-.burger-menu-system {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-}
-
-/* Overlay */
-.menu-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  animation: fadeIn 0.3s ease;
-  z-index: 1001;
-}
-
-.menu-overlay.panel-open {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(2px);
-}
-
-/* Main Menu */
-.burger-menu {
-  position: fixed;
-  top: 0;
-  left: -320px;
-  width: 320px;
-  height: 100vh;
-  background: var(--bg-primary);
-  border-right: 1px solid var(--border-color);
-  box-shadow: var(--shadow-xl);
-  z-index: 1002;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.burger-menu.open {
-  left: 0;
-}
-
-/* Header */
-.menu-header {
-  padding: 1.5rem;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: white;
-}
-
-.user-section, .auth-section {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.user-avatar.large, .auth-avatar {
-  width: 60px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.user-info h3, .auth-info h3 {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.user-info p, .auth-info p {
+<style>
+* {
   margin: 0;
-  font-size: 0.8rem;
-  opacity: 0.9;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* Navigation */
-.menu-nav {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem 0;
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --border-color: #e2e8f0;
 }
 
-.nav-section {
-  margin-bottom: 1.5rem;
+.dark-theme {
+  --primary: #818cf8;
+  --text-primary: #f3f4f6;
+  --text-secondary: #d1d5db;
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --bg-tertiary: #374151;
+  --border-color: #4b5563;
 }
 
-.section-title {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  margin: 0 1.5rem 0.5rem 1.5rem;
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
-.nav-items {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+#app {
+  min-height: 100vh;
 }
 
-.nav-item {
+.main-content {
+  transition: transform 0.3s ease;
+}
+
+.content-shifted {
+  transform: translateX(320px);
+}
+
+.app-header {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  width: 100%;
-  padding: 0.75rem 1.5rem;
+  justify-content: space-between;
+}
+
+.burger-toggle {
+  background: none;
   border: none;
-  background: transparent;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  color: var(--text-primary);
-  text-align: left;
+}
+
+.burger-toggle span {
+  width: 20px;
+  height: 2px;
+  background: var(--text-primary);
+}
+
+.logo h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.theme-toggle {
+  background: var(--bg-tertiary);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.app-main {
+  flex: 1;
   position: relative;
 }
 
-.nav-item:hover {
-  background: var(--bg-tertiary);
+.map-container {
+  width: 100%;
+  height: 100vh;
 }
 
-.nav-item.active {
-  background: var(--primary);
-  color: white;
-  transform: translateX(5px);
-}
-
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
+.floating-filters {
+  position: fixed;
   top: 50%;
+  right: 2rem;
   transform: translateY(-50%);
-  width: 4px;
-  height: 80%;
-  background: var(--accent);
-  border-radius: 0 2px 2px 0;
-}
-
-.nav-icon {
-  font-size: 1.25rem;
-  width: 24px;
-  text-align: center;
-}
-
-.nav-text {
-  flex: 1;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.nav-badge {
-  background: var(--accent);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  min-width: 20px;
-  text-align: center;
-}
-
-/* Auth Actions */
-.auth-actions, .user-actions {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-color);
-}
-
-.auth-button {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #0088cc, #00a2e8);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 90;
 }
 
-.auth-button:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.logout-button {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: var(--bg-tertiary);
+.search-box {
+  display: flex;
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
+  padding: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
   color: var(--text-primary);
-  font-weight: 600;
+  outline: none;
+}
+
+.search-btn {
+  background: var(--primary);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  color: white;
+}
+
+.quick-categories {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
 }
 
-.logout-button:hover {
-  background: var(--bg-secondary);
-  border-color: var(--text-muted);
+.category-chip {
+  background: transparent;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
 }
 
-/* Footer */
-.menu-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-color);
-  text-align: center;
+.category-chip:hover {
+  background: var(--bg-tertiary);
 }
 
-.app-version {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 0.25rem;
-}
-
-.app-copyright {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-
-/* Side Panels */
-.side-panels {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1003;
-  pointer-events: none;
-}
-
-.side-panels > * {
-  pointer-events: auto;
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
-/* Анимация для плавного открытия */
-.burger-menu {
-  transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.burger-menu.open {
-  transform: translateX(0);
-}
-
-/* Улучшаем видимость оверлея */
-.menu-overlay {
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  animation: fadeIn 0.2s ease-out;
-}
-
-.menu-overlay.panel-open {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .burger-menu {
-    width: 280px;
+  .content-shifted {
+    transform: translateX(280px);
   }
   
-  .side-panels > * {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .burger-menu {
-    width: 260px;
-  }
-  
-  .menu-header {
-    padding: 1rem;
-  }
-  
-  .user-avatar.large, .auth-avatar {
-    width: 50px;
-    height: 50px;
-    font-size: 1.25rem;
+  .floating-filters {
+    right: 1rem;
+    bottom: 2rem;
+    top: auto;
+    transform: none;
+    flex-direction: row;
   }
 }
 </style>
