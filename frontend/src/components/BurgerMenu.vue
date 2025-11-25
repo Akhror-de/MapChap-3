@@ -1,301 +1,318 @@
 <template>
-  <div id="app" :class="themeClass">
-    <BurgerMenu />
-    
-    <div class="main-content" :class="{ 'content-shifted': isAnyPanelOpen }">
-      <header class="app-header">
-        <div class="header-content">
-          <button class="burger-toggle" @click="toggleBurgerMenu">
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-          
-          <div class="logo">
-            <h1>🗺️ MapChap</h1>
-          </div>
-          
-          <button class="theme-toggle" @click="toggleTheme">
-            {{ isDarkTheme ? '☀️' : '🌙' }}
-          </button>
-        </div>
-      </header>
+  <div class="burger-menu-system">
+    <!-- Overlay -->
+    <div 
+      v-if="isMenuOpen || isPanelOpen"
+      class="menu-overlay"
+      @click="closeAll"
+    ></div>
 
-      <main class="app-main">
-        <div class="map-container">
-          <YandexMap />
-        </div>
-        
-        <div class="floating-filters">
-          <div class="search-box">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Поиск бизнесов..."
-              class="search-input"
-              @keyup.enter="onSearch"
-            />
-            <button class="search-btn" @click="onSearch">🔍</button>
+    <!-- Main Burger Menu -->
+    <div class="burger-menu" :class="{ open: isMenuOpen }">
+      <!-- Header -->
+      <div class="menu-header">
+        <div class="user-section" v-if="authStore.isAuthenticated">
+          <div class="user-avatar">
+            {{ authStore.user?.avatar || '👤' }}
           </div>
-          
-          <div class="quick-categories">
-            <button
-              v-for="category in quickCategories"
-              :key="category.id"
-              class="category-chip"
-              @click="selectCategory(category.id)"
-            >
-              <span class="chip-icon">{{ category.icon }}</span>
-            </button>
+          <div class="user-info">
+            <h3>{{ authStore.user?.name || 'Пользователь' }}</h3>
+            <p>{{ authStore.user?.role === 'business_owner' ? 'Владелец бизнеса' : 'Пользователь' }}</p>
           </div>
         </div>
-      </main>
+        <div class="auth-section" v-else>
+          <div class="auth-avatar">👤</div>
+          <div class="auth-info">
+            <h3>Гость</h3>
+            <p>Войдите для доступа ко всем функциям</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="menu-nav">
+        <button class="nav-item" @click="openPanel('profile')">
+          <span class="nav-icon">👤</span>
+          <span class="nav-text">Мой профиль</span>
+        </button>
+
+        <button class="nav-item" @click="openPanel('business')">
+          <span class="nav-icon">💼</span>
+          <span class="nav-text">Для бизнеса</span>
+        </button>
+
+        <button class="nav-item" @click="openPanel('blog')">
+          <span class="nav-icon">📝</span>
+          <span class="nav-text">Блог MapChap</span>
+        </button>
+
+        <button class="nav-item" @click="openPanel('about')">
+          <span class="nav-icon">ℹ️</span>
+          <span class="nav-text">О приложении</span>
+        </button>
+
+        <!-- Auth Actions -->
+        <div class="auth-actions" v-if="!authStore.isAuthenticated">
+          <button class="auth-button" @click="initAuth">
+            <span class="auth-icon">🔗</span>
+            <span class="auth-text">Войти через Telegram</span>
+          </button>
+        </div>
+
+        <div class="user-actions" v-else>
+          <button class="logout-button" @click="logout">
+            <span class="logout-icon">🚪</span>
+            <span class="logout-text">Выйти</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Side Panels -->
+    <div class="side-panels">
+      <ProfilePanel v-if="currentPanel === 'profile'" />
+      <BusinessPanel v-if="currentPanel === 'business'" />
+      <BlogPanel v-if="currentPanel === 'blog'" />
+      <AboutPanel v-if="currentPanel === 'about'" />
+      <ArticlePanel 
+        v-if="currentPanel === 'article' && currentArticle" 
+        :article="currentArticle" 
+      />
     </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { useUIStore } from '../stores/uiStore'
+import { useAuthStore } from '../stores/authStore'
 import { storeToRefs } from 'pinia'
-import { useOffersStore } from './stores/offersStore.js'
-import { useUIStore } from './stores/uiStore.js'
-import { useAuthStore } from './stores/authStore.js'
-import YandexMap from './components/YandexMap.vue'
-import BurgerMenu from './components/BurgerMenu.vue'
+import { computed } from 'vue'
+
+import ProfilePanel from './ProfilePanel.vue'
+import BusinessPanel from './BusinessPanel.vue'
+import BlogPanel from './BlogPanel.vue'
+import AboutPanel from './AboutPanel.vue'
+import ArticlePanel from './ArticlePanel.vue'
 
 export default {
-  name: 'App',
+  name: 'BurgerMenu',
   components: {
-    YandexMap,
-    BurgerMenu
+    ProfilePanel,
+    BusinessPanel,
+    BlogPanel,
+    AboutPanel,
+    ArticlePanel
   },
   setup() {
-    const offersStore = useOffersStore()
     const uiStore = useUIStore()
     const authStore = useAuthStore()
-    const searchQuery = ref('')
+    
+    const { 
+      isBurgerMenuOpen: isMenuOpen, 
+      currentPanel, 
+      currentArticle 
+    } = storeToRefs(uiStore)
 
-    const { isDarkTheme, activePanel } = storeToRefs(uiStore)
-    const { toggleTheme, toggleBurgerMenu } = uiStore
-    const { setSelectedCategory, setSearchQuery } = offersStore
+    const { 
+      toggleBurgerMenu, 
+      openPanel, 
+      closePanel,
+      showNotification
+    } = uiStore
+    
+    const { initTelegramAuth, logout } = authStore
 
-    onMounted(() => {
-      authStore.checkAuth()
-    })
+    const isPanelOpen = computed(() => currentPanel.value !== null)
 
-    const quickCategories = [
-      { id: 'all', name: 'Все', icon: '🗺️' },
-      { id: 'food', name: 'Еда', icon: '🍕' },
-      { id: 'shopping', name: 'Магазины', icon: '🛍️' },
-      { id: 'beauty', name: 'Красота', icon: '💄' }
-    ]
-
-    const themeClass = computed(() => isDarkTheme.value ? 'dark-theme' : 'light-theme')
-    const isAnyPanelOpen = computed(() => activePanel.value !== null)
-
-    const selectCategory = (categoryId) => {
-      setSelectedCategory(categoryId)
+    const openPanelHandler = (panelName) => {
+      openPanel(panelName)
+      toggleBurgerMenu() // Закрываем меню после выбора
     }
 
-    const onSearch = () => {
-      if (searchQuery.value.trim()) {
-        setSearchQuery(searchQuery.value)
+    const closeAll = () => {
+      closePanel()
+      if (isMenuOpen.value) {
+        toggleBurgerMenu()
+      }
+    }
+
+    const initAuth = () => {
+      initTelegramAuth()
+      showNotification('Авторизация через Telegram!', 'success')
+      toggleBurgerMenu()
+    }
+
+    const handleLogout = () => {
+      if (confirm('Вы уверены, что хотите выйти из аккаунта?')) {
+        logout()
+        closeAll()
+        showNotification('Вы успешно вышли из аккаунта', 'success')
       }
     }
 
     return {
-      searchQuery,
-      quickCategories,
-      isDarkTheme,
-      themeClass,
-      isAnyPanelOpen,
-      toggleTheme,
-      toggleBurgerMenu,
-      selectCategory,
-      onSearch
+      authStore,
+      isMenuOpen,
+      isPanelOpen,
+      currentPanel,
+      currentArticle,
+      openPanel: openPanelHandler,
+      closeAll,
+      initAuth,
+      logout: handleLogout
     }
   }
 }
 </script>
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+<style scoped>
+.burger-menu-system {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
 }
 
-:root {
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-tertiary: #f1f5f9;
-  --border-color: #e2e8f0;
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
 }
 
-.dark-theme {
-  --primary: #818cf8;
-  --text-primary: #f3f4f6;
-  --text-secondary: #d1d5db;
-  --bg-primary: #111827;
-  --bg-secondary: #1f2937;
-  --bg-tertiary: #374151;
-  --border-color: #4b5563;
-}
-
-body {
-  font-family: 'Inter', sans-serif;
+.burger-menu {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 320px;
+  height: 100vh;
   background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-#app {
-  min-height: 100vh;
-}
-
-.main-content {
+  border-right: 1px solid var(--border-color);
+  z-index: 1002;
   transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
-.content-shifted {
+.burger-menu.open {
   transform: translateX(320px);
 }
 
-.app-header {
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
-  padding: 1rem;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.burger-toggle {
-  background: none;
-  border: none;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  cursor: pointer;
-}
-
-.burger-toggle span {
-  width: 20px;
-  height: 2px;
-  background: var(--text-primary);
-}
-
-.logo h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--primary);
-}
-
-.theme-toggle {
-  background: var(--bg-tertiary);
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.app-main {
-  flex: 1;
-  position: relative;
-}
-
-.map-container {
-  width: 100%;
-  height: 100vh;
-}
-
-.floating-filters {
-  position: fixed;
-  top: 50%;
-  right: 2rem;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  z-index: 90;
-}
-
-.search-box {
-  display: flex;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.search-input {
-  flex: 1;
-  padding: 0.5rem;
-  border: none;
-  background: transparent;
-  color: var(--text-primary);
-  outline: none;
-}
-
-.search-btn {
-  background: var(--primary);
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  cursor: pointer;
+.menu-header {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
   color: white;
 }
 
-.quick-categories {
+.user-section, .auth-section {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1rem;
+  align-items: center;
+  gap: 1rem;
 }
 
-.category-chip {
-  background: transparent;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  cursor: pointer;
+.user-avatar, .auth-avatar {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.2rem;
 }
 
-.category-chip:hover {
+.user-info h3, .auth-info h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+}
+
+.user-info p, .auth-info p {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.menu-nav {
+  flex: 1;
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.nav-item:hover {
   background: var(--bg-tertiary);
 }
 
+.nav-icon {
+  font-size: 1.2rem;
+  width: 24px;
+}
+
+.auth-actions, .user-actions {
+  padding: 1rem 1.5rem;
+  margin-top: auto;
+}
+
+.auth-button, .logout-button {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.auth-button {
+  background: #0088cc;
+  color: white;
+}
+
+.logout-button {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.side-panels {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1003;
+  pointer-events: none;
+}
+
+.side-panels > * {
+  pointer-events: auto;
+}
+
 @media (max-width: 768px) {
-  .content-shifted {
-    transform: translateX(280px);
+  .burger-menu {
+    width: 280px;
   }
   
-  .floating-filters {
-    right: 1rem;
-    bottom: 2rem;
-    top: auto;
-    transform: none;
-    flex-direction: row;
+  .burger-menu.open {
+    transform: translateX(280px);
   }
 }
 </style>
