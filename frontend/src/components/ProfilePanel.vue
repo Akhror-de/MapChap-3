@@ -14,10 +14,6 @@
     </div>
 
     <div class="panel-content">
-      <div class="debug-info">
-        ✅ Панель профиля работает!
-      </div>
-
       <div v-if="authStore.isLoading" class="loading-state">
         <div class="loading-spinner"></div>
         <p>Загрузка профиля...</p>
@@ -117,11 +113,15 @@ export default {
 
 <style scoped>
 .side-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 100%;
   height: 100%;
   background: var(--bg-primary);
   display: flex;
   flex-direction: column;
+  animation: slideInRight 0.3s ease-out;
 }
 
 .panel-header {
@@ -166,16 +166,6 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
-}
-
-.debug-info {
-  background: #4CAF50;
-  color: white;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  text-align: center;
-  font-weight: bold;
 }
 
 .loading-state, .auth-required {
@@ -317,5 +307,16 @@ export default {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 </style>
