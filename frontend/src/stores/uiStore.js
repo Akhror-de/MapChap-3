@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 
 export const useUIStore = defineStore('ui', () => {
   // State
-  const isBurgerMenuOpen = ref(false)
   const isDarkTheme = ref(false)
   const activePanel = ref(null)
   const currentArticle = ref(null)
@@ -11,23 +10,12 @@ export const useUIStore = defineStore('ui', () => {
   const isLoading = ref(false)
 
   // Computed
-  const isAnyPanelOpen = computed(() => isBurgerMenuOpen.value || activePanel.value !== null)
+  const isAnyPanelOpen = computed(() => activePanel.value !== null)
 
   // Actions
-  const toggleBurgerMenu = () => {
-    console.log('🔄 Toggling burger menu, current state:', isBurgerMenuOpen.value)
-    isBurgerMenuOpen.value = !isBurgerMenuOpen.value
-    if (!isBurgerMenuOpen.value) {
-      activePanel.value = null
-      currentArticle.value = null
-    }
-  }
-
   const openPanel = (panelName) => {
     console.log('🎯 Opening panel:', panelName)
     activePanel.value = panelName
-    isBurgerMenuOpen.value = true
-    console.log('✅ Panel state after open:', activePanel.value, 'Menu open:', isBurgerMenuOpen.value)
   }
 
   const closePanel = () => {
@@ -69,7 +57,6 @@ export const useUIStore = defineStore('ui', () => {
 
   return {
     // State
-    isBurgerMenuOpen,
     isDarkTheme,
     activePanel,
     currentArticle,
@@ -80,7 +67,6 @@ export const useUIStore = defineStore('ui', () => {
     isAnyPanelOpen,
     
     // Actions
-    toggleBurgerMenu,
     openPanel,
     closePanel,
     openArticle,
