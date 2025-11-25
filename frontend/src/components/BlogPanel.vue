@@ -1,5 +1,5 @@
 <template>
-  <div class="side-panel modern-panel">
+  <div class="side-panel modern-panel blog-panel">
     <!-- Заголовок -->
     <div class="panel-header">
       <div class="header-content">
@@ -61,11 +61,6 @@
         <div class="tab-content">
           <!-- Рекомендуемые -->
           <div v-if="activeTab === 'featured'" class="featured-tab">
-            <div class="featured-header">
-              <h3>🌟 Рекомендуемые статьи</h3>
-              <p>Лучший контент от команды MapChap и сообщества</p>
-            </div>
-
             <!-- Избранная статья -->
             <div class="featured-article" v-if="featuredArticle">
               <div class="featured-badge">🔥 Главная статья</div>
@@ -86,7 +81,7 @@
                     </div>
                   </div>
                   <div class="article-stats">
-                    <span class="stat">👁️ {{ featuredArticle.views }}</span>
+                    <span class="stat">👁️ {{ formatViews(featuredArticle.views) }}</span>
                     <span class="stat">❤️ {{ featuredArticle.likes }}</span>
                     <span class="stat">💬 {{ featuredArticle.commentsCount }}</span>
                   </div>
@@ -122,8 +117,56 @@
                         <span class="author-name">{{ article.author.name }}</span>
                       </div>
                       <div class="stats">
-                        <span class="stat">👁️ {{ article.views }}</span>
+                        <span class="stat">👁️ {{ formatViews(article.views) }}</span>
                         <span class="stat">❤️ {{ article.likes }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Все статьи -->
+            <div class="all-articles-section">
+              <h4>📚 Все статьи</h4>
+              <div class="articles-list">
+                <div 
+                  v-for="article in getArticles" 
+                  :key="article.id"
+                  class="article-card list"
+                  @click="readArticle(article)"
+                >
+                  <div class="article-image">
+                    <img :src="article.image" :alt="article.title" />
+                  </div>
+                  <div class="article-content">
+                    <div class="article-header">
+                      <div class="article-category">{{ getCategoryName(article.category) }}</div>
+                      <div class="article-date">{{ formatDate(article.createdAt) }}</div>
+                    </div>
+                    <h4 class="article-title">{{ article.title }}</h4>
+                    <p class="article-excerpt">{{ article.excerpt }}</p>
+                    
+                    <div class="article-footer">
+                      <div class="author">
+                        <span class="author-avatar small">{{ article.author.avatar }}</span>
+                        <span class="author-name">{{ article.author.name }}</span>
+                      </div>
+                      <div class="article-actions">
+                        <button 
+                          class="action-btn like-btn" 
+                          :class="{ liked: article.isLiked }"
+                          @click.stop="toggleLike(article.id)"
+                        >
+                          🤍 {{ article.likes }}
+                        </button>
+                        <button 
+                          class="action-btn bookmark-btn" 
+                          :class="{ bookmarked: article.isBookmarked }"
+                          @click.stop="toggleBookmark(article.id)"
+                        >
+                          📑
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -143,56 +186,32 @@
               <div 
                 v-for="article in developerArticles" 
                 :key="article.id"
-                class="article-card"
+                class="article-card developer"
                 @click="readArticle(article)"
               >
-                <div class="article-header">
-                  <div class="article-author">
-                    <div class="author-avatar">{{ article.author.avatar }}</div>
-                    <div class="author-info">
-                      <strong>{{ article.author.name }}</strong>
-                      <span class="article-date">{{ formatDate(article.createdAt) }}</span>
-                      <span class="author-badge official">👨‍💻 Официально</span>
-                    </div>
-                  </div>
-                  <div class="article-category">{{ getCategoryName(article.category) }}</div>
-                </div>
-                
-                <h3 class="article-title">{{ article.title }}</h3>
-                <p class="article-excerpt">{{ article.excerpt }}</p>
-                
-                <div class="article-image" v-if="article.image">
+                <div class="article-badge official">👑 Официально</div>
+                <div class="article-image">
                   <img :src="article.image" :alt="article.title" />
                 </div>
-                
-                <div class="article-footer">
-                  <div class="article-stats">
-                    <div class="stat">
-                      <span class="stat-icon">👁️</span>
-                      <span class="stat-value">{{ article.views }}</span>
-                    </div>
-                    <div class="stat">
-                      <span class="stat-icon">❤️</span>
-                      <span class="stat-value">{{ article.likes }}</span>
-                    </div>
-                    <div class="stat">
-                      <span class="stat-icon">💬</span>
-                      <span class="stat-value">{{ article.commentsCount }}</span>
-                    </div>
-                    <div class="stat">
-                      <span class="stat-icon">⏱️</span>
-                      <span class="stat-value">{{ article.readTime }} мин</span>
-                    </div>
+                <div class="article-content">
+                  <div class="article-header">
+                    <div class="article-category">{{ getCategoryName(article.category) }}</div>
+                    <div class="article-date">{{ formatDate(article.createdAt) }}</div>
                   </div>
-
-                  <div class="article-tags" v-if="article.tags && article.tags.length > 0">
-                    <span 
-                      v-for="tag in article.tags.slice(0, 3)" 
-                      :key="tag"
-                      class="tag"
-                    >
-                      #{{ tag }}
-                    </span>
+                  <h3 class="article-title">{{ article.title }}</h3>
+                  <p class="article-excerpt">{{ article.excerpt }}</p>
+                  
+                  <div class="article-footer">
+                    <div class="author">
+                      <span class="author-avatar small">{{ article.author.avatar }}</span>
+                      <span class="author-name">{{ article.author.name }}</span>
+                      <span class="author-role">{{ getRoleName(article.author.role) }}</span>
+                    </div>
+                    <div class="article-stats">
+                      <span class="stat">👁️ {{ formatViews(article.views) }}</span>
+                      <span class="stat">❤️ {{ article.likes }}</span>
+                      <span class="stat">⏱️ {{ article.readTime }} мин</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -242,44 +261,40 @@
                 class="article-card community"
                 @click="readArticle(article)"
               >
-                <div class="article-header">
-                  <div class="article-author">
-                    <div class="author-avatar">{{ article.author.avatar }}</div>
-                    <div class="author-info">
-                      <strong>{{ article.author.name }}</strong>
-                      <span class="article-date">{{ formatDate(article.createdAt) }}</span>
-                      <span class="author-badge user">👥 Сообщество</span>
-                    </div>
-                  </div>
-                  <div class="article-category">{{ getCategoryName(article.category) }}</div>
+                <div class="article-badge community">👥 Сообщество</div>
+                <div class="article-image">
+                  <img :src="article.image" :alt="article.title" />
                 </div>
-                
-                <h3 class="article-title">{{ article.title }}</h3>
-                <p class="article-excerpt">{{ article.excerpt }}</p>
-                
-                <div class="article-footer">
-                  <div class="article-stats">
-                    <div class="stat">
-                      <span class="stat-icon">👁️</span>
-                      <span class="stat-value">{{ article.views }}</span>
+                <div class="article-content">
+                  <div class="article-header">
+                    <div class="article-category">{{ getCategoryName(article.category) }}</div>
+                    <div class="article-date">{{ formatDate(article.createdAt) }}</div>
+                  </div>
+                  <h3 class="article-title">{{ article.title }}</h3>
+                  <p class="article-excerpt">{{ article.excerpt }}</p>
+                  
+                  <div class="article-footer">
+                    <div class="author">
+                      <span class="author-avatar small">{{ article.author.avatar }}</span>
+                      <span class="author-name">{{ article.author.name }}</span>
                     </div>
-                    <div class="stat">
-                      <span class="stat-icon">❤️</span>
-                      <span class="stat-value">{{ article.likes }}</span>
-                    </div>
-                    <div class="stat">
-                      <span class="stat-icon">💬</span>
-                      <span class="stat-value">{{ article.commentsCount }}</span>
+                    <div class="article-actions">
+                      <button 
+                        class="action-btn like-btn" 
+                        :class="{ liked: article.isLiked }"
+                        @click.stop="toggleLike(article.id)"
+                      >
+                        🤍 {{ article.likes }}
+                      </button>
+                      <button 
+                        class="action-btn bookmark-btn" 
+                        :class="{ bookmarked: article.isBookmarked }"
+                        @click.stop="toggleBookmark(article.id)"
+                      >
+                        📑
+                      </button>
                     </div>
                   </div>
-
-                  <button 
-                    class="btn btn-small like-btn" 
-                    :class="{ liked: article.isLiked }"
-                    @click.stop="toggleLike(article.id)"
-                  >
-                    🤍 {{ article.likes }}
-                  </button>
                 </div>
               </div>
             </div>
@@ -305,7 +320,7 @@
             <div class="section-header">
               <h3>✍️ Написать статью</h3>
               <button v-if="editingArticle" class="btn btn-secondary" @click="cancelEdit">
-                Отменить
+                Отменить редактирование
               </button>
             </div>
 
@@ -403,6 +418,9 @@
                       <div class="char-counter">{{ articleForm.content.length }} символов</div>
                       <div v-if="articleForm.content.length < 500" class="warning-text">
                         Минимальная длина статьи - 500 символов
+                      </div>
+                      <div class="read-time">
+                        Примерное время чтения: {{ Math.ceil(articleForm.content.length / 1200) }} минут
                       </div>
                     </div>
                   </div>
@@ -541,12 +559,12 @@ export default {
     const authStore = useAuthStore()
     const blogStore = useBlogStore()
     
-    const { closePanel, showNotification, openArticle, openPanel } = uiStore
+    const { closePanel, showNotification, openArticle } = uiStore
     const { initTelegramAuth } = authStore
-    const { createArticle, updateArticle, toggleArticleLike, getArticleById } = blogStore
+    const { createArticle, updateArticle, toggleArticleLike, toggleArticleBookmark } = blogStore
 
-    const { isAuthenticated } = storeToRefs(authStore)
-    const { getDeveloperArticles, getUserArticles, isLoading } = storeToRefs(blogStore)
+    const { isAuthenticated, isBusinessOwner } = storeToRefs(authStore)
+    const { getDeveloperArticles, getUserArticles, getFeaturedArticles, getPopularArticles, isLoading } = storeToRefs(blogStore)
 
     // State
     const activeTab = ref('featured')
@@ -569,16 +587,15 @@ export default {
     // Computed
     const developerArticles = computed(() => getDeveloperArticles.value)
     const userArticles = computed(() => getUserArticles.value)
+    const featuredArticles = computed(() => getFeaturedArticles.value)
+    const popularArticles = computed(() => getPopularArticles.value)
 
     const featuredArticle = computed(() => {
-      return developerArticles.value[0] || userArticles.value[0]
+      return featuredArticles.value[0] || developerArticles.value[0] || userArticles.value[0]
     })
 
-    const popularArticles = computed(() => {
-      const allArticles = [...developerArticles.value, ...userArticles.value]
-      return allArticles
-        .sort((a, b) => b.views - a.views)
-        .slice(0, 3)
+    const getArticles = computed(() => {
+      return [...developerArticles.value, ...userArticles.value]
     })
 
     const communityStats = computed(() => {
@@ -613,12 +630,29 @@ export default {
       return category ? category.name : 'Другое'
     }
 
+    const getRoleName = (role) => {
+      const roles = {
+        founder: 'Основатель',
+        finance_director: 'Финансовый директор',
+        developer: 'Разработчик',
+        user: 'Пользователь'
+      }
+      return roles[role] || 'Автор'
+    }
+
     const formatDate = (dateString) => {
       return new Date(dateString).toLocaleDateString('ru-RU', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
       })
+    }
+
+    const formatViews = (views) => {
+      if (views >= 1000) {
+        return (views / 1000).toFixed(1) + 'k'
+      }
+      return views.toString()
     }
 
     const readArticle = (article) => {
@@ -631,6 +665,14 @@ export default {
         return
       }
       toggleArticleLike(articleId)
+    }
+
+    const toggleBookmark = (articleId) => {
+      if (!authStore.isAuthenticated) {
+        showNotification('Войдите в аккаунт, чтобы добавлять в закладки', 'info')
+        return
+      }
+      toggleArticleBookmark(articleId)
     }
 
     const handleImageUpload = (event) => {
@@ -659,7 +701,8 @@ export default {
           tags: articleForm.tags,
           allowComments: articleForm.allowComments,
           allowLikes: articleForm.allowLikes,
-          featured: articleForm.featured
+          featured: articleForm.featured,
+          image: articleForm.image
         }
 
         let newArticle
@@ -698,6 +741,7 @@ export default {
         commentsCount: 0,
         readTime: Math.ceil(articleForm.content.length / 1200),
         isLiked: false,
+        isBookmarked: false,
         createdAt: new Date().toISOString()
       }
       openArticle(previewArticle)
@@ -760,11 +804,14 @@ export default {
       
       // Computed
       isAuthenticated,
+      isBusinessOwner,
       isLoading,
       developerArticles,
       userArticles,
       featuredArticle,
+      featuredArticles,
       popularArticles,
+      getArticles,
       communityStats,
       canPublish,
       canPreview,
@@ -774,6 +821,7 @@ export default {
       initAuth,
       readArticle,
       toggleLike,
+      toggleBookmark,
       handleImageUpload,
       removeTag,
       publishArticle,
@@ -781,13 +829,19 @@ export default {
       previewArticle,
       cancelEdit,
       getCategoryName,
-      formatDate
+      getRoleName,
+      formatDate,
+      formatViews
     }
   }
 }
 </script>
 
 <style scoped>
+.blog-panel {
+  max-width: 800px;
+}
+
 .blog-content {
   padding: 0;
 }
@@ -854,23 +908,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-}
-
-.featured-header {
-  text-align: center;
-  padding: 1rem;
-}
-
-.featured-header h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.4rem;
-  color: var(--text-primary);
-}
-
-.featured-header p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 1rem;
 }
 
 .featured-article {
@@ -961,6 +998,12 @@ export default {
   backdrop-filter: blur(10px);
 }
 
+.author-avatar.small {
+  width: 24px;
+  height: 24px;
+  font-size: 0.8rem;
+}
+
 .author-info {
   display: flex;
   flex-direction: column;
@@ -985,7 +1028,8 @@ export default {
   opacity: 0.9;
 }
 
-.popular-section h4 {
+.popular-section h4,
+.all-articles-section h4 {
   margin: 0 0 1rem 0;
   font-size: 1.2rem;
   color: var(--text-primary);
@@ -995,6 +1039,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .article-card.featured {
@@ -1042,12 +1087,6 @@ export default {
   gap: 0.5rem;
 }
 
-.author-avatar.small {
-  width: 24px;
-  height: 24px;
-  font-size: 0.8rem;
-}
-
 .author-name {
   font-size: 0.8rem;
   font-weight: 500;
@@ -1061,6 +1100,166 @@ export default {
 .article-card.featured .stat {
   font-size: 0.7rem;
   opacity: 0.7;
+}
+
+/* Articles List */
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.article-card.list,
+.article-card.developer,
+.article-card.community {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.article-card.list:hover,
+.article-card.developer:hover,
+.article-card.community:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.article-card.developer {
+  border-left: 4px solid var(--primary);
+}
+
+.article-card.community {
+  border-left: 4px solid #10B981;
+}
+
+.article-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.article-badge.official {
+  background: var(--primary);
+  color: white;
+}
+
+.article-badge.community {
+  background: #10B981;
+  color: white;
+}
+
+.article-card.list .article-image,
+.article-card.developer .article-image,
+.article-card.community .article-image {
+  width: 100px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  float: left;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+}
+
+.article-card.list .article-content,
+.article-card.developer .article-content,
+.article-card.community .article-content {
+  padding: 0;
+  overflow: hidden;
+}
+
+.article-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.article-date {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.article-card.list .article-title,
+.article-card.developer .article-title,
+.article-card.community .article-title {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.article-card.list .article-excerpt,
+.article-card.developer .article-excerpt,
+.article-card.community .article-excerpt {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+.article-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.article-footer .author {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.author-role {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+}
+
+.article-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+.action-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+.action-btn.liked {
+  background: #fecaca;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.action-btn.bookmarked {
+  background: #fef3c7;
+  color: #d97706;
+  border-color: #fef3c7;
 }
 
 /* Developers & Community Tabs */
@@ -1114,182 +1313,6 @@ export default {
 .stat-label {
   font-size: 0.9rem;
   color: var(--text-secondary);
-}
-
-.articles-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.article-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.article-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.article-card.community {
-  border-left: 4px solid var(--primary);
-}
-
-.article-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.article-author {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.article-author .author-avatar {
-  width: 40px;
-  height: 40px;
-  background: var(--primary-gradient);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-}
-
-.article-author .author-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.article-author .author-info strong {
-  margin-bottom: 0.25rem;
-  font-size: 0.9rem;
-}
-
-.article-date {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.author-badge {
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  margin-top: 0.25rem;
-}
-
-.author-badge.official {
-  background: var(--primary);
-  color: white;
-}
-
-.author-badge.user {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.article-category {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  padding: 0.4rem 0.8rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.article-title {
-  font-size: 1.2rem;
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-  line-height: 1.3;
-}
-
-.article-excerpt {
-  color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 1rem;
-}
-
-.article-card .article-image {
-  width: 100%;
-  height: 200px;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-}
-
-.article-card .article-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.article-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.article-stats {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.article-stats .stat {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.stat-icon {
-  font-size: 1rem;
-}
-
-.stat-value {
-  font-weight: 500;
-}
-
-.article-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.tag {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  padding: 0.3rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  border: 1px solid var(--border-color);
-}
-
-.like-btn {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
-
-.like-btn.liked {
-  background: #ef4444;
-  color: white;
-  border-color: #ef4444;
 }
 
 .empty-state {
@@ -1419,12 +1442,19 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-top: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .warning-text {
   color: #ef4444;
   font-size: 0.8rem;
   font-weight: 500;
+}
+
+.read-time {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
 }
 
 .editor-tips {
@@ -1619,11 +1649,6 @@ export default {
   background: var(--bg-tertiary);
 }
 
-.btn-small {
-  padding: 0.5rem 1rem;
-  font-size: 0.8rem;
-}
-
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -1637,6 +1662,10 @@ export default {
 
 /* Responsive */
 @media (max-width: 768px) {
+  .blog-panel {
+    max-width: 100%;
+  }
+  
   .tabs {
     flex-direction: column;
   }
@@ -1680,6 +1709,16 @@ export default {
     width: 100%;
     justify-content: space-between;
   }
+  
+  .article-card.list .article-image,
+  .article-card.developer .article-image,
+  .article-card.community .article-image {
+    float: none;
+    width: 100%;
+    height: 150px;
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1699,6 +1738,11 @@ export default {
   
   .publish-actions {
     flex-direction: column;
+  }
+  
+  .editor-info {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>
