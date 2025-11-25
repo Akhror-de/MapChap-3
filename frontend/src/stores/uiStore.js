@@ -27,7 +27,7 @@ export const useUIStore = defineStore('ui', () => {
     console.log('🎯 Opening panel:', panelName)
     activePanel.value = panelName
     isBurgerMenuOpen.value = true
-    console.log('✅ Panel state after open:', activePanel.value)
+    console.log('✅ Panel state after open:', activePanel.value, 'Menu open:', isBurgerMenuOpen.value)
   }
 
   const closePanel = () => {
