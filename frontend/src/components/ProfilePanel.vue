@@ -112,62 +112,6 @@ export default {
 </script>
 
 <style scoped>
-.side-panel {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--bg-primary);
-  display: flex;
-  flex-direction: column;
-  animation: slideInRight 0.3s ease-out;
-}
-
-.panel-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.back-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: none;
-  border: none;
-  color: var(--text-primary);
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: background 0.3s ease;
-}
-
-.back-button:hover {
-  background: var(--bg-tertiary);
-}
-
-.panel-title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.panel-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-}
-
 .loading-state, .auth-required {
   text-align: center;
   padding: 3rem 2rem;
@@ -307,16 +251,5 @@ export default {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
 }
 </style>
