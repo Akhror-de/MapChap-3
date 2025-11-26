@@ -21,25 +21,32 @@
 
     <!-- Основной контент -->
     <div class="main-content" :class="{ 'blurred': activePanel }">
-      <!-- Упрощенный хедер -->
+      <!-- Хедер с кнопками справа -->
       <header class="app-header">
         <div class="header-content">
-          <!-- Кнопка для бизнеса слева -->
-          <button class="header-btn business-btn" @click="openPanel('business')">
-            <span class="btn-icon">💼</span>
-            <span class="btn-text">Для бизнеса</span>
-          </button>
-          
+          <!-- Логотип слева -->
           <div class="logo">
             <h1>🗺️ MapChap</h1>
             <span class="tagline">Бизнес на карте</span>
           </div>
           
-          <!-- Кнопка для профиля справа -->
-          <button class="header-btn profile-btn" @click="openPanel('profile')">
-            <span class="btn-icon">👤</span>
-            <span class="btn-text">Профиль</span>
-          </button>
+          <!-- Кнопки справа -->
+          <div class="header-buttons">
+            <button class="header-btn" @click="openPanel('business')" title="Для бизнеса">
+              <span class="btn-icon">💼</span>
+              <span class="btn-text">Бизнес</span>
+            </button>
+            
+            <button class="header-btn" @click="openPanel('blog')" title="Блог">
+              <span class="btn-icon">📝</span>
+              <span class="btn-text">Блог</span>
+            </button>
+            
+            <button class="header-btn" @click="openPanel('profile')" title="Профиль">
+              <span class="btn-icon">👤</span>
+              <span class="btn-text">Профиль</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -48,7 +55,7 @@
         {{ notification.message }}
       </div>
 
-      <!-- Основной контент - только карта и фильтры -->
+      <!-- Основной контент - карта -->
       <main class="app-main">
         <div class="map-container">
           <YandexMap />
@@ -135,6 +142,7 @@ export default {
       console.log('🚀 App mounted')
       initTheme()
       authStore.checkAuth()
+      offersStore.fetchOffers() // Загружаем предложения
     })
 
     const quickCategories = [
@@ -150,6 +158,7 @@ export default {
 
     const selectCategory = (categoryId) => {
       setSelectedCategory(categoryId)
+      showNotification(`Выбрана категория: ${quickCategories.find(c => c.id === categoryId)?.name}`, 'info')
     }
 
     const onSearch = () => {
@@ -193,130 +202,131 @@ export default {
 </script>
 
 <style>
-/* ... существующие стили ... */
+/* Базовые стили остаются прежними */
 
-/* Добавьте эти стили */
-.panel-overlay {
-  position: fixed;
+/* Хедер */
+.app-header {
+  background: var(--glass-bg);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 0.75rem 1rem;
+  position: sticky;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  z-index: 1000;
-  animation: fadeIn 0.3s ease;
-}
-
-.side-panels {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 100%;
-  max-width: 400px;
-  height: 100vh;
-  z-index: 1001;
-  pointer-events: none;
-}
-
-.side-panels > * {
-  pointer-events: auto;
-}
-
-.main-content.blurred {
-  filter: blur(2px);
-  transition: filter 0.3s ease;
-}
-
-/* Стили для всех панелей */
-.side-panel {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--bg-primary);
-  display: flex;
-  flex-direction: column;
-  animation: slideInRight 0.3s ease-out;
-  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
-}
-
-.panel-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  z-index: 100;
 }
 
 .header-content {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.back-button {
+/* Контейнер для кнопок справа */
+.header-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Кнопки в хедере */
+.header-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: none;
-  border: none;
-  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+  font-weight: 500;
   font-size: 0.9rem;
 }
 
-.back-button:hover {
-  background: var(--bg-tertiary);
+.header-btn:hover {
+  background: var(--bg-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
-.panel-title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+.header-btn .btn-icon {
+  font-size: 1.1rem;
+}
+
+.logo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.panel-content {
+.logo h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tagline {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Основной контент */
+.app-main {
   flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Анимации */
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.map-container {
+  width: 100%;
+  height: calc(100vh - 80px); /* Высота минус хедер */
+  position: relative;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Стили для карты */
+.yandex-map {
+  width: 100%;
+  height: 100%;
+  border-radius: 0; /* Убираем скругления для полного покрытия */
 }
 
-/* Responsive */
+/* Адаптивность */
 @media (max-width: 768px) {
-  .side-panels {
-    max-width: 100%;
-  }
-  
   .header-btn .btn-text {
     display: none;
   }
   
   .header-btn {
     padding: 0.75rem;
+  }
+  
+  .header-buttons {
+    gap: 0.25rem;
+  }
+  
+  .logo h1 {
+    font-size: 1.25rem;
+  }
+  
+  .tagline {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content {
+    padding: 0 0.5rem;
+  }
+  
+  .header-btn {
+    padding: 0.6rem;
   }
 }
 </style>
