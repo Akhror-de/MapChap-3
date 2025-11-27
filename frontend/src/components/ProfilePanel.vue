@@ -15,7 +15,7 @@
 
     <div class="panel-content">
       <div v-if="authStore.isLoading" class="loading-state">
-        <div class="loading-spinner"></div>
+        <div class="tg-loading-spinner"></div>
         <p>Загрузка профиля...</p>
       </div>
 
@@ -30,17 +30,19 @@
 
       <div v-else class="profile-content">
         <div class="profile-header">
-          <div class="avatar-section">
-            <div class="avatar-large">
-              {{ authStore.user.avatar }}
+          <div class="profile-header-content">
+            <div class="avatar-section">
+              <div class="avatar-large">
+                {{ authStore.user.avatar }}
+              </div>
             </div>
-          </div>
-          
-          <div class="profile-info">
-            <h1 class="user-name">{{ authStore.user.name }}</h1>
-            <p class="user-username">@{{ authStore.user.username }}</p>
-            <div class="user-role">
-              {{ authStore.user.role === 'business_owner' ? '💼 Владелец бизнеса' : '👤 Пользователь' }}
+            
+            <div class="profile-info">
+              <h1 class="user-name">{{ authStore.user.name }}</h1>
+              <p class="user-username">@{{ authStore.user.username }}</p>
+              <div class="user-role">
+                {{ authStore.user.role === 'business_owner' ? '💼 Владелец бизнеса' : '👤 Пользователь' }}
+              </div>
             </div>
           </div>
         </div>
@@ -112,41 +114,86 @@ export default {
 </script>
 
 <style scoped>
+/* Используем Telegram стили */
+.profile-content {
+  padding: 0;
+}
+
 .loading-state, .auth-required {
   text-align: center;
-  padding: 3rem 2rem;
-  color: var(--text-secondary);
+  padding: 60px 20px;
+  color: var(--tg-hint-color);
 }
 
-.loading-spinner {
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.tg-loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--border-color);
-  border-top: 3px solid var(--primary);
+  border: 3px solid var(--tg-border-color);
+  border-top: 3px solid var(--tg-button-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
 }
 
-.auth-required .auth-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
+.auth-required {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.auth-icon {
+  font-size: 64px;
+  opacity: 0.7;
 }
 
 .auth-required h3 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text-primary);
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--tg-text-color);
 }
 
+.auth-required p {
+  margin: 0;
+  font-size: 16px;
+  color: var(--tg-hint-color);
+}
+
+/* Профиль */
 .profile-header {
+  background: linear-gradient(135deg, var(--tg-button-color), #6b8cff);
+  color: white;
+  padding: 24px 20px;
+  border-radius: var(--tg-border-radius-large);
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.profile-header-content {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: white;
-  border-radius: 16px;
+  gap: 16px;
 }
 
 .avatar-large {
@@ -157,67 +204,82 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  backdrop-filter: blur(10px);
+  font-size: 32px;
   border: 3px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.profile-info {
+  flex: 1;
 }
 
 .user-name {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
+  margin: 0 0 4px 0;
+  font-size: 24px;
   font-weight: 700;
 }
 
 .user-username {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 12px 0;
   opacity: 0.9;
+  font-size: 16px;
 }
 
 .user-role {
   background: rgba(255, 255, 255, 0.3);
-  padding: 0.4rem 0.8rem;
+  padding: 6px 12px;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 14px;
   font-weight: 600;
   display: inline-block;
   backdrop-filter: blur(10px);
 }
 
+/* Статистика */
 .profile-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .stat-card {
+  background: var(--tg-section-bg-color);
+  border: 0.5px solid var(--tg-border-color);
+  border-radius: var(--tg-border-radius-medium);
+  padding: 16px;
   text-align: center;
-  padding: 1.5rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--tg-shadow-2);
 }
 
 .stat-value {
-  font-size: 1.8rem;
+  font-size: 24px;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--tg-button-color);
   display: block;
   line-height: 1;
-  margin-bottom: 0.5rem;
+  margin-bottom: 4px;
 }
 
 .stat-label {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  font-size: 14px;
+  color: var(--tg-hint-color);
+  font-weight: 500;
 }
 
+/* Действия */
 .profile-actions {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 12px;
 }
 
+/* Стили для кнопок */
 .btn {
   padding: 0.75rem 1.5rem;
   border: none;
@@ -251,5 +313,33 @@ export default {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  .profile-header {
+    padding: 20px 16px;
+  }
+  
+  .profile-header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .avatar-large {
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+  }
+  
+  .user-name {
+    font-size: 20px;
+  }
+  
+  .profile-stats {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
 }
 </style>
