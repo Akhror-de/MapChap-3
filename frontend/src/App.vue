@@ -21,74 +21,86 @@
 
     <!-- Основной контент -->
     <div class="main-content" :class="{ 'blurred': activePanel }">
-      <!-- Хедер с кнопками справа -->
+      <!-- Профессиональный хедер в стиле Telegram -->
       <header class="app-header">
         <div class="header-content">
-          <!-- Логотип слева -->
+          <!-- Логотип по центру -->
           <div class="logo">
             <h1>🗺️ MapChap</h1>
-            <span class="tagline">Бизнес на карте</span>
           </div>
           
-          <!-- Кнопки справа -->
-          <div class="header-buttons">
-            <button class="header-btn" @click="openPanel('business')" title="Для бизнеса">
-              <span class="btn-icon">💼</span>
-              <span class="btn-text">Бизнес</span>
+          <!-- Кнопки действий справа -->
+          <div class="header-actions">
+            <button class="header-action-btn" @click="openPanel('business')" title="Бизнес-панель">
+              <span class="action-icon">💼</span>
             </button>
             
-            <button class="header-btn" @click="openPanel('blog')" title="Блог">
-              <span class="btn-icon">📝</span>
-              <span class="btn-text">Блог</span>
+            <button class="header-action-btn" @click="openPanel('blog')" title="Блог">
+              <span class="action-icon">📝</span>
             </button>
             
-            <button class="header-btn" @click="openPanel('profile')" title="Профиль">
-              <span class="btn-icon">👤</span>
-              <span class="btn-text">Профиль</span>
+            <button class="header-action-btn" @click="openPanel('profile')" title="Профиль">
+              <span class="action-icon">👤</span>
             </button>
           </div>
         </div>
       </header>
 
-      <!-- Уведомления -->
+      <!-- Уведомления в стиле Telegram -->
       <div v-if="notification" class="notification" :class="notification.type">
-        {{ notification.message }}
+        <div class="notification-content">
+          <span class="notification-icon">
+            <span v-if="notification.type === 'success'">✅</span>
+            <span v-else-if="notification.type === 'error'">❌</span>
+            <span v-else>💡</span>
+          </span>
+          <span class="notification-text">{{ notification.message }}</span>
+        </div>
       </div>
 
-      <!-- Основной контент - карта -->
+      <!-- Основной контент -->
       <main class="app-main">
         <div class="map-container">
           <YandexMap />
         </div>
         
-        <!-- Плавающая панель фильтров -->
-        <div class="floating-filters">
-          <div class="search-box">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Поиск бизнесов..."
-              class="search-input"
-              @keyup.enter="onSearch"
-            />
-            <button class="search-btn" @click="onSearch">🔍</button>
+        <!-- Плавающие контролы в стиле Telegram -->
+        <div class="floating-controls">
+          <!-- Поиск -->
+          <div class="search-section">
+            <div class="search-container">
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Поиск бизнесов..."
+                class="search-input"
+                @keyup.enter="onSearch"
+              />
+              <button class="search-btn" @click="onSearch">
+                <span class="search-icon">🔍</span>
+              </button>
+            </div>
           </div>
           
-          <div class="quick-categories">
-            <button
-              v-for="category in quickCategories"
-              :key="category.id"
-              class="category-chip"
-              :class="{ active: selectedCategory === category.id }"
-              @click="selectCategory(category.id)"
-            >
-              <span class="chip-icon">{{ category.icon }}</span>
-              <span class="chip-text">{{ category.name }}</span>
-            </button>
+          <!-- Быстрые категории -->
+          <div class="categories-section">
+            <div class="categories-scroll">
+              <button
+                v-for="category in quickCategories"
+                :key="category.id"
+                class="category-btn"
+                :class="{ active: selectedCategory === category.id }"
+                @click="selectCategory(category.id)"
+              >
+                <span class="category-icon">{{ category.icon }}</span>
+                <span class="category-name">{{ category.name }}</span>
+              </button>
+            </div>
           </div>
           
-          <button class="location-fab" @click="getUserLocation" title="Мое местоположение">
-            <span class="fab-icon">📍</span>
+          <!-- Кнопка местоположения -->
+          <button class="location-btn" @click="getUserLocation" title="Мое местоположение">
+            <span class="location-icon">📍</span>
           </button>
         </div>
       </main>
@@ -103,6 +115,7 @@ import { useOffersStore } from './stores/offersStore.js'
 import { useUIStore } from './stores/uiStore.js'
 import { useAuthStore } from './stores/authStore.js'
 import { useGeolocation } from './composables/useGeolocation.js'
+import { useTelegramTheme } from './composables/useTelegramTheme.js'
 import YandexMap from './components/YandexMap.vue'
 
 // Импортируем компоненты панелей
@@ -127,22 +140,23 @@ export default {
     const uiStore = useUIStore()
     const authStore = useAuthStore()
     const { getCurrentLocation } = useGeolocation()
+    const { isTelegram, tgTheme, applyTelegramTheme } = useTelegramTheme()
+    
     const searchQuery = ref('')
 
     // Store refs
-    const { activePanel, currentArticle, notification, isDarkTheme } = storeToRefs(uiStore)
+    const { activePanel, currentArticle, notification } = storeToRefs(uiStore)
     const { isAuthenticated } = storeToRefs(authStore)
 
     // Store actions
-    const { initTheme, toggleTheme, openPanel, closePanel, showNotification } = uiStore
+    const { openPanel, closePanel, showNotification } = uiStore
     const { setSelectedCategory, setSearchQuery, searchByAddress, setUserLocation } = offersStore
 
     // Инициализация при загрузке
     onMounted(() => {
       console.log('🚀 App mounted')
-      initTheme()
       authStore.checkAuth()
-      offersStore.fetchOffers() // Загружаем предложения
+      offersStore.fetchOffers()
     })
 
     const quickCategories = [
@@ -150,15 +164,17 @@ export default {
       { id: 'food', name: 'Еда', icon: '🍕' },
       { id: 'shopping', name: 'Магазины', icon: '🛍️' },
       { id: 'beauty', name: 'Красота', icon: '💄' },
-      { id: 'services', name: 'Услуги', icon: '🔧' }
+      { id: 'services', name: 'Услуги', icon: '🔧' },
+      { id: 'medical', name: 'Медицина', icon: '⚕️' }
     ]
 
     const selectedCategory = computed(() => offersStore.selectedCategory)
-    const themeClass = computed(() => isDarkTheme.value ? 'dark-theme' : 'light-theme')
+    const themeClass = computed(() => `tg-${tgTheme.value}`)
 
     const selectCategory = (categoryId) => {
       setSelectedCategory(categoryId)
-      showNotification(`Выбрана категория: ${quickCategories.find(c => c.id === categoryId)?.name}`, 'info')
+      const categoryName = quickCategories.find(c => c.id === categoryId)?.name
+      showNotification(`Выбрана категория: ${categoryName}`, 'info')
     }
 
     const onSearch = () => {
@@ -184,13 +200,11 @@ export default {
       searchQuery,
       quickCategories,
       selectedCategory,
-      isDarkTheme,
-      themeClass,
       activePanel,
       currentArticle,
       notification,
       isAuthenticated,
-      toggleTheme,
+      isTelegram,
       openPanel,
       closePanel,
       selectCategory,
@@ -202,79 +216,203 @@ export default {
 </script>
 
 <style>
-/* Базовые стили остаются прежними */
+/* Telegram-стили CSS переменные */
+:root {
+  /* Основные цвета Telegram */
+  --tg-bg-color: #ffffff;
+  --tg-text-color: #000000;
+  --tg-hint-color: #707579;
+  --tg-link-color: #2678b6;
+  --tg-button-color: #50a8eb;
+  --tg-button-text-color: #ffffff;
+  --tg-secondary-bg-color: #f1f1f1;
+  --tg-section-bg-color: #ffffff;
+  --tg-border-color: #e5e5e5;
+  
+  /* Дополнительные цвета */
+  --tg-success-color: #34c759;
+  --tg-warning-color: #ff9500;
+  --tg-error-color: #ff3b30;
+  
+  /* Тени */
+  --tg-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --tg-shadow-2: 0 2px 6px rgba(0, 0, 0, 0.1);
+  --tg-shadow-3: 0 4px 12px rgba(0, 0, 0, 0.1);
+  
+  /* Скругления */
+  --tg-border-radius-small: 8px;
+  --tg-border-radius-medium: 12px;
+  --tg-border-radius-large: 16px;
+  --tg-border-radius-xlarge: 20px;
+}
 
-/* Хедер */
+.tg-dark {
+  --tg-bg-color: #1c1c1d;
+  --tg-text-color: #ffffff;
+  --tg-hint-color: #98989e;
+  --tg-link-color: #5eafff;
+  --tg-button-color: #50a8eb;
+  --tg-button-text-color: #ffffff;
+  --tg-secondary-bg-color: #2d2d2f;
+  --tg-section-bg-color: #2d2d2f;
+  --tg-border-color: #3d3d3f;
+}
+
+/* Базовые стили */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--tg-bg-color);
+  color: var(--tg-text-color);
+  line-height: 1.4;
+  font-size: 17px;
+}
+
+#app {
+  min-height: 100vh;
+  background: var(--tg-bg-color);
+  position: relative;
+}
+
+/* Overlay для панелей */
+.panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Панели */
+.side-panels {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+  max-width: 400px;
+  height: 100vh;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.side-panels > * {
+  pointer-events: auto;
+}
+
+.main-content.blurred {
+  filter: blur(2px);
+  transition: filter 0.3s ease;
+}
+
+/* Профессиональный хедер в стиле Telegram */
 .app-header {
-  background: var(--glass-bg);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
-  border-bottom: 1px solid var(--glass-border);
-  padding: 0.75rem 1rem;
+  background: var(--tg-section-bg-color);
+  border-bottom: 0.5px solid var(--tg-border-color);
+  padding: 12px 16px;
   position: sticky;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-/* Контейнер для кнопок справа */
-.header-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* Кнопки в хедере */
-.header-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: var(--text-primary);
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-
-.header-btn:hover {
-  background: var(--bg-secondary);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.header-btn .btn-icon {
-  font-size: 1.1rem;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .logo h1 {
-  font-size: 1.5rem;
+  font-size: 20px;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--tg-text-color);
+  letter-spacing: -0.5px;
 }
 
-.tagline {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.header-action-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: var(--tg-secondary-bg-color);
+  border-radius: var(--tg-border-radius-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--tg-text-color);
+}
+
+.header-action-btn:hover {
+  background: var(--tg-border-color);
+  transform: scale(1.05);
+}
+
+.header-action-btn .action-icon {
+  font-size: 20px;
+}
+
+/* Уведомления в стиле Telegram */
+.notification {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--tg-section-bg-color);
+  border: 0.5px solid var(--tg-border-color);
+  border-radius: var(--tg-border-radius-large);
+  padding: 12px 16px;
+  box-shadow: var(--tg-shadow-3);
+  z-index: 10000;
+  animation: slideDown 0.3s ease;
+  max-width: 320px;
+  width: 90%;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.notification-text {
+  font-size: 15px;
   font-weight: 500;
+  color: var(--tg-text-color);
+}
+
+.notification.success {
+  border-left: 4px solid var(--tg-success-color);
+}
+
+.notification.error {
+  border-left: 4px solid var(--tg-error-color);
+}
+
+.notification.info {
+  border-left: 4px solid var(--tg-button-color);
 }
 
 /* Основной контент */
@@ -286,47 +424,240 @@ export default {
 
 .map-container {
   width: 100%;
-  height: calc(100vh - 80px); /* Высота минус хедер */
+  height: calc(100vh - 68px); /* Высота минус хедер */
   position: relative;
 }
 
-/* Стили для карты */
-.yandex-map {
+/* Плавающие контролы в стиле Telegram */
+.floating-controls {
+  position: fixed;
+  top: 80px;
+  left: 16px;
+  right: 16px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Поиск */
+.search-section {
   width: 100%;
-  height: 100%;
-  border-radius: 0; /* Убираем скругления для полного покрытия */
+}
+
+.search-container {
+  display: flex;
+  background: var(--tg-section-bg-color);
+  border: 0.5px solid var(--tg-border-color);
+  border-radius: var(--tg-border-radius-large);
+  overflow: hidden;
+  box-shadow: var(--tg-shadow-2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.search-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: none;
+  background: transparent;
+  color: var(--tg-text-color);
+  font-size: 16px;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--tg-hint-color);
+}
+
+.search-btn {
+  padding: 0 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--tg-hint-color);
+  transition: color 0.2s ease;
+}
+
+.search-btn:hover {
+  color: var(--tg-text-color);
+}
+
+.search-icon {
+  font-size: 18px;
+}
+
+/* Категории */
+.categories-section {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.categories-scroll {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.category-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  background: var(--tg-section-bg-color);
+  border: 0.5px solid var(--tg-border-color);
+  border-radius: var(--tg-border-radius-large);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--tg-text-color);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--tg-shadow-1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.category-btn:hover {
+  background: var(--tg-secondary-bg-color);
+  transform: translateY(-1px);
+  box-shadow: var(--tg-shadow-2);
+}
+
+.category-btn.active {
+  background: var(--tg-button-color);
+  color: var(--tg-button-text-color);
+  border-color: var(--tg-button-color);
+}
+
+.category-icon {
+  font-size: 16px;
+}
+
+.category-name {
+  font-weight: 500;
+}
+
+/* Кнопка местоположения */
+.location-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  border: none;
+  background: var(--tg-section-bg-color);
+  border: 0.5px solid var(--tg-border-color);
+  border-radius: var(--tg-border-radius-large);
+  cursor: pointer;
+  color: var(--tg-text-color);
+  font-size: 20px;
+  box-shadow: var(--tg-shadow-3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 90;
+}
+
+.location-btn:hover {
+  background: var(--tg-secondary-bg-color);
+  transform: scale(1.05);
+  box-shadow: var(--tg-shadow-3);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Скрываем scrollbar для категорий */
+.categories-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.categories-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
-  .header-btn .btn-text {
-    display: none;
+  .floating-controls {
+    left: 12px;
+    right: 12px;
   }
   
-  .header-btn {
-    padding: 0.75rem;
+  .side-panels {
+    max-width: 100%;
   }
   
-  .header-buttons {
-    gap: 0.25rem;
-  }
-  
-  .logo h1 {
-    font-size: 1.25rem;
-  }
-  
-  .tagline {
-    display: none;
+  .notification {
+    width: calc(100% - 24px);
   }
 }
 
 @media (max-width: 480px) {
-  .header-content {
-    padding: 0 0.5rem;
+  .app-header {
+    padding: 12px;
   }
   
-  .header-btn {
-    padding: 0.6rem;
+  .header-content {
+    padding: 0 4px;
   }
+  
+  .floating-controls {
+    left: 8px;
+    right: 8px;
+  }
+  
+  .category-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .category-name {
+    display: none;
+  }
+  
+  .location-btn {
+    bottom: 16px;
+    right: 12px;
+    width: 52px;
+    height: 52px;
+  }
+}
+
+/* Улучшенная прокрутка для вебкитов */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--tg-hint-color);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tg-text-color);
 }
 </style>
