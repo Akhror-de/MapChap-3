@@ -247,7 +247,7 @@
                 <div class="comment-actions">
                   <button 
                     class="action-btn like-btn" 
-                    @click="toggleCommentLike(comment.id)"
+                    @click="handleToggleCommentLike(comment.id)"
                     :class="{ liked: comment.is_liked }"
                   >
                     <span class="action-icon">{{ comment.is_liked ? '❤️' : '🤍' }}</span>
@@ -308,7 +308,7 @@ export default {
       incrementArticleViews, 
       toggleArticleLike, 
       addComment: addCommentToStore,
-      toggleCommentLike,
+      toggleCommentLike: toggleCommentLikeInStore, // Переименовано здесь
       getRelatedArticles
     } = blogStore
 
@@ -492,12 +492,13 @@ export default {
       }
     }
 
-    const toggleCommentLike = (commentId) => {
+    // Исправленная функция - переименована чтобы избежать конфликта
+    const handleToggleCommentLike = (commentId) => {
       if (!isAuthenticated.value) {
         showNotification('Войдите в аккаунт, чтобы ставить лайки', 'info')
         return
       }
-      toggleCommentLike(commentId)
+      toggleCommentLikeInStore(commentId)
     }
 
     const replyToComment = (comment) => {
@@ -552,7 +553,7 @@ export default {
       scrollToComments,
       focusCommentInput,
       addComment,
-      toggleCommentLike,
+      handleToggleCommentLike, // Исправленное имя
       replyToComment,
       readArticle,
       initAuth
