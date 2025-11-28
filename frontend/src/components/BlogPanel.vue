@@ -1,6 +1,5 @@
 <template>
-  <div class="side-panel modern-panel blog-panel">
-    <!-- Заголовок -->
+  <div class="side-panel modern-panel">
     <div class="panel-header">
       <div class="header-content">
         <button class="back-button" @click="closePanel">
@@ -14,10 +13,9 @@
       </div>
     </div>
 
-    <!-- Содержимое панели -->
     <div class="panel-content">
       <!-- Загрузка -->
-      <div v-if="blogStore.isLoading" class="loading-state">
+      <div v-if="isLoading" class="loading-state">
         <div class="loading-spinner"></div>
         <p>Загрузка статей...</p>
       </div>
@@ -28,17 +26,17 @@
         <div class="tabs">
           <button 
             class="tab-btn"
-            :class="{ active: activeTab === 'featured' }"
-            @click="activeTab = 'featured'"
+            :class="{ active: activeTab === 'all' }"
+            @click="activeTab = 'all'"
           >
-            🌟 Рекомендуемые
+            📰 Все статьи
           </button>
           <button 
             class="tab-btn"
-            :class="{ active: activeTab === 'developers' }"
-            @click="activeTab = 'developers'"
+            :class="{ active: activeTab === 'official' }"
+            @click="activeTab = 'official'"
           >
-            👨‍💻 От команды
+            👑 Официальные
           </button>
           <button 
             class="tab-btn"
@@ -48,192 +46,200 @@
             👥 Сообщество
           </button>
           <button 
-            class="tab-btn"
-            :class="{ active: activeTab === 'create' }"
-            @click="activeTab = 'create'"
             v-if="authStore.isAuthenticated"
+            class="tab-btn"
+            :class="{ active: activeTab === 'my' }"
+            @click="activeTab = 'my'"
           >
-            ✍️ Написать
+            ✍️ Мои статьи
           </button>
         </div>
 
         <!-- Содержимое вкладок -->
         <div class="tab-content">
-          <!-- Рекомендуемые -->
-          <div v-if="activeTab === 'featured'" class="featured-tab">
-            <!-- Избранная статья -->
-            <div class="featured-article" v-if="featuredArticle">
-              <div class="featured-badge">🔥 Главная статья</div>
-              <div class="article-image">
-                <img :src="featuredArticle.image" :alt="featuredArticle.title" />
+          <!-- Все статьи -->
+          <div v-if="activeTab === 'all'" class="articles-tab">
+            <div class="section-header">
+              <h3>📰 Все статьи</h3>
+              <p>Актуальные материалы от команды и сообщества</p>
+            </div>
+
+            <!-- Фильтры -->
+            <div class="filters">
+              <div class="filter-group">
+                <select v-model="filters.category" @change="applyFilters">
+                  <option value="">Все категории</option>
+                  <option 
+                    v-for="category in categories" 
+                    :key="category.id" 
+                    :value="category.id"
+                  >
+                    {{ category.name }}
+                  </option>
+                </select>
               </div>
-              <div class="article-content">
-                <div class="article-category">{{ getCategoryName(featuredArticle.category) }}</div>
-                <h3 class="article-title">{{ featuredArticle.title }}</h3>
-                <p class="article-excerpt">{{ featuredArticle.excerpt }}</p>
-                
-                <div class="article-meta">
+              <div class="filter-group">
+                <select v-model="filters.sort" @change="applyFilters">
+                  <option value="newest">Сначала новые</option>
+                  <option value="popular">По популярности</option>
+                  <option value="rating">По рейтингу</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Список статей -->
+            <div class="articles-list">
+              <article 
+                v-for="article in filteredArticles" 
+                :key="article.id"
+                class="article-card"
+                @click="readArticle(article)"
+              >
+                <div class="article-header">
                   <div class="article-author">
-                    <div class="author-avatar">{{ featuredArticle.author.avatar }}</div>
+                    <div class="author-avatar">
+                      <img v-if="article.author.avatar" :src="article.author.avatar" :alt="article.author.name" />
+                      <span v-else>{{ article.author.name.charAt(0) }}</span>
+                    </div>
                     <div class="author-info">
-                      <strong>{{ featuredArticle.author.name }}</strong>
-                      <span>{{ formatDate(featuredArticle.createdAt) }}</span>
+                      <strong>{{ article.author.name }}</strong>
+                      <span class="article-date">{{ formatDate(article.created_at) }}</span>
+                      <span v-if="article.author.role !== 'user'" class="author-badge official">
+                        {{ getRoleBadge(article.author.role) }}
+                      </span>
                     </div>
                   </div>
-                  <div class="article-stats">
-                    <span class="stat">👁️ {{ formatViews(featuredArticle.views) }}</span>
-                    <span class="stat">❤️ {{ featuredArticle.likes }}</span>
-                    <span class="stat">💬 {{ featuredArticle.commentsCount }}</span>
+                  <div class="article-category">{{ getCategoryName(article.category) }}</div>
+                </div>
+
+                <div class="article-image" v-if="article.image">
+                  <img :src="article.image" :alt="article.title" />
+                </div>
+
+                <h3 class="article-title">{{ article.title }}</h3>
+                <p class="article-excerpt">{{ article.excerpt }}</p>
+
+                <div class="article-stats">
+                  <div class="stat">
+                    <span class="stat-icon">👁️</span>
+                    <span class="stat-value">{{ formatViews(article.views) }}</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-icon">❤️</span>
+                    <span class="stat-value">{{ article.likes }}</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-icon">💬</span>
+                    <span class="stat-value">{{ article.comments_count }}</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-icon">⏱️</span>
+                    <span class="stat-value">{{ article.read_time }} мин</span>
                   </div>
                 </div>
 
-                <button class="btn btn-primary" @click="readArticle(featuredArticle)">
-                  Читать статью →
-                </button>
-              </div>
+                <div class="article-tags" v-if="article.tags && article.tags.length > 0">
+                  <span 
+                    v-for="tag in article.tags.slice(0, 3)" 
+                    :key="tag"
+                    class="tag"
+                  >
+                    #{{ tag }}
+                  </span>
+                  <span v-if="article.tags.length > 3" class="tag-more">
+                    +{{ article.tags.length - 3 }}
+                  </span>
+                </div>
+              </article>
             </div>
 
-            <!-- Популярные статьи -->
-            <div class="popular-section">
-              <h4>📈 Популярные сейчас</h4>
-              <div class="articles-grid">
-                <div 
-                  v-for="article in popularArticles" 
-                  :key="article.id"
-                  class="article-card featured"
-                  @click="readArticle(article)"
-                >
-                  <div class="article-image">
-                    <img :src="article.image" :alt="article.title" />
-                  </div>
-                  <div class="article-content">
-                    <div class="article-category">{{ getCategoryName(article.category) }}</div>
-                    <h4 class="article-title">{{ article.title }}</h4>
-                    <p class="article-excerpt">{{ article.excerpt }}</p>
-                    
-                    <div class="article-meta">
-                      <div class="author">
-                        <span class="author-avatar small">{{ article.author.avatar }}</span>
-                        <span class="author-name">{{ article.author.name }}</span>
-                      </div>
-                      <div class="stats">
-                        <span class="stat">👁️ {{ formatViews(article.views) }}</span>
-                        <span class="stat">❤️ {{ article.likes }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <!-- Пагинация -->
+            <div class="pagination" v-if="totalPages > 1">
+              <button 
+                class="pagination-btn" 
+                :disabled="currentPage === 1"
+                @click="changePage(currentPage - 1)"
+              >
+                ←
+              </button>
+              <span class="pagination-info">
+                Страница {{ currentPage }} из {{ totalPages }}
+              </span>
+              <button 
+                class="pagination-btn" 
+                :disabled="currentPage === totalPages"
+                @click="changePage(currentPage + 1)"
+              >
+                →
+              </button>
             </div>
 
-            <!-- Все статьи -->
-            <div class="all-articles-section">
-              <h4>📚 Все статьи</h4>
-              <div class="articles-list">
-                <div 
-                  v-for="article in getArticles" 
-                  :key="article.id"
-                  class="article-card list"
-                  @click="readArticle(article)"
-                >
-                  <div class="article-image">
-                    <img :src="article.image" :alt="article.title" />
-                  </div>
-                  <div class="article-content">
-                    <div class="article-header">
-                      <div class="article-category">{{ getCategoryName(article.category) }}</div>
-                      <div class="article-date">{{ formatDate(article.createdAt) }}</div>
-                    </div>
-                    <h4 class="article-title">{{ article.title }}</h4>
-                    <p class="article-excerpt">{{ article.excerpt }}</p>
-                    
-                    <div class="article-footer">
-                      <div class="author">
-                        <span class="author-avatar small">{{ article.author.avatar }}</span>
-                        <span class="author-name">{{ article.author.name }}</span>
-                      </div>
-                      <div class="article-actions">
-                        <button 
-                          class="action-btn like-btn" 
-                          :class="{ liked: article.isLiked }"
-                          @click.stop="toggleLike(article.id)"
-                        >
-                          🤍 {{ article.likes }}
-                        </button>
-                        <button 
-                          class="action-btn bookmark-btn" 
-                          :class="{ bookmarked: article.isBookmarked }"
-                          @click.stop="toggleBookmark(article.id)"
-                        >
-                          📑
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div v-if="filteredArticles.length === 0" class="empty-state">
+              <div class="empty-icon">📝</div>
+              <h4>Статьи не найдены</h4>
+              <p>Попробуйте изменить фильтры или зайти позже</p>
             </div>
           </div>
 
-          <!-- От команды -->
-          <div v-if="activeTab === 'developers'" class="developers-tab">
+          <!-- Официальные статьи -->
+          <div v-if="activeTab === 'official'" class="official-tab">
             <div class="section-header">
-              <h3>👨‍💻 От команды MapChap</h3>
-              <p>Официальные новости, обновления и советы от создателей платформы</p>
+              <h3>👑 Официальные статьи</h3>
+              <p>Новости, обновления и анонсы от команды MapChap</p>
             </div>
 
             <div class="articles-list">
-              <div 
-                v-for="article in developerArticles" 
+              <article 
+                v-for="article in officialArticles" 
                 :key="article.id"
-                class="article-card developer"
+                class="article-card featured"
                 @click="readArticle(article)"
               >
-                <div class="article-badge official">👑 Официально</div>
-                <div class="article-image">
+                <div class="featured-badge">Официально</div>
+                <div class="article-image" v-if="article.image">
                   <img :src="article.image" :alt="article.title" />
                 </div>
                 <div class="article-content">
-                  <div class="article-header">
-                    <div class="article-category">{{ getCategoryName(article.category) }}</div>
-                    <div class="article-date">{{ formatDate(article.createdAt) }}</div>
-                  </div>
+                  <div class="article-category">{{ getCategoryName(article.category) }}</div>
                   <h3 class="article-title">{{ article.title }}</h3>
                   <p class="article-excerpt">{{ article.excerpt }}</p>
                   
-                  <div class="article-footer">
-                    <div class="author">
-                      <span class="author-avatar small">{{ article.author.avatar }}</span>
-                      <span class="author-name">{{ article.author.name }}</span>
-                      <span class="author-role">{{ getRoleName(article.author.role) }}</span>
+                  <div class="article-meta">
+                    <div class="article-author">
+                      <div class="author-avatar">
+                        <img v-if="article.author.avatar" :src="article.author.avatar" :alt="article.author.name" />
+                        <span v-else>{{ article.author.name.charAt(0) }}</span>
+                      </div>
+                      <div class="author-info">
+                        <strong>{{ article.author.name }}</strong>
+                        <span>{{ formatDate(article.created_at) }}</span>
+                      </div>
                     </div>
                     <div class="article-stats">
                       <span class="stat">👁️ {{ formatViews(article.views) }}</span>
                       <span class="stat">❤️ {{ article.likes }}</span>
-                      <span class="stat">⏱️ {{ article.readTime }} мин</span>
                     </div>
                   </div>
                 </div>
-              </div>
+              </article>
             </div>
 
-            <div v-if="developerArticles.length === 0" class="empty-state">
-              <div class="empty-icon">📝</div>
-              <h4>Пока нет статей от команды</h4>
-              <p>Следите за обновлениями - скоро появятся новые материалы!</p>
+            <div v-if="officialArticles.length === 0" class="empty-state">
+              <div class="empty-icon">👑</div>
+              <h4>Пока нет официальных статей</h4>
+              <p>Следите за обновлениями - скоро появятся новости!</p>
             </div>
           </div>
 
           <!-- Сообщество -->
           <div v-if="activeTab === 'community'" class="community-tab">
             <div class="section-header">
-              <h3>👥 Сообщество MapChap</h3>
+              <h3>👥 Сообщество</h3>
               <p>Статьи, обзоры и опыт от наших пользователей</p>
-              
               <button 
-                class="btn btn-primary" 
-                @click="activeTab = 'create'"
                 v-if="authStore.isAuthenticated"
+                class="btn btn-primary"
+                @click="startWriting"
               >
                 ✍️ Написать статью
               </button>
@@ -255,55 +261,69 @@
             </div>
 
             <div class="articles-list">
-              <div 
-                v-for="article in userArticles" 
+              <article 
+                v-for="article in communityArticles" 
                 :key="article.id"
                 class="article-card community"
                 @click="readArticle(article)"
               >
-                <div class="article-badge community">👥 Сообщество</div>
-                <div class="article-image">
-                  <img :src="article.image" :alt="article.title" />
-                </div>
-                <div class="article-content">
-                  <div class="article-header">
-                    <div class="article-category">{{ getCategoryName(article.category) }}</div>
-                    <div class="article-date">{{ formatDate(article.createdAt) }}</div>
-                  </div>
-                  <h3 class="article-title">{{ article.title }}</h3>
-                  <p class="article-excerpt">{{ article.excerpt }}</p>
-                  
-                  <div class="article-footer">
-                    <div class="author">
-                      <span class="author-avatar small">{{ article.author.avatar }}</span>
-                      <span class="author-name">{{ article.author.name }}</span>
+                <div class="article-header">
+                  <div class="article-author">
+                    <div class="author-avatar">
+                      <img v-if="article.author.avatar" :src="article.author.avatar" :alt="article.author.name" />
+                      <span v-else>{{ article.author.name.charAt(0) }}</span>
                     </div>
-                    <div class="article-actions">
-                      <button 
-                        class="action-btn like-btn" 
-                        :class="{ liked: article.isLiked }"
-                        @click.stop="toggleLike(article.id)"
-                      >
-                        🤍 {{ article.likes }}
-                      </button>
-                      <button 
-                        class="action-btn bookmark-btn" 
-                        :class="{ bookmarked: article.isBookmarked }"
-                        @click.stop="toggleBookmark(article.id)"
-                      >
-                        📑
-                      </button>
+                    <div class="author-info">
+                      <strong>{{ article.author.name }}</strong>
+                      <span class="article-date">{{ formatDate(article.created_at) }}</span>
+                      <span class="author-badge user">👥 Сообщество</span>
                     </div>
                   </div>
+                  <div class="article-rating" v-if="article.rating">
+                    ⭐ {{ article.rating }}
+                  </div>
                 </div>
-              </div>
+
+                <h3 class="article-title">{{ article.title }}</h3>
+                <p class="article-excerpt">{{ article.excerpt }}</p>
+
+                <div class="article-footer">
+                  <div class="article-stats">
+                    <div class="stat">
+                      <span class="stat-icon">👁️</span>
+                      <span class="stat-value">{{ formatViews(article.views) }}</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-icon">❤️</span>
+                      <span class="stat-value">{{ article.likes }}</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-icon">💬</span>
+                      <span class="stat-value">{{ article.comments_count }}</span>
+                    </div>
+                  </div>
+
+                  <button 
+                    class="btn btn-small like-btn" 
+                    :class="{ liked: article.is_liked }"
+                    @click.stop="toggleLike(article.id)"
+                  >
+                    <span class="btn-icon">{{ article.is_liked ? '❤️' : '🤍' }}</span>
+                    {{ article.likes }}
+                  </button>
+                </div>
+              </article>
             </div>
 
-            <div v-if="userArticles.length === 0" class="empty-state">
+            <div v-if="communityArticles.length === 0" class="empty-state">
               <div class="empty-icon">👥</div>
               <h4>Сообщество только начинается</h4>
               <p>Станьте первым автором и поделитесь своим опытом!</p>
-              <button class="btn btn-primary" @click="activeTab = 'create'" v-if="authStore.isAuthenticated">
+              <button 
+                v-if="authStore.isAuthenticated"
+                class="btn btn-primary" 
+                @click="startWriting"
+              >
                 Написать первую статью
               </button>
               <div v-else class="auth-prompt">
@@ -315,228 +335,135 @@
             </div>
           </div>
 
-          <!-- Создание статьи -->
-          <div v-if="activeTab === 'create'" class="create-tab">
+          <!-- Мои статьи -->
+          <div v-if="activeTab === 'my'" class="my-articles-tab">
             <div class="section-header">
-              <h3>✍️ Написать статью</h3>
-              <button v-if="editingArticle" class="btn btn-secondary" @click="cancelEdit">
-                Отменить редактирование
+              <h3>✍️ Мои статьи</h3>
+              <button class="btn btn-primary" @click="startWriting">
+                📝 Новая статья
               </button>
             </div>
 
-            <!-- Не авторизован -->
             <div v-if="!authStore.isAuthenticated" class="auth-required">
               <div class="auth-icon">🔐</div>
               <h4>Требуется авторизация</h4>
-              <p>Войдите в аккаунт, чтобы написать статью</p>
+              <p>Войдите в аккаунт для управления статьями</p>
               <button class="btn btn-primary" @click="initAuth">
                 Войти через Telegram
               </button>
             </div>
 
-            <!-- Форма создания -->
-            <div v-else class="create-form">
-              <form @submit.prevent="publishArticle">
-                <!-- Основная информация -->
-                <div class="form-section">
-                  <h4>📝 Основная информация</h4>
-                  
-                  <div class="form-group">
-                    <label>Заголовок статьи *</label>
-                    <input 
-                      v-model="articleForm.title"
-                      type="text" 
-                      placeholder="Интересный заголовок, который привлечет читателей..."
-                      required
-                      maxlength="100"
-                    >
-                    <div class="char-counter">{{ articleForm.title.length }}/100</div>
-                  </div>
-
-                  <div class="form-grid">
-                    <div class="form-group">
-                      <label>Категория *</label>
-                      <select v-model="articleForm.category" required>
-                        <option value="">Выберите категорию</option>
-                        <option 
-                          v-for="category in blogStore.categories" 
-                          :key="category.id" 
-                          :value="category.id"
-                        >
-                          {{ category.name }}
-                        </option>
-                      </select>
-                    </div>
-
-                    <div class="form-group">
-                      <label>Обложка статьи</label>
-                      <div class="image-upload">
-                        <input 
-                          type="file" 
-                          accept="image/*"
-                          @change="handleImageUpload"
-                          ref="imageInput"
-                          style="display: none"
-                        >
-                        <button type="button" class="btn btn-outline" @click="$refs.imageInput.click()">
-                          📸 Выбрать изображение
-                        </button>
-                        <span v-if="articleForm.image" class="image-name">
-                          {{ articleForm.image.name }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label>Краткое описание *</label>
-                    <textarea 
-                      v-model="articleForm.excerpt"
-                      placeholder="Краткое описание, которое увидят читатели в списке статей. Постарайтесь уложиться в 1-2 предложения."
-                      rows="3"
-                      maxlength="200"
-                      required
-                    ></textarea>
-                    <div class="char-counter">{{ articleForm.excerpt.length }}/200</div>
-                  </div>
+            <div v-else class="my-articles-content">
+              <!-- Статистика автора -->
+              <div class="author-stats">
+                <div class="stat-card">
+                  <div class="stat-value">{{ authorStats.published || 0 }}</div>
+                  <div class="stat-label">Опубликовано</div>
                 </div>
-
-                <!-- Содержание -->
-                <div class="form-section">
-                  <h4>📄 Содержание статьи</h4>
-                  
-                  <div class="form-group">
-                    <label>Текст статьи *</label>
-                    <textarea 
-                      v-model="articleForm.content"
-                      placeholder="Напишите вашу статью здесь. Используйте заголовки, списки и абзацы для лучшей читаемости."
-                      rows="15"
-                      required
-                      minlength="500"
-                    ></textarea>
-                    <div class="editor-info">
-                      <div class="char-counter">{{ articleForm.content.length }} символов</div>
-                      <div v-if="articleForm.content.length < 500" class="warning-text">
-                        Минимальная длина статьи - 500 символов
-                      </div>
-                      <div class="read-time">
-                        Примерное время чтения: {{ Math.ceil(articleForm.content.length / 1200) }} минут
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="editor-tips">
-                    <h5>💡 Советы по написанию:</h5>
-                    <ul>
-                      <li>Используйте заголовки разных уровней для структуры</li>
-                      <li>Делитесь личным опытом и практическими советами</li>
-                      <li>Добавляйте списки для лучшей читаемости</li>
-                      <li>Проверяйте орфографию и пунктуацию</li>
-                      <li>Добавьте призыв к обсуждению в конце</li>
-                    </ul>
-                  </div>
+                <div class="stat-card">
+                  <div class="stat-value">{{ authorStats.drafts || 0 }}</div>
+                  <div class="stat-label">Черновиков</div>
                 </div>
+                <div class="stat-card">
+                  <div class="stat-value">{{ authorStats.totalViews || 0 }}</div>
+                  <div class="stat-label">Просмотров</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value">{{ authorStats.totalLikes || 0 }}</div>
+                  <div class="stat-label">Лайков</div>
+                </div>
+              </div>
 
-                <!-- Теги и настройки -->
-                <div class="form-section">
-                  <h4>🏷️ Теги и настройки</h4>
-                  
-                  <div class="form-group">
-                    <label>Теги (через запятую)</label>
-                    <input 
-                      v-model="articleForm.tagsInput"
-                      type="text" 
-                      placeholder="бизнес, успех, маркетинг, советы, опыт"
-                      maxlength="100"
-                    >
-                    <div class="tags-preview" v-if="articleForm.tags.length > 0">
-                      <span 
-                        v-for="tag in articleForm.tags" 
-                        :key="tag"
-                        class="tag-preview"
-                        @click="removeTag(tag)"
-                      >
-                        #{{ tag }} ×
+              <!-- Вкладки моих статей -->
+              <div class="sub-tabs">
+                <button 
+                  class="sub-tab-btn"
+                  :class="{ active: myArticlesFilter === 'published' }"
+                  @click="myArticlesFilter = 'published'"
+                >
+                  📢 Опубликованные
+                </button>
+                <button 
+                  class="sub-tab-btn"
+                  :class="{ active: myArticlesFilter === 'drafts' }"
+                  @click="myArticlesFilter = 'drafts'"
+                >
+                  📝 Черновики
+                </button>
+                <button 
+                  class="sub-tab-btn"
+                  :class="{ active: myArticlesFilter === 'pending' }"
+                  @click="myArticlesFilter = 'pending'"
+                >
+                  ⏳ На модерации
+                </button>
+              </div>
+
+              <!-- Список моих статей -->
+              <div class="my-articles-list">
+                <div 
+                  v-for="article in myArticles" 
+                  :key="article.id"
+                  class="my-article-card"
+                  :class="article.status"
+                >
+                  <div class="article-main">
+                    <h4 class="article-title">{{ article.title || 'Без названия' }}</h4>
+                    <p class="article-excerpt">{{ article.excerpt || 'Нет описания' }}</p>
+                    
+                    <div class="article-meta">
+                      <span class="article-status" :class="article.status">
+                        {{ getStatusText(article.status) }}
                       </span>
+                      <span class="article-date">{{ formatDate(article.updated_at) }}</span>
+                      <span class="article-category">{{ getCategoryName(article.category) }}</span>
                     </div>
-                    <div class="help-text">
-                      Добавьте до 5 тегов для лучшей discoverability
+
+                    <div class="article-stats" v-if="article.status === 'published'">
+                      <span class="stat">👁️ {{ article.views || 0 }}</span>
+                      <span class="stat">❤️ {{ article.likes || 0 }}</span>
+                      <span class="stat">💬 {{ article.comments_count || 0 }}</span>
                     </div>
                   </div>
 
-                  <div class="form-options">
-                    <label class="checkbox-label">
-                      <input 
-                        v-model="articleForm.allowComments"
-                        type="checkbox" 
-                      >
-                      <span class="checkmark"></span>
-                      💬 Разрешить комментарии
-                    </label>
-                    
-                    <label class="checkbox-label">
-                      <input 
-                        v-model="articleForm.allowLikes"
-                        type="checkbox" 
-                        checked
-                      >
-                      <span class="checkmark"></span>
-                      ❤️ Разрешить лайки
-                    </label>
-                    
-                    <label class="checkbox-label" v-if="authStore.isBusinessOwner">
-                      <input 
-                        v-model="articleForm.featured"
-                        type="checkbox" 
-                      >
-                      <span class="checkmark"></span>
-                      ⭐ Продвигать статью
-                    </label>
-                  </div>
-                </div>
-
-                <!-- Предпросмотр -->
-                <div class="form-section" v-if="articleForm.content.length > 0">
-                  <h4>👁️ Предпросмотр</h4>
-                  <div class="preview">
-                    <h4>{{ articleForm.title || 'Заголовок статьи' }}</h4>
-                    <p class="preview-excerpt">{{ articleForm.excerpt || 'Краткое описание статьи...' }}</p>
-                    <div class="preview-content">
-                      {{ articleForm.content.substring(0, 200) }}...
-                    </div>
-                    <div class="preview-meta">
-                      <span>👁️ 0 просмотров</span>
-                      <span>❤️ 0 лайков</span>
-                      <span>⏱️ {{ Math.ceil(articleForm.content.length / 1200) }} мин чтения</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Действия -->
-                <div class="form-actions">
-                  <button type="button" class="btn btn-secondary" @click="saveDraft">
-                    💾 Сохранить черновик
-                  </button>
-                  
-                  <div class="publish-actions">
-                    <button 
-                      type="button" 
-                      class="btn btn-outline"
-                      @click="previewArticle"
-                      :disabled="!canPreview"
-                    >
-                      👁️ Предпросмотр
+                  <div class="article-actions">
+                    <button class="btn btn-small" @click.stop="editArticle(article)">
+                      ✏️
                     </button>
                     <button 
-                      type="submit" 
-                      class="btn btn-primary"
-                      :disabled="!canPublish"
+                      v-if="article.status === 'published'"
+                      class="btn btn-small" 
+                      @click.stop="toggleArticleStatus(article.id)"
                     >
-                      {{ editingArticle ? '💾 Сохранить изменения' : '🚀 Опубликовать статью' }}
+                      ⏸️
+                    </button>
+                    <button 
+                      v-else-if="article.status === 'draft'"
+                      class="btn btn-small btn-success" 
+                      @click.stop="publishArticle(article.id)"
+                    >
+                      📢
+                    </button>
+                    <button 
+                      class="btn btn-small btn-danger" 
+                      @click.stop="deleteArticle(article.id)"
+                    >
+                      🗑️
                     </button>
                   </div>
                 </div>
-              </form>
+              </div>
+
+              <div v-if="myArticles.length === 0" class="empty-state">
+                <div class="empty-icon">📝</div>
+                <h4 v-if="myArticlesFilter === 'published'">У вас нет опубликованных статей</h4>
+                <h4 v-else-if="myArticlesFilter === 'drafts'">У вас нет черновиков</h4>
+                <h4 v-else>Нет статей на модерации</h4>
+                <p>Начните писать свою первую статью!</p>
+                <button class="btn btn-primary" @click="startWriting">
+                  Написать статью
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -548,76 +475,113 @@
 <script>
 import { useUIStore } from '../stores/uiStore'
 import { useAuthStore } from '../stores/authStore'
-import { useBlogStore } from '../stores/blogStore'
-import { storeToRefs } from 'pinia'
-import { ref, computed, reactive, watch } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 
 export default {
   name: 'BlogPanel',
   setup() {
     const uiStore = useUIStore()
     const authStore = useAuthStore()
-    const blogStore = useBlogStore()
-    
-    const { closePanel, showNotification, openArticle } = uiStore
-    const { initTelegramAuth } = authStore
-    const { createArticle, updateArticle, toggleArticleLike, toggleArticleBookmark } = blogStore
 
-    const { isAuthenticated, isBusinessOwner } = storeToRefs(authStore)
-    const { getDeveloperArticles, getUserArticles, getFeaturedArticles, getPopularArticles, isLoading } = storeToRefs(blogStore)
+    const { closePanel, showNotification, openPanel, openArticle } = uiStore
+    const { initTelegramAuth } = authStore
 
     // State
-    const activeTab = ref('featured')
-    const editingArticle = ref(null)
+    const activeTab = ref('all')
+    const isLoading = ref(false)
+    const currentPage = ref(1)
+    const totalPages = ref(1)
+    const myArticlesFilter = ref('published')
 
-    // Form data
-    const articleForm = reactive({
-      title: '',
+    const filters = reactive({
       category: '',
-      excerpt: '',
-      content: '',
-      tagsInput: '',
-      tags: [],
-      allowComments: true,
-      allowLikes: true,
-      featured: false,
-      image: null
+      sort: 'newest',
+      search: ''
     })
+
+    // Mock data - в реальном приложении будет загружаться из API
+    const articles = ref([])
+    const categories = ref([
+      { id: 'news', name: '📰 Новости', icon: '📰' },
+      { id: 'updates', name: '🔄 Обновления', icon: '🔄' },
+      { id: 'guides', name: '📚 Гайды', icon: '📚' },
+      { id: 'business', name: '💼 Бизнес-советы', icon: '💼' },
+      { id: 'success', name: '🚀 Истории успеха', icon: '🚀' },
+      { id: 'technology', name: '🤖 Технологии', icon: '🤖' },
+      { id: 'marketing', name: '📈 Маркетинг', icon: '📈' },
+      { id: 'other', name: '🔮 Другое', icon: '🔮' }
+    ])
 
     // Computed
-    const developerArticles = computed(() => getDeveloperArticles.value)
-    const userArticles = computed(() => getUserArticles.value)
-    const featuredArticles = computed(() => getFeaturedArticles.value)
-    const popularArticles = computed(() => getPopularArticles.value)
+    const filteredArticles = computed(() => {
+      let filtered = articles.value
 
-    const featuredArticle = computed(() => {
-      return featuredArticles.value[0] || developerArticles.value[0] || userArticles.value[0]
+      // Фильтрация по категории
+      if (filters.category) {
+        filtered = filtered.filter(article => article.category === filters.category)
+      }
+
+      // Сортировка
+      switch (filters.sort) {
+        case 'newest':
+          filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          break
+        case 'popular':
+          filtered.sort((a, b) => b.views - a.views)
+          break
+        case 'rating':
+          filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+          break
+      }
+
+      return filtered
     })
 
-    const getArticles = computed(() => {
-      return [...developerArticles.value, ...userArticles.value]
+    const officialArticles = computed(() => {
+      return articles.value.filter(article => 
+        article.author.role !== 'user' && article.status === 'published'
+      )
+    })
+
+    const communityArticles = computed(() => {
+      return articles.value.filter(article => 
+        article.author.role === 'user' && article.status === 'published'
+      )
+    })
+
+    const myArticles = computed(() => {
+      if (!authStore.isAuthenticated) return []
+      
+      return articles.value.filter(article => {
+        const isMyArticle = article.author.id === authStore.user.id
+        return isMyArticle && article.status === myArticlesFilter.value
+      })
     })
 
     const communityStats = computed(() => {
-      const authors = new Set(userArticles.value.map(article => article.author.id))
-      const totalComments = userArticles.value.reduce((sum, article) => sum + article.commentsCount, 0)
+      const communityArticlesList = communityArticles.value
+      const authors = new Set(communityArticlesList.map(article => article.author.id))
+      const totalComments = communityArticlesList.reduce((sum, article) => sum + article.comments_count, 0)
       
       return {
-        totalArticles: userArticles.value.length,
+        totalArticles: communityArticlesList.length,
         totalAuthors: authors.size,
         totalComments: totalComments
       }
     })
 
-    const canPublish = computed(() => {
-      return articleForm.title.length > 0 &&
-             articleForm.category.length > 0 &&
-             articleForm.excerpt.length > 0 &&
-             articleForm.content.length >= 500
-    })
-
-    const canPreview = computed(() => {
-      return articleForm.title.length > 0 && articleForm.content.length > 0
+    const authorStats = computed(() => {
+      if (!authStore.isAuthenticated) return {}
+      
+      const myArticlesList = articles.value.filter(article => article.author.id === authStore.user.id)
+      
+      return {
+        published: myArticlesList.filter(a => a.status === 'published').length,
+        drafts: myArticlesList.filter(a => a.status === 'draft').length,
+        pending: myArticlesList.filter(a => a.status === 'pending').length,
+        totalViews: myArticlesList.reduce((sum, article) => sum + (article.views || 0), 0),
+        totalLikes: myArticlesList.reduce((sum, article) => sum + (article.likes || 0), 0)
+      }
     })
 
     // Methods
@@ -625,26 +589,12 @@ export default {
       initTelegramAuth()
     }
 
-    const getCategoryName = (categoryId) => {
-      const category = blogStore.categories.find(cat => cat.id === categoryId)
-      return category ? category.name : 'Другое'
-    }
-
-    const getRoleName = (role) => {
-      const roles = {
-        founder: 'Основатель',
-        finance_director: 'Финансовый директор',
-        developer: 'Разработчик',
-        user: 'Пользователь'
-      }
-      return roles[role] || 'Автор'
-    }
-
     const formatDate = (dateString) => {
+      if (!dateString) return 'Недавно'
       return new Date(dateString).toLocaleDateString('ru-RU', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
       })
     }
 
@@ -655,8 +605,41 @@ export default {
       return views.toString()
     }
 
+    const getCategoryName = (categoryId) => {
+      const category = categories.value.find(cat => cat.id === categoryId)
+      return category ? category.name : 'Другое'
+    }
+
+    const getRoleBadge = (role) => {
+      const badges = {
+        admin: '👑 Админ',
+        moderator: '🛡️ Модератор',
+        editor: '✏️ Редактор',
+        author: '📝 Автор'
+      }
+      return badges[role] || '👥 Команда'
+    }
+
+    const getStatusText = (status) => {
+      const statuses = {
+        published: '✅ Опубликовано',
+        draft: '📝 Черновик',
+        pending: '⏳ На модерации',
+        rejected: '❌ Отклонено'
+      }
+      return statuses[status] || status
+    }
+
     const readArticle = (article) => {
       openArticle(article)
+    }
+
+    const startWriting = () => {
+      if (!authStore.isAuthenticated) {
+        showNotification('Войдите в аккаунт, чтобы написать статью', 'info')
+        return
+      }
+      showNotification('Редактор статей будет доступен в следующем обновлении', 'info')
     }
 
     const toggleLike = (articleId) => {
@@ -664,205 +647,122 @@ export default {
         showNotification('Войдите в аккаунт, чтобы ставить лайки', 'info')
         return
       }
-      toggleArticleLike(articleId)
+      showNotification('Лайк добавлен!', 'success')
     }
 
-    const toggleBookmark = (articleId) => {
-      if (!authStore.isAuthenticated) {
-        showNotification('Войдите в аккаунт, чтобы добавлять в закладки', 'info')
-        return
-      }
-      toggleArticleBookmark(articleId)
+    const editArticle = (article) => {
+      showNotification(`Редактирование статьи: "${article.title}"`, 'info')
     }
 
-    const handleImageUpload = (event) => {
-      const file = event.target.files[0]
-      if (file) {
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-          showNotification('Изображение должно быть меньше 5MB', 'error')
-          return
-        }
-        articleForm.image = file
-      }
+    const toggleArticleStatus = (articleId) => {
+      showNotification('Статус статьи изменен', 'success')
     }
 
-    const removeTag = (tagToRemove) => {
-      articleForm.tags = articleForm.tags.filter(tag => tag !== tagToRemove)
-      articleForm.tagsInput = articleForm.tags.join(', ')
+    const publishArticle = (articleId) => {
+      showNotification('Статья отправлена на модерацию', 'success')
     }
 
-    const publishArticle = async () => {
-      try {
-        const articleData = {
-          title: articleForm.title,
-          category: articleForm.category,
-          excerpt: articleForm.excerpt,
-          content: articleForm.content,
-          tags: articleForm.tags,
-          allowComments: articleForm.allowComments,
-          allowLikes: articleForm.allowLikes,
-          featured: articleForm.featured,
-          image: articleForm.image
-        }
-
-        let newArticle
-        if (editingArticle.value) {
-          newArticle = await updateArticle(editingArticle.value.id, articleData)
-          showNotification('Статья успешно обновлена!', 'success')
-        } else {
-          newArticle = await createArticle(articleData)
-          showNotification('Статья успешно опубликована!', 'success')
-        }
-
-        resetForm()
-        activeTab.value = 'community'
-        
-      } catch (error) {
-        showNotification('Ошибка при публикации статьи', 'error')
+    const deleteArticle = (articleId) => {
+      if (confirm('Вы уверены, что хотите удалить эту статью?')) {
+        showNotification('Статья удалена', 'success')
       }
     }
 
-    const saveDraft = () => {
-      localStorage.setItem('blog_article_draft', JSON.stringify(articleForm))
-      showNotification('Черновик сохранен!', 'success')
+    const applyFilters = () => {
+      // В реальном приложении здесь будет запрос к API
+      console.log('Applying filters:', filters)
     }
 
-    const previewArticle = () => {
-      const previewArticle = {
-        id: 'preview',
-        title: articleForm.title,
-        excerpt: articleForm.excerpt,
-        content: articleForm.content,
-        author: authStore.user,
-        category: articleForm.category,
-        tags: articleForm.tags,
-        views: 0,
-        likes: 0,
-        commentsCount: 0,
-        readTime: Math.ceil(articleForm.content.length / 1200),
-        isLiked: false,
-        isBookmarked: false,
-        createdAt: new Date().toISOString()
-      }
-      openArticle(previewArticle)
+    const changePage = (page) => {
+      currentPage.value = page
+      // В реальном приложении здесь будет загрузка данных для страницы
     }
 
-    const cancelEdit = () => {
-      editingArticle.value = null
-      resetForm()
-      activeTab.value = 'community'
+    // Load initial data
+    const loadArticles = () => {
+      isLoading.value = true
+      
+      // Mock data - в реальном приложении будет API запрос
+      setTimeout(() => {
+        articles.value = [
+          {
+            id: 1,
+            title: 'MapChap v3.0: Новая эра бизнес-карт',
+            excerpt: 'Представляем полностью переработанную платформу для бизнес-объявлений на карте с фокусом на пользовательский опыт.',
+            content: 'Полное содержание статьи...',
+            category: 'news',
+            image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800',
+            author: {
+              id: 1,
+              name: 'Ахрор Хабибуллаев',
+              avatar: null,
+              role: 'admin'
+            },
+            status: 'published',
+            views: 1245,
+            likes: 89,
+            comments_count: 23,
+            read_time: 5,
+            is_liked: false,
+            rating: 4.8,
+            tags: ['обновление', 'платформа', 'бизнес'],
+            created_at: '2024-01-15T10:00:00Z',
+            updated_at: '2024-01-15T10:00:00Z'
+          }
+        ]
+        isLoading.value = false
+      }, 1000)
     }
 
-    const resetForm = () => {
-      editingArticle.value = null
-      Object.assign(articleForm, {
-        title: '',
-        category: '',
-        excerpt: '',
-        content: '',
-        tagsInput: '',
-        tags: [],
-        allowComments: true,
-        allowLikes: true,
-        featured: false,
-        image: null
-      })
-    }
-
-    // Watchers
-    watch(() => articleForm.tagsInput, (newValue) => {
-      if (newValue) {
-        articleForm.tags = newValue.split(',')
-          .map(tag => tag.trim())
-          .filter(tag => tag.length > 0)
-          .slice(0, 5) // Максимум 5 тегов
-      } else {
-        articleForm.tags = []
-      }
+    onMounted(() => {
+      loadArticles()
     })
 
-    // Load draft on component mount
-    const loadDraft = () => {
-      const draft = localStorage.getItem('blog_article_draft')
-      if (draft) {
-        const draftData = JSON.parse(draft)
-        Object.assign(articleForm, draftData)
-      }
-    }
-
-    loadDraft()
-
     return {
-      // Stores
-      authStore,
-      blogStore,
-      
       // State
       activeTab,
-      editingArticle,
-      articleForm,
+      isLoading,
+      currentPage,
+      totalPages,
+      myArticlesFilter,
+      filters,
       
       // Computed
-      isAuthenticated,
-      isBusinessOwner,
-      isLoading,
-      developerArticles,
-      userArticles,
-      featuredArticle,
-      featuredArticles,
-      popularArticles,
-      getArticles,
+      filteredArticles,
+      officialArticles,
+      communityArticles,
+      myArticles,
       communityStats,
-      canPublish,
-      canPreview,
+      authorStats,
+      categories,
+      
+      // Stores
+      authStore,
       
       // Methods
       closePanel,
       initAuth,
       readArticle,
+      startWriting,
       toggleLike,
-      toggleBookmark,
-      handleImageUpload,
-      removeTag,
+      editArticle,
+      toggleArticleStatus,
       publishArticle,
-      saveDraft,
-      previewArticle,
-      cancelEdit,
-      getCategoryName,
-      getRoleName,
+      deleteArticle,
+      applyFilters,
+      changePage,
       formatDate,
-      formatViews
+      formatViews,
+      getCategoryName,
+      getRoleBadge,
+      getStatusText
     }
   }
 }
 </script>
 
 <style scoped>
-.blog-panel {
-  max-width: 800px;
-}
-
-.blog-content {
-  padding: 0;
-}
-
-.loading-state {
-  text-align: center;
-  padding: 3rem 2rem;
-  color: var(--text-secondary);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-color);
-  border-top: 3px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-/* Tabs */
+/* Стили для вкладок */
 .tabs {
   display: flex;
   background: var(--bg-secondary);
@@ -898,381 +798,37 @@ export default {
   background: var(--bg-tertiary);
 }
 
-.tab-content {
-  flex: 1;
-  overflow-y: auto;
-}
-
-/* Featured Tab */
-.featured-tab {
+.sub-tabs {
   display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.featured-article {
-  position: relative;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-}
-
-.featured-badge {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  z-index: 2;
-}
-
-.article-image {
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-}
-
-.article-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.article-content {
-  padding: 1.5rem;
-}
-
-.article-category {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.3);
-  padding: 0.4rem 0.8rem;
+  background: var(--bg-tertiary);
   border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.article-title {
-  font-size: 1.4rem;
-  margin: 0 0 1rem 0;
-  line-height: 1.3;
-}
-
-.article-excerpt {
-  font-size: 1rem;
-  line-height: 1.5;
-  opacity: 0.9;
+  padding: 0.25rem;
   margin-bottom: 1.5rem;
 }
 
-.article-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.article-author {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.author-avatar {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  backdrop-filter: blur(10px);
-}
-
-.author-avatar.small {
-  width: 24px;
-  height: 24px;
-  font-size: 0.8rem;
-}
-
-.author-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.author-info strong {
-  margin-bottom: 0.25rem;
-}
-
-.author-info span {
-  font-size: 0.8rem;
-  opacity: 0.8;
-}
-
-.article-stats {
-  display: flex;
-  gap: 1rem;
-}
-
-.article-stats .stat {
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-.popular-section h4,
-.all-articles-section h4 {
-  margin: 0 0 1rem 0;
-  font-size: 1.2rem;
-  color: var(--text-primary);
-}
-
-.articles-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.article-card.featured {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  overflow: hidden;
-  transition: all 0.3s ease;
+.sub-tab-btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: transparent;
   cursor: pointer;
-}
-
-.article-card.featured:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-xl);
-}
-
-.article-card.featured .article-image {
-  height: 150px;
-}
-
-.article-card.featured .article-content {
-  padding: 1.25rem;
-}
-
-.article-card.featured .article-title {
-  font-size: 1.1rem;
-  margin: 0.5rem 0;
-}
-
-.article-card.featured .article-excerpt {
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-}
-
-.article-card.featured .article-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0;
-}
-
-.article-card.featured .author {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.author-name {
+  transition: all 0.3s ease;
   font-size: 0.8rem;
+  color: var(--text-secondary);
+  border-radius: 8px;
   font-weight: 500;
 }
 
-.article-card.featured .stats {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.article-card.featured .stat {
-  font-size: 0.7rem;
-  opacity: 0.7;
-}
-
-/* Articles List */
-.articles-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.article-card.list,
-.article-card.developer,
-.article-card.community {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  position: relative;
-}
-
-.article-card.list:hover,
-.article-card.developer:hover,
-.article-card.community:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.article-card.developer {
-  border-left: 4px solid var(--primary);
-}
-
-.article-card.community {
-  border-left: 4px solid #10B981;
-}
-
-.article-badge {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-.article-badge.official {
+.sub-tab-btn.active {
   background: var(--primary);
   color: white;
 }
 
-.article-badge.community {
-  background: #10B981;
-  color: white;
-}
-
-.article-card.list .article-image,
-.article-card.developer .article-image,
-.article-card.community .article-image {
-  width: 100px;
-  height: 80px;
-  border-radius: 8px;
-  overflow: hidden;
-  float: left;
-  margin-right: 1rem;
-  margin-bottom: 1rem;
-}
-
-.article-card.list .article-content,
-.article-card.developer .article-content,
-.article-card.community .article-content {
-  padding: 0;
-  overflow: hidden;
-}
-
-.article-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.article-date {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.article-card.list .article-title,
-.article-card.developer .article-title,
-.article-card.community .article-title {
-  font-size: 1.1rem;
-  margin: 0 0 0.5rem 0;
-}
-
-.article-card.list .article-excerpt,
-.article-card.developer .article-excerpt,
-.article-card.community .article-excerpt {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-  margin-bottom: 1rem;
-}
-
-.article-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.article-footer .author {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.author-role {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  background: var(--bg-tertiary);
-  padding: 0.2rem 0.5rem;
-  border-radius: 8px;
-}
-
-.article-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.4rem 0.75rem;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.8rem;
-  color: var(--text-primary);
-}
-
-.action-btn:hover {
-  background: var(--bg-tertiary);
-}
-
-.action-btn.liked {
-  background: #fecaca;
-  color: #dc2626;
-  border-color: #fecaca;
-}
-
-.action-btn.bookmarked {
-  background: #fef3c7;
-  color: #d97706;
-  border-color: #fef3c7;
-}
-
-/* Developers & Community Tabs */
-.developers-tab,
-.community-tab {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
+/* Секции */
 .section-header {
   text-align: center;
-  padding: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .section-header h3 {
@@ -1286,11 +842,30 @@ export default {
   color: var(--text-secondary);
 }
 
-.community-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+/* Фильтры */
+.filters {
+  display: flex;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-group select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+/* Статистика */
+.community-stats,
+.author-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .stat-card {
@@ -1315,18 +890,356 @@ export default {
   color: var(--text-secondary);
 }
 
-.empty-state {
+/* Карточки статей */
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.article-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.article-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.article-card.featured {
+  border-left: 4px solid var(--primary);
+}
+
+.article-card.community {
+  border-left: 4px solid var(--secondary);
+}
+
+.featured-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--primary);
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.article-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.article-author {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.author-avatar {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-gradient);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: white;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.author-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.author-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.author-info strong {
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.article-date {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.author-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.author-badge.official {
+  background: var(--primary);
+  color: white;
+}
+
+.author-badge.user {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.article-category {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.article-rating {
+  background: var(--accent);
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.article-image {
+  width: 100%;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.article-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.article-title {
+  font-size: 1.2rem;
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.article-excerpt {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.article-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.article-stats .stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.stat-icon {
+  font-size: 1rem;
+}
+
+.stat-value {
+  font-weight: 500;
+}
+
+.article-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  border: 1px solid var(--border-color);
+}
+
+.tag-more {
+  background: var(--primary);
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.article-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Мои статьи */
+.my-articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.my-article-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  gap: 1rem;
+}
+
+.my-article-card:hover {
+  background: var(--bg-tertiary);
+}
+
+.article-main {
+  flex: 1;
+}
+
+.my-article-card .article-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.my-article-card .article-excerpt {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+}
+
+.article-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.article-status {
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.article-status.published {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.article-status.draft {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.article-status.pending {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.article-status.rejected {
+  background: #fecaca;
+  color: #dc2626;
+}
+
+.article-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Пагинация */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.pagination-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Состояния */
+.loading-state,
+.empty-state,
+.auth-required {
   text-align: center;
   padding: 3rem 2rem;
   color: var(--text-secondary);
 }
 
-.empty-icon {
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+.empty-icon,
+.auth-icon {
   font-size: 4rem;
   margin-bottom: 1rem;
 }
 
-.empty-state h4 {
+.empty-state h4,
+.auth-required h4 {
   margin: 0 0 0.5rem 0;
   color: var(--text-primary);
 }
@@ -1337,272 +1250,7 @@ export default {
   border-top: 1px solid var(--border-color);
 }
 
-/* Create Tab */
-.create-tab {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.auth-required {
-  text-align: center;
-  padding: 3rem 2rem;
-  color: var(--text-secondary);
-}
-
-.auth-required .auth-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-}
-
-.auth-required h4 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text-primary);
-}
-
-.create-form {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.form-section {
-  padding: 1.5rem;
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-}
-
-.form-section h4 {
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
-  color: var(--text-primary);
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-group label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.char-counter {
-  text-align: right;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-top: 0.25rem;
-}
-
-.image-upload {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.image-name {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.editor-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.5rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.warning-text {
-  color: #ef4444;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.read-time {
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-}
-
-.editor-tips {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-top: 1rem;
-}
-
-.editor-tips h5 {
-  margin: 0 0 0.75rem 0;
-  font-size: 1rem;
-  color: var(--text-primary);
-}
-
-.editor-tips ul {
-  margin: 0;
-  padding-left: 1.5rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.editor-tips li {
-  margin-bottom: 0.5rem;
-}
-
-.help-text {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-top: 0.25rem;
-}
-
-.tags-preview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.tag-preview {
-  background: var(--primary);
-  color: white;
-  padding: 0.4rem 0.75rem;
-  border-radius: 16px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.tag-preview:hover {
-  background: #ef4444;
-  transform: scale(1.05);
-}
-
-.form-options {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-}
-
-.checkbox-label input {
-  display: none;
-}
-
-.checkmark {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border-color);
-  border-radius: 4px;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.checkbox-label input:checked + .checkmark {
-  background: var(--primary);
-  border-color: var(--primary);
-}
-
-.checkbox-label input:checked + .checkmark::after {
-  content: '✓';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.preview {
-  padding: 1.5rem;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-}
-
-.preview h4 {
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-}
-
-.preview-excerpt {
-  color: var(--text-secondary);
-  font-style: italic;
-  margin-bottom: 1rem;
-  line-height: 1.5;
-}
-
-.preview-content {
-  color: var(--text-primary);
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
-.preview-meta {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.form-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.publish-actions {
-  display: flex;
-  gap: 1rem;
-}
-
-/* Buttons */
+/* Кнопки */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -1629,24 +1277,39 @@ export default {
   box-shadow: var(--shadow-md);
 }
 
-.btn-secondary {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #059669;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-small {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.like-btn {
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-  background: var(--bg-secondary);
-}
-
-.btn-outline {
-  background: transparent;
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
 }
 
-.btn-outline:hover:not(:disabled) {
-  background: var(--bg-tertiary);
+.like-btn.liked {
+  background: #fecaca;
+  color: #dc2626;
+  border-color: #fecaca;
 }
 
 .btn:disabled {
@@ -1660,26 +1323,14 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
-/* Responsive */
+/* Адаптивность */
 @media (max-width: 768px) {
-  .blog-panel {
-    max-width: 100%;
-  }
-  
   .tabs {
     flex-direction: column;
   }
   
-  .section-header {
-    text-align: left;
-  }
-  
-  .articles-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .community-stats {
-    grid-template-columns: 1fr;
+  .filters {
+    flex-direction: column;
   }
   
   .article-header {
@@ -1692,57 +1343,38 @@ export default {
     align-items: flex-start;
   }
   
-  .article-stats {
-    flex-wrap: wrap;
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .form-actions {
+  .my-article-card {
     flex-direction: column;
-    align-items: stretch;
   }
   
-  .publish-actions {
-    width: 100%;
-    justify-content: space-between;
+  .article-actions {
+    align-self: flex-end;
   }
   
-  .article-card.list .article-image,
-  .article-card.developer .article-image,
-  .article-card.community .article-image {
-    float: none;
-    width: 100%;
-    height: 150px;
-    margin-right: 0;
-    margin-bottom: 1rem;
+  .community-stats,
+  .author-stats {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 480px) {
-  .featured-article .article-meta {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
   .article-stats {
+    flex-wrap: wrap;
     gap: 0.75rem;
   }
   
-  .image-upload {
+  .article-meta {
     flex-direction: column;
-    align-items: flex-start;
+    gap: 0.5rem;
   }
   
-  .publish-actions {
-    flex-direction: column;
+  .community-stats,
+  .author-stats {
+    grid-template-columns: 1fr;
   }
   
-  .editor-info {
+  .sub-tabs {
     flex-direction: column;
-    align-items: flex-start;
   }
 }
 </style>
