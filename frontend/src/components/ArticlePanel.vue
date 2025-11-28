@@ -1,6 +1,5 @@
 <template>
   <div class="side-panel modern-panel article-panel" v-if="article">
-    <!-- Заголовок -->
     <div class="panel-header">
       <div class="header-content">
         <button class="back-button" @click="closePanel">
@@ -14,14 +13,16 @@
       </div>
     </div>
 
-    <!-- Содержимое панели -->
     <div class="panel-content">
       <article class="article-full">
         <!-- Шапка статьи -->
         <header class="article-header">
           <div class="article-meta">
             <div class="article-author">
-              <div class="author-avatar large">{{ article.author.avatar }}</div>
+              <div class="author-avatar large">
+                <img v-if="article.author.photo_url" :src="article.author.photo_url" :alt="article.author.name" />
+                <span v-else>{{ getAuthorInitials(article.author) }}</span>
+              </div>
               <div class="author-info">
                 <div class="author-main">
                   <strong class="author-name">{{ article.author.name }}</strong>
@@ -30,18 +31,18 @@
                   </span>
                 </div>
                 <div class="article-dates">
-                  <span class="publish-date">Опубликовано {{ formatDate(article.createdAt) }}</span>
+                  <span class="publish-date">Опубликовано {{ formatDate(article.created_at) }}</span>
                   <span v-if="showUpdatedDate" class="update-date">
-                    • Обновлено {{ formatDate(article.updatedAt) }}
+                    • Обновлено {{ formatDate(article.updated_at) }}
                   </span>
                 </div>
               </div>
             </div>
             
             <div class="article-actions-header">
-              <button class="action-btn" @click="toggleLike" :class="{ liked: article.isLiked }">
-                <span class="action-icon">{{ article.isLiked ? '❤️' : '🤍' }}</span>
-                <span class="action-count">{{ article.likes }}</span>
+              <button class="action-btn" @click="toggleLike" :class="{ liked: article.is_liked }">
+                <span class="action-icon">{{ article.is_liked ? '❤️' : '🤍' }}</span>
+                <span class="action-count">{{ article.likes_count || 0 }}</span>
               </button>
               <button class="action-btn" @click="toggleBookmark" :class="{ bookmarked: isBookmarked }">
                 <span class="action-icon">{{ isBookmarked ? '🔖' : '📑' }}</span>
@@ -66,17 +67,17 @@
             </div>
             <div class="stat-item">
               <span class="stat-icon">❤️</span>
-              <span class="stat-value">{{ article.likes }}</span>
+              <span class="stat-value">{{ article.likes_count || 0 }}</span>
               <span class="stat-label">лайков</span>
             </div>
             <div class="stat-item">
               <span class="stat-icon">💬</span>
-              <span class="stat-value">{{ article.commentsCount }}</span>
+              <span class="stat-value">{{ article.comments_count || 0 }}</span>
               <span class="stat-label">комментариев</span>
             </div>
             <div class="stat-item">
               <span class="stat-icon">⏱️</span>
-              <span class="stat-value">{{ article.readTime }}</span>
+              <span class="stat-value">{{ article.reading_time || 5 }}</span>
               <span class="stat-label">мин чтения</span>
             </div>
           </div>
@@ -91,10 +92,10 @@
             </span>
           </div>
 
-          <div class="article-image" v-if="article.image">
-            <img :src="article.image" :alt="article.title" />
-            <div class="image-caption" v-if="article.imageCaption">
-              {{ article.imageCaption }}
+          <div class="article-image" v-if="article.cover_image">
+            <img :src="article.cover_image" :alt="article.title" />
+            <div class="image-caption" v-if="article.image_caption">
+              {{ article.image_caption }}
             </div>
           </div>
         </header>
@@ -107,16 +108,16 @@
         <!-- Действия под статьей -->
         <footer class="article-actions-footer">
           <div class="actions-main">
-            <button class="btn like-btn" @click="toggleLike" :class="{ liked: article.isLiked }">
-              <span class="btn-icon">{{ article.isLiked ? '❤️' : '🤍' }}</span>
+            <button class="btn like-btn" @click="toggleLike" :class="{ liked: article.is_liked }">
+              <span class="btn-icon">{{ article.is_liked ? '❤️' : '🤍' }}</span>
               <span class="btn-text">Нравится</span>
-              <span class="btn-count">{{ article.likes }}</span>
+              <span class="btn-count">{{ article.likes_count || 0 }}</span>
             </button>
             
             <button class="btn comment-btn" @click="scrollToComments">
               <span class="btn-icon">💬</span>
               <span class="btn-text">Комментировать</span>
-              <span class="btn-count">{{ article.commentsCount }}</span>
+              <span class="btn-count">{{ article.comments_count || 0 }}</span>
             </button>
             
             <button class="btn share-btn" @click="shareArticle">
@@ -133,7 +134,10 @@
 
         <!-- Информация об авторе -->
         <div class="author-card">
-          <div class="author-avatar large">{{ article.author.avatar }}</div>
+          <div class="author-avatar large">
+            <img v-if="article.author.photo_url" :src="article.author.photo_url" :alt="article.author.name" />
+            <span v-else>{{ getAuthorInitials(article.author) }}</span>
+          </div>
           <div class="author-details">
             <h3 class="author-name">{{ article.author.name }}</h3>
             <p class="author-role">{{ getRoleDescription(article.author.role) }}</p>
@@ -142,13 +146,13 @@
             </p>
             <div class="author-stats">
               <span class="author-stat">
-                <strong>{{ authorStats.articles }}</strong> статей
+                <strong>{{ authorStats.articles || 0 }}</strong> статей
               </span>
               <span class="author-stat">
-                <strong>{{ authorStats.followers }}</strong> подписчиков
+                <strong>{{ authorStats.followers || 0 }}</strong> подписчиков
               </span>
               <span class="author-stat">
-                <strong>{{ authorStats.rating }}</strong> рейтинг
+                <strong>{{ authorStats.rating || 0 }}</strong> рейтинг
               </span>
             </div>
             <button class="btn btn-outline follow-btn" @click="toggleFollow">
@@ -173,7 +177,7 @@
               <p class="rec-excerpt">{{ related.excerpt }}</p>
               <div class="rec-meta">
                 <span class="rec-author">{{ related.author.name }}</span>
-                <span class="rec-date">{{ formatDate(related.createdAt) }}</span>
+                <span class="rec-date">{{ formatDate(related.created_at) }}</span>
               </div>
             </div>
           </div>
@@ -182,7 +186,7 @@
         <!-- Комментарии -->
         <div class="comments-section">
           <div class="comments-header">
-            <h3>💬 Комментарии ({{ article.commentsCount }})</h3>
+            <h3>💬 Комментарии ({{ article.comments_count || 0 }})</h3>
             <button class="btn btn-primary" @click="focusCommentInput" v-if="authStore.isAuthenticated">
               Написать комментарий
             </button>
@@ -194,8 +198,11 @@
           <!-- Форма комментария -->
           <div class="comment-form" v-if="authStore.isAuthenticated">
             <div class="comment-author">
-              <div class="author-avatar small">{{ authStore.user.avatar }}</div>
-              <div class="author-name">{{ authStore.user.name }}</div>
+              <div class="author-avatar small">
+                <img v-if="authStore.user.photo_url" :src="authStore.user.photo_url" :alt="authStore.user.name" />
+                <span v-else>{{ getAuthorInitials(authStore.user) }}</span>
+              </div>
+              <div class="author-name">{{ authStore.user.first_name }} {{ authStore.user.last_name }}</div>
             </div>
             <div class="comment-input-container">
               <textarea 
@@ -228,20 +235,23 @@
             >
               <div class="comment-header">
                 <div class="comment-author">
-                  <div class="author-avatar small">{{ comment.author.avatar }}</div>
+                  <div class="author-avatar small">
+                    <img v-if="comment.author.photo_url" :src="comment.author.photo_url" :alt="comment.author.name" />
+                    <span v-else>{{ getAuthorInitials(comment.author) }}</span>
+                  </div>
                   <div class="author-info">
                     <strong class="author-name">{{ comment.author.name }}</strong>
-                    <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                    <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
                   </div>
                 </div>
                 <div class="comment-actions">
                   <button 
                     class="action-btn like-btn" 
-                    @click="handleToggleCommentLike(comment.id)"
-                    :class="{ liked: comment.isLiked }"
+                    @click="toggleCommentLike(comment.id)"
+                    :class="{ liked: comment.is_liked }"
                   >
-                    <span class="action-icon">{{ comment.isLiked ? '❤️' : '🤍' }}</span>
-                    <span class="action-count">{{ comment.likes }}</span>
+                    <span class="action-icon">{{ comment.is_liked ? '❤️' : '🤍' }}</span>
+                    <span class="action-count">{{ comment.likes_count || 0 }}</span>
                   </button>
                 </div>
               </div>
@@ -298,7 +308,8 @@ export default {
       incrementArticleViews, 
       toggleArticleLike, 
       addComment: addCommentToStore,
-      toggleCommentLike: toggleCommentLikeStore 
+      toggleCommentLike,
+      getRelatedArticles
     } = blogStore
 
     // State
@@ -308,16 +319,18 @@ export default {
     const commentInput = ref(null)
 
     // Computed
-    const comments = computed(() => getCommentsByArticleId.value(props.article.id))
+    const comments = computed(() => {
+      return getCommentsByArticleId.value(props.article.id) || []
+    })
     
     const showUpdatedDate = computed(() => {
-      return props.article.updatedAt && 
-             props.article.updatedAt !== props.article.createdAt &&
-             new Date(props.article.updatedAt) > new Date(props.article.createdAt)
+      return props.article.updated_at && 
+             props.article.updated_at !== props.article.created_at &&
+             new Date(props.article.updated_at) > new Date(props.article.created_at)
     })
 
     const formattedViews = computed(() => {
-      const views = props.article.views
+      const views = props.article.views_count || 0
       if (views >= 1000) {
         return (views / 1000).toFixed(1) + 'k'
       }
@@ -330,23 +343,20 @@ export default {
     })
 
     const authorStats = computed(() => {
-      return {
-        articles: 12,
-        followers: 456,
-        rating: 4.8
+      return props.article.author?.stats || {
+        articles: 0,
+        followers: 0,
+        rating: 0
       }
     })
 
     const relatedArticles = computed(() => {
-      // В реальном приложении здесь была бы логика получения связанных статей
-      const allArticles = [...blogStore.getDeveloperArticles, ...blogStore.getUserArticles]
-      return allArticles
-        .filter(article => article.id !== props.article.id)
-        .slice(0, 3)
+      return getRelatedArticles(props.article.id) || []
     })
 
     // Methods
     const formatDate = (dateString) => {
+      if (!dateString) return 'недавно'
       return new Date(dateString).toLocaleDateString('ru-RU', {
         year: 'numeric',
         month: 'long',
@@ -355,6 +365,7 @@ export default {
     }
 
     const formatContent = (content) => {
+      if (!content) return ''
       // Простое форматирование текста в HTML
       return content
         .replace(/\n/g, '<br>')
@@ -367,11 +378,22 @@ export default {
         .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
     }
 
+    const getAuthorInitials = (author) => {
+      if (!author) return '👤'
+      const name = author.name || ''
+      const parts = name.split(' ')
+      if (parts.length >= 2) {
+        return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+      }
+      return name[0]?.toUpperCase() || '👤'
+    }
+
     const getRoleDisplayName = (role) => {
       const roles = {
         founder: '👑 Основатель',
-        finance_director: '💰 Финансовый директор',
-        developer: '👨‍💻 Разработчик',
+        admin: '👑 Администратор',
+        moderator: '🛡️ Модератор',
+        author: '✍️ Автор',
         user: '👥 Пользователь'
       }
       return roles[role] || '👤 Автор'
@@ -380,8 +402,9 @@ export default {
     const getRoleDescription = (role) => {
       const descriptions = {
         founder: 'Основатель платформы MapChap',
-        finance_director: 'Финансовый директор MapChap',
-        developer: 'Разработчик платформы',
+        admin: 'Администратор платформы',
+        moderator: 'Модератор сообщества',
+        author: 'Автор контента',
         user: 'Активный участник сообщества'
       }
       return descriptions[role] || 'Автор сообщества'
@@ -407,7 +430,7 @@ export default {
       }
       isBookmarked.value = !isBookmarked.value
       showNotification(
-        isBookmarked.value ? 'Статья добавлена в закладки' : 'Статья удалена из закладки',
+        isBookmarked.value ? 'Статья добавлена в закладки' : 'Статья удалена из закладок',
         'success'
       )
     }
@@ -429,7 +452,7 @@ export default {
         navigator.share({
           title: props.article.title,
           text: props.article.excerpt,
-          url: window.location.href
+          url: window.location.href + `?article=${props.article.id}`
         }).catch(() => {
           copyToClipboard()
         })
@@ -439,7 +462,8 @@ export default {
     }
 
     const copyToClipboard = () => {
-      navigator.clipboard.writeText(window.location.href)
+      const url = window.location.href + `?article=${props.article.id}`
+      navigator.clipboard.writeText(url)
       showNotification('Ссылка скопирована в буфер обмена', 'success')
     }
 
@@ -468,12 +492,12 @@ export default {
       }
     }
 
-    const handleToggleCommentLike = (commentId) => {
+    const toggleCommentLike = (commentId) => {
       if (!isAuthenticated.value) {
         showNotification('Войдите в аккаунт, чтобы ставить лайки', 'info')
         return
       }
-      toggleCommentLikeStore(commentId)
+      toggleCommentLike(commentId)
     }
 
     const replyToComment = (comment) => {
@@ -517,6 +541,7 @@ export default {
       closePanel,
       formatDate,
       formatContent,
+      getAuthorInitials,
       getRoleDisplayName,
       getRoleDescription,
       getCategoryName,
@@ -527,7 +552,7 @@ export default {
       scrollToComments,
       focusCommentInput,
       addComment,
-      handleToggleCommentLike,
+      toggleCommentLike,
       replyToComment,
       readArticle,
       initAuth
@@ -578,6 +603,13 @@ export default {
   justify-content: center;
   font-size: 1.5rem;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.author-avatar.large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .author-avatar.small {
@@ -590,6 +622,13 @@ export default {
   justify-content: center;
   font-size: 0.9rem;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.author-avatar.small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .author-info {
@@ -618,17 +657,17 @@ export default {
   font-weight: 600;
 }
 
-.author-badge.founder {
+.author-badge.founder, .author-badge.admin {
   background: linear-gradient(135deg, #ffd700, #ffed4e);
   color: #000;
 }
 
-.author-badge.finance_director {
+.author-badge.moderator {
   background: linear-gradient(135deg, #10b981, #34d399);
   color: white;
 }
 
-.author-badge.developer {
+.author-badge.author {
   background: linear-gradient(135deg, #3b82f6, #60a5fa);
   color: white;
 }
