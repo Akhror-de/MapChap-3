@@ -254,7 +254,7 @@
                   <button 
                     class="btn btn-small" 
                     :class="getStatusButtonClass(offer.status)"
-                    @click="toggleOfferStatus(offer.id)"
+                    @click="handleToggleOfferStatus(offer.id)"
                   >
                     <span class="btn-icon">{{ getStatusButtonIcon(offer.status) }}</span>
                     {{ getStatusButtonText(offer.status) }}
@@ -374,7 +374,7 @@ export default {
     const { 
       createOffer, 
       updateOffer, 
-      toggleOfferStatus,
+      toggleOfferStatus: toggleOfferStatusInStore, // Переименовано здесь
       getCategoryById 
     } = businessStore
 
@@ -560,9 +560,10 @@ export default {
       activeTab.value = 'offers'
     }
 
-    const toggleOfferStatus = async (offerId) => {
+    // Исправленная функция - переименована чтобы избежать конфликта
+    const handleToggleOfferStatus = async (offerId) => {
       try {
-        await toggleOfferStatus(offerId)
+        await toggleOfferStatusInStore(offerId)
         showNotification('Статус объявления изменен', 'success')
       } catch (error) {
         showNotification('Ошибка при изменении статуса', 'error')
@@ -615,7 +616,7 @@ export default {
       submitOffer,
       editOffer,
       cancelEdit,
-      toggleOfferStatus,
+      handleToggleOfferStatus, // Исправленное имя
       manageOffers,
       showAnalytics,
       showSettings,
