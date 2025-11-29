@@ -1,5 +1,5 @@
 <template>
-  <div class="side-panel modern-panel" v-click-outside="handleClickOutside">
+  <div class="side-panel modern-panel">
     <div class="panel-header">
       <div class="header-content">
         <button class="back-button" @click="closePanel">
@@ -56,21 +56,21 @@
           <button 
             class="tab-btn"
             :class="{ active: activeTab === 'edit' }"
-            @click="setActiveTab('edit')"
+            @click="activeTab = 'edit'"
           >
             ✏️ Редактировать
           </button>
           <button 
             class="tab-btn"
             :class="{ active: activeTab === 'favorites' }"
-            @click="setActiveTab('favorites')"
+            @click="activeTab = 'favorites'"
           >
             ⭐ Избранное
           </button>
           <button 
             class="tab-btn"
             :class="{ active: activeTab === 'stats' }"
-            @click="setActiveTab('stats')"
+            @click="activeTab = 'stats'"
           >
             📊 Статистика
           </button>
@@ -79,7 +79,7 @@
         <!-- Содержимое вкладок -->
         <div class="tab-content">
           <!-- Редактирование профиля -->
-          <div v-if="activeTab === 'edit'" class="edit-tab">
+          <div v-show="activeTab === 'edit'" class="edit-tab">
             <div class="section-header">
               <h3>✏️ Редактирование профиля</h3>
               <p>Обновите информацию о себе</p>
@@ -113,7 +113,6 @@
                     type="text" 
                     placeholder="Ваше имя"
                     required
-                    @keydown.enter.prevent
                   >
                 </div>
 
@@ -124,7 +123,6 @@
                     type="text" 
                     placeholder="Ваша фамилия"
                     required
-                    @keydown.enter.prevent
                   >
                 </div>
 
@@ -135,7 +133,6 @@
                     type="text" 
                     placeholder="username"
                     @input="formatUsername"
-                    @keydown.enter.prevent
                   >
                   <div class="input-hint">Только латинские буквы, цифры и подчеркивания</div>
                 </div>
@@ -146,7 +143,6 @@
                     v-model="editForm.email"
                     type="email" 
                     placeholder="email@example.com"
-                    @keydown.enter.prevent
                   >
                 </div>
 
@@ -157,7 +153,6 @@
                     placeholder="Расскажите о себе..."
                     rows="3"
                     maxlength="200"
-                    @keydown.enter.prevent
                   ></textarea>
                   <div class="char-counter">{{ editForm.bio.length }}/200</div>
                 </div>
@@ -168,7 +163,6 @@
                     v-model="editForm.city"
                     type="text" 
                     placeholder="Ваш город"
-                    @keydown.enter.prevent
                   >
                 </div>
 
@@ -178,7 +172,6 @@
                     v-model="editForm.phone"
                     type="tel" 
                     placeholder="+7 (999) 123-45-67"
-                    @keydown.enter.prevent
                   >
                 </div>
               </div>
@@ -207,16 +200,6 @@
                       Новости и обновления
                     </span>
                   </label>
-                  <label class="setting-item">
-                    <input 
-                      type="checkbox" 
-                      v-model="editForm.notifications.promotions"
-                    >
-                    <span class="setting-label">
-                      <span class="setting-icon">🎁</span>
-                      Спецпредложения
-                    </span>
-                  </label>
                 </div>
               </div>
 
@@ -235,35 +218,15 @@
           </div>
 
           <!-- Избранное -->
-          <div v-if="activeTab === 'favorites'" class="favorites-tab">
+          <div v-show="activeTab === 'favorites'" class="favorites-tab">
             <div class="section-header">
               <h3>⭐ Избранные места</h3>
               <p>Ваши сохраненные бизнесы и места</p>
             </div>
 
-            <!-- Фильтры избранного -->
-            <div class="filters">
-              <div class="filter-group">
-                <select v-model="favoritesFilter" @change="applyFavoritesFilter">
-                  <option value="all">Все категории</option>
-                  <option value="cafe">☕ Кафе</option>
-                  <option value="restaurant">🍕 Рестораны</option>
-                  <option value="shop">🛍️ Магазины</option>
-                  <option value="service">🔧 Услуги</option>
-                </select>
-              </div>
-              <div class="filter-group">
-                <select v-model="favoritesSort" @change="applyFavoritesFilter">
-                  <option value="recent">Сначала новые</option>
-                  <option value="name">По названию</option>
-                  <option value="rating">По рейтингу</option>
-                </select>
-              </div>
-            </div>
-
             <!-- Список избранного -->
             <div class="favorites-list">
-              <div v-if="filteredFavorites.length === 0" class="empty-state">
+              <div v-if="favorites.length === 0" class="empty-state">
                 <div class="empty-icon">⭐</div>
                 <h4>Пока нет избранных мест</h4>
                 <p>Добавляйте бизнесы в избранное, чтобы легко находить их позже</p>
@@ -274,13 +237,12 @@
 
               <div v-else class="favorites-grid">
                 <div 
-                  v-for="favorite in filteredFavorites" 
+                  v-for="favorite in favorites" 
                   :key="favorite.id"
                   class="favorite-card"
                 >
                   <div class="favorite-image">
-                    <img v-if="favorite.image" :src="favorite.image" :alt="favorite.name" />
-                    <div v-else class="image-placeholder">
+                    <div class="image-placeholder">
                       🏢
                     </div>
                     <button class="favorite-btn active" @click="removeFromFavorites(favorite.id)">
@@ -298,9 +260,6 @@
                         <span class="rating-stars">⭐</span>
                         <span class="rating-value">{{ favorite.rating || 'Нет' }}</span>
                       </div>
-                      <div class="distance" v-if="favorite.distance">
-                        📍 {{ favorite.distance }} км
-                      </div>
                     </div>
 
                     <div class="favorite-actions">
@@ -315,26 +274,10 @@
                 </div>
               </div>
             </div>
-
-            <!-- Статистика избранного -->
-            <div class="favorites-stats">
-              <div class="stat-card">
-                <div class="stat-value">{{ profileStore.totalFavorites }}</div>
-                <div class="stat-label">Всего избранных</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-value">{{ profileStore.favoriteCategories }}</div>
-                <div class="stat-label">Категорий</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-value">{{ profileStore.avgRating }}</div>
-                <div class="stat-label">Средний рейтинг</div>
-              </div>
-            </div>
           </div>
 
           <!-- Статистика пользователя -->
-          <div v-if="activeTab === 'stats'" class="stats-tab">
+          <div v-show="activeTab === 'stats'" class="stats-tab">
             <div class="section-header">
               <h3>📊 Моя статистика</h3>
               <p>Ваша активность на платформе</p>
@@ -363,100 +306,27 @@
                   <div class="metric-label">Комментариев</div>
                 </div>
               </div>
-              <div class="metric-card info">
-                <div class="metric-icon">📅</div>
-                <div class="metric-content">
-                  <div class="metric-value">{{ userStats.daysActive || 0 }}</div>
-                  <div class="metric-label">Дней с нами</div>
-                </div>
-              </div>
             </div>
 
-            <!-- Детальная статистика -->
-            <div class="detailed-stats">
-              <div class="stat-section">
-                <h4>🎯 Активность по категориям</h4>
-                <div class="category-stats">
-                  <div 
-                    v-for="category in userStats.categoryDistribution" 
-                    :key="category.name"
-                    class="category-stat"
-                  >
-                    <div class="category-info">
-                      <span class="category-icon">{{ category.icon }}</span>
-                      <span class="category-name">{{ category.name }}</span>
-                    </div>
-                    <div class="category-value">{{ category.count }} мест</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="stat-section">
-                <h4>📈 Активность за месяц</h4>
-                <div class="activity-chart">
-                  <div 
-                    v-for="day in userStats.monthlyActivity" 
-                    :key="day.date"
-                    class="chart-bar"
-                    :style="{ height: day.activity * 8 + 'px' }"
-                    :title="`${day.date}: ${day.activity} действий`"
-                  ></div>
-                </div>
-                <div class="chart-legend">
-                  <span>Низкая</span>
-                  <span>Высокая активность</span>
-                </div>
-              </div>
-
-              <!-- Достижения -->
-              <div class="stat-section">
-                <h4>🏆 Достижения</h4>
-                <div class="achievements-grid">
-                  <div 
-                    v-for="achievement in userStats.achievements" 
-                    :key="achievement.id"
-                    class="achievement-card"
-                    :class="{ unlocked: achievement.unlocked }"
-                  >
-                    <div class="achievement-icon">{{ achievement.icon }}</div>
-                    <div class="achievement-content">
-                      <h5>{{ achievement.name }}</h5>
-                      <p>{{ achievement.description }}</p>
-                      <div class="achievement-progress" v-if="!achievement.unlocked">
-                        <div class="progress-bar">
-                          <div 
-                            class="progress-fill" 
-                            :style="{ width: achievement.progress + '%' }"
-                          ></div>
-                        </div>
-                        <span class="progress-text">{{ achievement.progress }}%</span>
-                      </div>
-                      <div class="achievement-date" v-else>
-                        Получено {{ formatDate(achievement.unlockedAt) }}
-                      </div>
+            <!-- Достижения -->
+            <div class="stat-section">
+              <h4>🏆 Достижения</h4>
+              <div class="achievements-grid">
+                <div 
+                  v-for="achievement in userStats.achievements" 
+                  :key="achievement.id"
+                  class="achievement-card"
+                  :class="{ unlocked: achievement.unlocked }"
+                >
+                  <div class="achievement-icon">{{ achievement.icon }}</div>
+                  <div class="achievement-content">
+                    <h5>{{ achievement.name }}</h5>
+                    <p>{{ achievement.description }}</p>
+                    <div v-if="achievement.unlocked" class="achievement-date">
+                      Получено {{ formatDate(achievement.unlockedAt) }}
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <!-- Экспорт данных -->
-            <div class="export-section">
-              <h4>📤 Экспорт данных</h4>
-              <p>Вы можете скачать ваши данные в удобном формате</p>
-              <div class="export-actions">
-                <button class="btn btn-secondary" @click="exportData('json')">
-                  <span class="btn-icon">📄</span>
-                  JSON
-                </button>
-                <button class="btn btn-secondary" @click="exportData('csv')">
-                  <span class="btn-icon">📊</span>
-                  CSV
-                </button>
-                <button class="btn btn-secondary" @click="exportData('pdf')">
-                  <span class="btn-icon">📋</span>
-                  PDF отчет
-                </button>
               </div>
             </div>
           </div>
@@ -471,35 +341,17 @@ import { useUIStore } from '../stores/uiStore'
 import { useAuthStore } from '../stores/authStore'
 import { useProfileStore } from '../stores/profileStore'
 import { storeToRefs } from 'pinia'
-import { ref, computed, onMounted, reactive, watch } from 'vue'
-
-// Директива для закрытия по клику вне компонента
-const vClickOutside = {
-  mounted(el, binding) {
-    el.clickOutsideEvent = function(event) {
-      if (!(el === event.target || el.contains(event.target))) {
-        binding.value(event)
-      }
-    }
-    document.body.addEventListener('click', el.clickOutsideEvent)
-  },
-  unmounted(el) {
-    document.body.removeEventListener('click', el.clickOutsideEvent)
-  }
-}
+import { ref, computed, onMounted, reactive } from 'vue'
 
 export default {
   name: 'ProfilePanel',
-  directives: {
-    'click-outside': vClickOutside
-  },
   setup() {
     const uiStore = useUIStore()
     const authStore = useAuthStore()
     const profileStore = useProfileStore()
 
     const { closePanel, showNotification } = uiStore
-    const { initTelegramAuth, logout: authLogout, updateUser } = authStore
+    const { initTelegramAuth, logout: authLogout } = authStore
     const { updateUserProfile, getFavorites, removeFavorite, init } = profileStore
 
     const { isAuthenticated, user } = storeToRefs(authStore)
@@ -508,8 +360,6 @@ export default {
     // State
     const isLoading = ref(false)
     const activeTab = ref('edit')
-    const favoritesFilter = ref('all')
-    const favoritesSort = ref('recent')
     const isSubmitting = ref(false)
 
     // Form data
@@ -543,30 +393,6 @@ export default {
              editForm.photo_url !== (user.value.photo_url || '')
     })
 
-    const filteredFavorites = computed(() => {
-      let filtered = [...favorites.value]
-
-      // Фильтрация по категории
-      if (favoritesFilter.value !== 'all') {
-        filtered = filtered.filter(fav => fav.category === favoritesFilter.value)
-      }
-
-      // Сортировка
-      switch (favoritesSort.value) {
-        case 'recent':
-          filtered.sort((a, b) => new Date(b.added_at) - new Date(a.added_at))
-          break
-        case 'name':
-          filtered.sort((a, b) => a.name.localeCompare(b.name))
-          break
-        case 'rating':
-          filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0))
-          break
-      }
-
-      return filtered
-    })
-
     // Methods
     const initAuth = () => {
       initTelegramAuth()
@@ -578,10 +404,6 @@ export default {
         closePanel()
         showNotification('Вы успешно вышли из аккаунта', 'success')
       }
-    }
-
-    const setActiveTab = (tab) => {
-      activeTab.value = tab
     }
 
     const getUserInitials = (user) => {
@@ -629,18 +451,8 @@ export default {
       
       isSubmitting.value = true
       try {
-        const result = await updateUserProfile(editForm)
-        
-        // Обновляем пользователя в authStore
-        updateUser({
-          ...user.value,
-          ...result
-        })
-        
+        await updateUserProfile(editForm)
         showNotification('Профиль успешно обновлен', 'success')
-        
-        // Перезагружаем данные профиля
-        resetForm()
       } catch (error) {
         console.error('Error updating profile:', error)
         showNotification('Ошибка при обновлении профиля', 'error')
@@ -669,10 +481,6 @@ export default {
       })
     }
 
-    const applyFavoritesFilter = () => {
-      // Фильтрация применяется в computed свойстве
-    }
-
     const removeFromFavorites = async (favoriteId) => {
       try {
         await removeFavorite(favoriteId)
@@ -684,12 +492,10 @@ export default {
 
     const viewOnMap = (favorite) => {
       showNotification(`Показать на карте: ${favorite.name}`, 'info')
-      // В реальном приложении здесь будет навигация на карту
     }
 
     const viewDetails = (favorite) => {
       showNotification(`Подробности: ${favorite.name}`, 'info')
-      // В реальном приложении здесь будет открытие деталей бизнеса
     }
 
     const exploreBusinesses = () => {
@@ -707,32 +513,13 @@ export default {
       return categories[categoryId] || 'Другое'
     }
 
-    const exportData = (format) => {
-      showNotification(`Экспорт данных в формате ${format} будет доступен в следующем обновлении`, 'info')
-    }
-
-    const handleClickOutside = (event) => {
-      // Закрываем панель только если клик был вне её
-      if (!event.target.closest('.side-panel')) {
-        closePanel()
-      }
-    }
-
     // Load user data
     const loadUserData = () => {
       if (isAuthenticated.value) {
         resetForm()
-        // Загрузка избранного и статистики
         init()
       }
     }
-
-    // Watch for user changes
-    watch(user, (newUser) => {
-      if (newUser) {
-        resetForm()
-      }
-    }, { immediate: true })
 
     onMounted(() => {
       loadUserData()
@@ -746,15 +533,13 @@ export default {
       // State
       isLoading,
       activeTab,
-      favoritesFilter,
-      favoritesSort,
       editForm,
       isSubmitting,
       
       // Computed
       isAuthenticated,
       user,
-      favorites: filteredFavorites,
+      favorites,
       userStats,
       hasChanges,
       
@@ -762,23 +547,19 @@ export default {
       closePanel,
       initAuth,
       logout,
-      setActiveTab,
       updateProfile,
       resetForm,
       removeFromFavorites,
       viewOnMap,
       viewDetails,
       exploreBusinesses,
-      applyFavoritesFilter,
       getCategoryName,
-      exportData,
       getUserInitials,
       formatJoinDate,
       formatDate,
       formatUsername,
       changeAvatar,
-      removeAvatar,
-      handleClickOutside
+      removeAvatar
     }
   }
 }
@@ -804,9 +585,6 @@ export default {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-primary);
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .header-content {
@@ -966,8 +744,6 @@ export default {
   border-radius: 16px;
   padding: 0.5rem;
   margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 0.25rem;
 }
 
 .tab-btn {
@@ -981,8 +757,6 @@ export default {
   color: var(--text-secondary);
   border-radius: 12px;
   font-weight: 500;
-  min-width: 120px;
-  white-space: nowrap;
 }
 
 .tab-btn.active {
@@ -1129,26 +903,9 @@ export default {
 }
 
 /* Избранное */
-.filters {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.filter-group select {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
 .favorites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -1170,12 +927,6 @@ export default {
   position: relative;
   height: 120px;
   overflow: hidden;
-}
-
-.favorite-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .image-placeholder {
@@ -1251,42 +1002,9 @@ export default {
   gap: 0.25rem;
 }
 
-.distance {
-  color: var(--text-secondary);
-}
-
 .favorite-actions {
   display: flex;
   gap: 0.5rem;
-}
-
-.favorites-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-  padding: 1.5rem;
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-}
-
-.stat-card {
-  text-align: center;
-  padding: 1rem;
-}
-
-.stat-value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--primary);
-  display: block;
-  line-height: 1;
-  margin-bottom: 0.5rem;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
 }
 
 /* Статистика */
@@ -1318,10 +1036,6 @@ export default {
   background: linear-gradient(135deg, #f59e0b, #fbbf24);
 }
 
-.metric-card.info {
-  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-}
-
 .metric-icon {
   font-size: 2rem;
 }
@@ -1338,13 +1052,6 @@ export default {
   opacity: 0.9;
 }
 
-.detailed-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
 .stat-section {
   padding: 1.5rem;
   background: var(--bg-secondary);
@@ -1357,73 +1064,9 @@ export default {
   color: var(--text-primary);
 }
 
-.category-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.category-stat {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem;
-  background: var(--bg-primary);
-  border-radius: 8px;
-}
-
-.category-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.category-icon {
-  font-size: 1.25rem;
-}
-
-.category-name {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.category-value {
-  font-weight: 600;
-  color: var(--primary);
-}
-
-.activity-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 100px;
-  margin-bottom: 0.5rem;
-  padding: 0 1rem;
-}
-
-.chart-bar {
-  flex: 1;
-  background: var(--primary);
-  border-radius: 2px 2px 0 0;
-  min-height: 2px;
-  transition: all 0.3s ease;
-}
-
-.chart-bar:hover {
-  opacity: 0.8;
-}
-
-.chart-legend {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  padding: 0 1rem;
-}
-
 .achievements-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1rem;
 }
 
@@ -1464,62 +1107,10 @@ export default {
   color: var(--text-secondary);
 }
 
-.achievement-progress {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.progress-bar {
-  flex: 1;
-  height: 6px;
-  background: var(--bg-tertiary);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--primary);
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.progress-text {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  min-width: 40px;
-}
-
 .achievement-date {
   font-size: 0.8rem;
   color: var(--text-secondary);
   font-style: italic;
-}
-
-.export-section {
-  text-align: center;
-  padding: 2rem;
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-}
-
-.export-section h4 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text-primary);
-}
-
-.export-section p {
-  margin: 0 0 1.5rem 0;
-  color: var(--text-secondary);
-}
-
-.export-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 
 /* Кнопки */
@@ -1601,28 +1192,16 @@ export default {
     grid-template-columns: 1fr;
   }
   
-  .favorites-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .filters {
-    flex-direction: column;
-  }
-  
-  .achievements-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .export-actions {
-    flex-direction: column;
-  }
-  
   .tabs {
     flex-direction: column;
   }
   
-  .tab-btn {
-    min-width: auto;
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .upload-actions {
+    flex-direction: column;
   }
 }
 
@@ -1632,18 +1211,6 @@ export default {
   }
   
   .favorite-actions {
-    flex-direction: column;
-  }
-  
-  .activity-chart {
-    gap: 1px;
-  }
-  
-  .form-actions {
-    flex-direction: column;
-  }
-  
-  .upload-actions {
     flex-direction: column;
   }
 }
