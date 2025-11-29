@@ -1,5 +1,5 @@
 <template>
-  <div class="side-panel modern-panel">
+  <div class="side-panel modern-panel" v-click-outside="handleClickOutside">
     <div class="panel-header">
       <div class="header-content">
         <button class="back-button" @click="closePanel">
@@ -222,7 +222,7 @@
 
               <!-- Действия формы -->
               <div class="form-actions">
-                <button type="button" class="btn btn-secondary" @click="resetForm">
+                <button type="button" class="btn btn-secondary" @click="resetForm" :disabled="isSubmitting">
                   Отменить
                 </button>
                 <button type="button" class="btn btn-primary" @click="updateProfile" :disabled="!hasChanges || isSubmitting">
@@ -398,7 +398,7 @@
                     v-for="day in userStats.monthlyActivity" 
                     :key="day.date"
                     class="chart-bar"
-                    :style="{ height: day.activity * 2 + 'px' }"
+                    :style="{ height: day.activity * 8 + 'px' }"
                     :title="`${day.date}: ${day.activity} действий`"
                   ></div>
                 </div>
@@ -471,17 +471,35 @@ import { useUIStore } from '../stores/uiStore'
 import { useAuthStore } from '../stores/authStore'
 import { useProfileStore } from '../stores/profileStore'
 import { storeToRefs } from 'pinia'
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
+
+// Директива для закрытия по клику вне компонента
+const vClickOutside = {
+  mounted(el, binding) {
+    el.clickOutsideEvent = function(event) {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value(event)
+      }
+    }
+    document.body.addEventListener('click', el.clickOutsideEvent)
+  },
+  unmounted(el) {
+    document.body.removeEventListener('click', el.clickOutsideEvent)
+  }
+}
 
 export default {
   name: 'ProfilePanel',
+  directives: {
+    'click-outside': vClickOutside
+  },
   setup() {
     const uiStore = useUIStore()
     const authStore = useAuthStore()
     const profileStore = useProfileStore()
 
     const { closePanel, showNotification } = uiStore
-    const { initTelegramAuth, logout: authLogout } = authStore
+    const { initTelegramAuth, logout: authLogout, updateUser } = authStore
     const { updateUserProfile, getFavorites, removeFavorite, init } = profileStore
 
     const { isAuthenticated, user } = storeToRefs(authStore)
@@ -526,7 +544,7 @@ export default {
     })
 
     const filteredFavorites = computed(() => {
-      let filtered = favorites.value
+      let filtered = [...favorites.value]
 
       // Фильтрация по категории
       if (favoritesFilter.value !== 'all') {
@@ -575,15 +593,23 @@ export default {
 
     const formatJoinDate = (dateString) => {
       if (!dateString) return 'недавно'
-      return new Date(dateString).toLocaleDateString('ru-RU', {
-        year: 'numeric',
-        month: 'long'
-      })
+      try {
+        return new Date(dateString).toLocaleDateString('ru-RU', {
+          year: 'numeric',
+          month: 'long'
+        })
+      } catch (e) {
+        return 'недавно'
+      }
     }
 
     const formatDate = (dateString) => {
       if (!dateString) return ''
-      return new Date(dateString).toLocaleDateString('ru-RU')
+      try {
+        return new Date(dateString).toLocaleDateString('ru-RU')
+      } catch (e) {
+        return ''
+      }
     }
 
     const formatUsername = () => {
@@ -603,8 +629,18 @@ export default {
       
       isSubmitting.value = true
       try {
-        await updateUserProfile(editForm)
+        const result = await updateUserProfile(editForm)
+        
+        // Обновляем пользователя в authStore
+        updateUser({
+          ...user.value,
+          ...result
+        })
+        
         showNotification('Профиль успешно обновлен', 'success')
+        
+        // Перезагружаем данные профиля
+        resetForm()
       } catch (error) {
         console.error('Error updating profile:', error)
         showNotification('Ошибка при обновлении профиля', 'error')
@@ -675,6 +711,13 @@ export default {
       showNotification(`Экспорт данных в формате ${format} будет доступен в следующем обновлении`, 'info')
     }
 
+    const handleClickOutside = (event) => {
+      // Закрываем панель только если клик был вне её
+      if (!event.target.closest('.side-panel')) {
+        closePanel()
+      }
+    }
+
     // Load user data
     const loadUserData = () => {
       if (isAuthenticated.value) {
@@ -683,6 +726,13 @@ export default {
         init()
       }
     }
+
+    // Watch for user changes
+    watch(user, (newUser) => {
+      if (newUser) {
+        resetForm()
+      }
+    }, { immediate: true })
 
     onMounted(() => {
       loadUserData()
@@ -727,14 +777,96 @@ export default {
       formatDate,
       formatUsername,
       changeAvatar,
-      removeAvatar
+      removeAvatar,
+      handleClickOutside
     }
   }
 }
 </script>
 
 <style scoped>
-/* Добавим стиль для маленького спиннера загрузки */
+/* Базовые стили */
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 450px;
+  background: var(--bg-primary);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: var(--bg-tertiary);
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+/* Загрузка и состояния */
+.loading-state,
+.auth-required,
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--text-secondary);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
 .loading-spinner-small {
   width: 16px;
   height: 16px;
@@ -751,7 +883,13 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
-/* Остальные стили остаются такими же как в предыдущей версии */
+.auth-icon,
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+/* Шапка профиля */
 .profile-header {
   display: flex;
   align-items: center;
@@ -913,6 +1051,7 @@ export default {
   color: var(--text-primary);
   font-size: 0.9rem;
   transition: all 0.3s ease;
+  font-family: inherit;
 }
 
 .form-group input:focus,
@@ -965,6 +1104,7 @@ export default {
 .setting-item input[type="checkbox"] {
   width: 18px;
   height: 18px;
+  cursor: pointer;
 }
 
 .setting-label {
@@ -973,6 +1113,7 @@ export default {
   gap: 0.5rem;
   font-weight: 500;
   color: var(--text-primary);
+  cursor: pointer;
 }
 
 .setting-icon {
@@ -987,5 +1128,523 @@ export default {
   border-top: 1px solid var(--border-color);
 }
 
-/* Остальные стили... */
+/* Избранное */
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-group select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.favorite-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.favorite-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.favorite-image {
+  position: relative;
+  height: 120px;
+  overflow: hidden;
+}
+
+.favorite-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.favorite-btn.active {
+  background: #fecaca;
+  color: #dc2626;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+}
+
+.favorite-content {
+  padding: 1rem;
+}
+
+.favorite-name {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.favorite-category {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.9rem;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.favorite-address {
+  margin: 0 0 1rem 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.favorite-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.distance {
+  color: var(--text-secondary);
+}
+
+.favorite-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.favorites-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.stat-card {
+  text-align: center;
+  padding: 1rem;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: block;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Статистика */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+  color: white;
+}
+
+.metric-card.primary {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+.metric-card.success {
+  background: linear-gradient(135deg, #10b981, #34d399);
+}
+
+.metric-card.warning {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.metric-card.info {
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+}
+
+.metric-icon {
+  font-size: 2rem;
+}
+
+.metric-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.detailed-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.stat-section {
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.stat-section h4 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+}
+
+.category-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.category-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--bg-primary);
+  border-radius: 8px;
+}
+
+.category-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.category-icon {
+  font-size: 1.25rem;
+}
+
+.category-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.category-value {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.activity-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 100px;
+  margin-bottom: 0.5rem;
+  padding: 0 1rem;
+}
+
+.chart-bar {
+  flex: 1;
+  background: var(--primary);
+  border-radius: 2px 2px 0 0;
+  min-height: 2px;
+  transition: all 0.3s ease;
+}
+
+.chart-bar:hover {
+  opacity: 0.8;
+}
+
+.chart-legend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding: 0 1rem;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.achievement-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.achievement-card.unlocked {
+  opacity: 1;
+  border-color: var(--primary);
+  background: var(--bg-secondary);
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.achievement-content {
+  flex: 1;
+}
+
+.achievement-content h5 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.achievement-content p {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.achievement-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  min-width: 40px;
+}
+
+.achievement-date {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.export-section {
+  text-align: center;
+  padding: 2rem;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.export-section h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.export-section p {
+  margin: 0 0 1.5rem 0;
+  color: var(--text-secondary);
+}
+
+.export-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Кнопки */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  text-decoration: none;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-secondary);
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+}
+
+.btn-small {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .side-panel {
+    max-width: 100%;
+  }
+  
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .logout-btn {
+    align-self: center;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .favorites-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filters {
+    flex-direction: column;
+  }
+  
+  .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .export-actions {
+    flex-direction: column;
+  }
+  
+  .tabs {
+    flex-direction: column;
+  }
+  
+  .tab-btn {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .favorite-actions {
+    flex-direction: column;
+  }
+  
+  .activity-chart {
+    gap: 1px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .upload-actions {
+    flex-direction: column;
+  }
+}
 </style>
