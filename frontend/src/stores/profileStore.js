@@ -21,9 +21,11 @@ export const useProfileStore = defineStore('profile', () => {
     return [...new Set(categories)].length
   })
   const avgRating = computed(() => {
-    if (favorites.value.length === 0) return 0
-    const sum = favorites.value.reduce((acc, fav) => acc + (fav.rating || 0), 0)
-    return (sum / favorites.value.length).toFixed(1)
+    if (favorites.value.length === 0) return '0.0'
+    const ratedFavorites = favorites.value.filter(fav => fav.rating)
+    if (ratedFavorites.length === 0) return '0.0'
+    const sum = ratedFavorites.reduce((acc, fav) => acc + fav.rating, 0)
+    return (sum / ratedFavorites.length).toFixed(1)
   })
 
   // Actions
@@ -49,20 +51,43 @@ export const useProfileStore = defineStore('profile', () => {
         distance: 1.2,
         image: null,
         added_at: '2024-01-14T15:30:00Z'
+      },
+      {
+        id: 3,
+        name: 'Магазин "ТехноМир"',
+        category: 'shop',
+        address: 'ул. Центральная, 15',
+        rating: 4.2,
+        distance: 2.1,
+        image: null,
+        added_at: '2024-01-13T09:15:00Z'
       }
     ]
   }
 
   const removeFavorite = async (favoriteId) => {
     // Mock implementation
+    const initialLength = favorites.value.length
     favorites.value = favorites.value.filter(fav => fav.id !== favoriteId)
-    return Promise.resolve()
+    
+    if (favorites.value.length < initialLength) {
+      return Promise.resolve()
+    } else {
+      return Promise.reject(new Error('Favorite not found'))
+    }
   }
 
   const updateUserProfile = async (profileData) => {
-    // Mock implementation
+    // Mock implementation - в реальном приложении будет API запрос
     console.log('Updating profile with:', profileData)
-    return Promise.resolve()
+    
+    // Имитация задержки сети
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // В реальном приложении здесь будет обновление данных в authStore
+        resolve(profileData)
+      }, 1000)
+    })
   }
 
   const loadUserStats = () => {
@@ -79,9 +104,9 @@ export const useProfileStore = defineStore('profile', () => {
         { name: 'Услуги', icon: '🔧', count: 1 }
       ],
       monthlyActivity: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toLocaleDateString(),
-        activity: Math.floor(Math.random() * 10)
-      })).reverse(),
+        date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
+        activity: Math.floor(Math.random() * 10) + 1
+      })),
       achievements: [
         {
           id: 1,
@@ -106,6 +131,14 @@ export const useProfileStore = defineStore('profile', () => {
           icon: '💬',
           unlocked: false,
           progress: 40
+        },
+        {
+          id: 4,
+          name: 'Постоянный клиент',
+          description: 'Посетите 20 разных мест',
+          icon: '🏆',
+          unlocked: true,
+          unlockedAt: '2024-01-12T14:30:00Z'
         }
       ]
     }
