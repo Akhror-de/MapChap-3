@@ -16,1202 +16,646 @@
     <div class="panel-content">
       <!-- Загрузка -->
       <div v-if="isLoading" class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Загрузка профиля...</p>
+        <LoadingSpinner size="large" text="Загрузка профиля..." />
       </div>
 
       <!-- Не авторизован -->
-      <div v-else-if="!authStore.isAuthenticated" class="auth-required">
+      <div v-else-if="!isAuthenticated" class="auth-required">
         <div class="auth-icon">🔐</div>
         <h3>Требуется авторизация</h3>
-        <p>Войдите в аккаунт для доступа к профилю</p>
-        <button class="btn btn-primary" @click="initAuth">
-          Войти через Telegram
+        <p>Войдите в систему, чтобы просмотреть профиль</p>
+        <button class="btn btn-primary" @click="redirectToLogin">
+          Войти
         </button>
       </div>
 
-      <!-- Основной контент профиля -->
+      <!-- Контент профиля -->
       <div v-else class="profile-content">
-        <!-- Шапка профиля -->
-        <div class="profile-header">
-          <div class="profile-avatar">
-            <img v-if="user.photo_url" :src="user.photo_url" :alt="user.name" />
-            <div v-else class="avatar-placeholder">
-              {{ getUserInitials(user) }}
+        <!-- Аватар и основная информация -->
+        <div class="profile-summary">
+          <div class="avatar-section">
+            <div class="avatar" @click="openAvatarUpload">
+              <img v-if="user?.photo_url" :src="user.photo_url" alt="Avatar" />
+              <div v-else class="avatar-placeholder">
+                {{ getUserInitials }}
+              </div>
+              <div class="avatar-overlay">
+                <span class="overlay-icon">📷</span>
+              </div>
+            </div>
+            <div class="user-info">
+              <h3 class="user-name">{{ user?.first_name }} {{ user?.last_name }}</h3>
+              <p class="user-username" v-if="user?.username">
+                @{{ user.username }}
+              </p>
+              <p class="user-email">{{ user?.email }}</p>
             </div>
           </div>
-          <div class="profile-info">
-            <h3 class="user-name">{{ user.first_name }} {{ user.last_name }}</h3>
-            <p class="user-username" v-if="user.username">@{{ user.username }}</p>
-            <p class="user-join-date">Участник с {{ formatJoinDate(user.join_date) }}</p>
+
+          <!-- Быстрые действия -->
+          <div class="quick-actions">
+            <button class="action-btn" @click="switchTab('edit')">
+              <span class="action-icon">✏️</span>
+              Редактировать
+            </button>
+            <button class="action-btn" @click="switchTab('favorites')">
+              <span class="action-icon">⭐</span>
+              Избранное
+              <span class="badge" v-if="favoritesCount > 0">{{ favoritesCount }}</span>
+            </button>
+            <button class="action-btn" @click="switchTab('stats')">
+              <span class="action-icon">📊</span>
+              Статистика
+            </button>
           </div>
-          <button class="btn btn-secondary logout-btn" @click="logout">
-            <span class="btn-icon">🚪</span>
-            Выйти
-          </button>
         </div>
 
-        <!-- Вкладки -->
-        <div class="tabs">
-          <button 
-            class="tab-btn"
-            :class="{ active: activeTab === 'edit' }"
-            @click="activeTab = 'edit'"
-          >
-            ✏️ Редактировать
-          </button>
-          <button 
-            class="tab-btn"
-            :class="{ active: activeTab === 'favorites' }"
-            @click="activeTab = 'favorites'"
-          >
-            ⭐ Избранное
-          </button>
-          <button 
-            class="tab-btn"
-            :class="{ active: activeTab === 'stats' }"
-            @click="activeTab = 'stats'"
-          >
-            📊 Статистика
-          </button>
+        <!-- Табы профиля -->
+        <div class="profile-tabs-wrapper">
+          <div class="tabs-header">
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              class="tab-button"
+              :class="{ active: activeTab === tab.id }"
+              @click="switchTab(tab.id)"
+            >
+              <span class="tab-icon">{{ tab.icon }}</span>
+              <span class="tab-label">{{ tab.label }}</span>
+            </button>
+          </div>
+
+          <div class="tab-content">
+            <!-- Редактирование профиля -->
+            <div v-if="activeTab === 'edit'" class="edit-tab">
+              <ProfileEditTab
+                v-if="user"
+                v-model:form-data="editForm"
+                :validation-errors="validationErrors"
+                :is-submitting="isSubmitting"
+                :has-changes="hasChanges"
+                @update:field="validateField"
+                @save="updateProfile"
+                @reset="resetForm"
+              />
+            </div>
+
+            <!-- Статистика -->
+            <div v-else-if="activeTab === 'stats'" class="stats-tab">
+              <ProfileStatsTab
+                :user-stats="userStats"
+                :is-loading="isLoading"
+                @export-stats="exportStats"
+              />
+            </div>
+
+            <!-- Избранное -->
+            <div v-else-if="activeTab === 'favorites'" class="favorites-tab">
+              <ProfileFavoritesTab
+                :favorites="favorites"
+                :is-loading="isLoading"
+                @remove-favorite="removeFavorite"
+                @export-favorites="exportFavorites"
+              />
+            </div>
+
+            <!-- Уведомления -->
+            <div v-else-if="activeTab === 'notifications'" class="notifications-tab">
+              <ProfileNotifications
+                v-model:notifications="editForm.notifications"
+                @update="markFormDirty"
+              />
+            </div>
+
+            <!-- Безопасность -->
+            <div v-else-if="activeTab === 'security'" class="security-tab">
+              <ProfileSecurity
+                @password-change="handlePasswordChange"
+              />
+            </div>
+          </div>
         </div>
 
-        <!-- Содержимое вкладок -->
-        <div class="tab-content">
-          <!-- Редактирование профиля -->
-          <div v-show="activeTab === 'edit'" class="edit-tab">
-            <div class="section-header">
-              <h3>✏️ Редактирование профиля</h3>
-              <p>Обновите информацию о себе</p>
-            </div>
-
-            <div class="profile-form">
-              <div class="avatar-upload">
-                <div class="avatar-preview">
-                  <img v-if="editForm.photo_url" :src="editForm.photo_url" alt="Avatar" />
-                  <div v-else class="avatar-placeholder large">
-                    {{ getUserInitials(user) }}
-                  </div>
-                </div>
-                <div class="upload-actions">
-                  <button type="button" class="btn btn-secondary" @click="changeAvatar">
-                    <span class="btn-icon">🖼️</span>
-                    Сменить фото
-                  </button>
-                  <button type="button" class="btn btn-outline" @click="removeAvatar" v-if="editForm.photo_url">
-                    <span class="btn-icon">🗑️</span>
-                    Удалить
-                  </button>
-                </div>
-              </div>
-
-              <div class="form-grid">
-                <div class="form-group">
-                  <label>Имя *</label>
-                  <input 
-                    v-model="editForm.first_name"
-                    type="text" 
-                    placeholder="Ваше имя"
-                    required
-                  >
-                </div>
-
-                <div class="form-group">
-                  <label>Фамилия *</label>
-                  <input 
-                    v-model="editForm.last_name"
-                    type="text" 
-                    placeholder="Ваша фамилия"
-                    required
-                  >
-                </div>
-
-                <div class="form-group">
-                  <label>Username</label>
-                  <input 
-                    v-model="editForm.username"
-                    type="text" 
-                    placeholder="username"
-                    @input="formatUsername"
-                  >
-                  <div class="input-hint">Только латинские буквы, цифры и подчеркивания</div>
-                </div>
-
-                <div class="form-group">
-                  <label>Email</label>
-                  <input 
-                    v-model="editForm.email"
-                    type="email" 
-                    placeholder="email@example.com"
-                  >
-                </div>
-
-                <div class="form-group full-width">
-                  <label>О себе</label>
-                  <textarea 
-                    v-model="editForm.bio"
-                    placeholder="Расскажите о себе..."
-                    rows="3"
-                    maxlength="200"
-                  ></textarea>
-                  <div class="char-counter">{{ editForm.bio.length }}/200</div>
-                </div>
-
-                <div class="form-group">
-                  <label>Город</label>
-                  <input 
-                    v-model="editForm.city"
-                    type="text" 
-                    placeholder="Ваш город"
-                  >
-                </div>
-
-                <div class="form-group">
-                  <label>Телефон</label>
-                  <input 
-                    v-model="editForm.phone"
-                    type="tel" 
-                    placeholder="+7 (999) 123-45-67"
-                  >
-                </div>
-              </div>
-
-              <!-- Настройки уведомлений -->
-              <div class="settings-section">
-                <h4>🔔 Настройки уведомлений</h4>
-                <div class="settings-list">
-                  <label class="setting-item">
-                    <input 
-                      type="checkbox" 
-                      v-model="editForm.notifications.email"
-                    >
-                    <span class="setting-label">
-                      <span class="setting-icon">📧</span>
-                      Email уведомления
-                    </span>
-                  </label>
-                  <label class="setting-item">
-                    <input 
-                      type="checkbox" 
-                      v-model="editForm.notifications.news"
-                    >
-                    <span class="setting-label">
-                      <span class="setting-icon">📰</span>
-                      Новости и обновления
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Действия формы -->
-              <div class="form-actions">
-                <button type="button" class="btn btn-secondary" @click="resetForm" :disabled="isSubmitting">
-                  Отменить
-                </button>
-                <button type="button" class="btn btn-primary" @click="updateProfile" :disabled="!hasChanges || isSubmitting">
-                  <span v-if="isSubmitting" class="loading-spinner-small"></span>
-                  <span v-else>💾</span>
-                  {{ isSubmitting ? 'Сохранение...' : 'Сохранить изменения' }}
-                </button>
-              </div>
-            </div>
+        <!-- Информация о сессии -->
+        <div class="session-info">
+          <div class="session-item">
+            <span class="session-label">В сети:</span>
+            <span class="session-value">{{ formatLastActive }}</span>
           </div>
-
-          <!-- Избранное -->
-          <div v-show="activeTab === 'favorites'" class="favorites-tab">
-            <div class="section-header">
-              <h3>⭐ Избранные места</h3>
-              <p>Ваши сохраненные бизнесы и места</p>
-            </div>
-
-            <!-- Список избранного -->
-            <div class="favorites-list">
-              <div v-if="favorites.length === 0" class="empty-state">
-                <div class="empty-icon">⭐</div>
-                <h4>Пока нет избранных мест</h4>
-                <p>Добавляйте бизнесы в избранное, чтобы легко находить их позже</p>
-                <button class="btn btn-primary" @click="exploreBusinesses">
-                  Найти бизнесы
-                </button>
-              </div>
-
-              <div v-else class="favorites-grid">
-                <div 
-                  v-for="favorite in favorites" 
-                  :key="favorite.id"
-                  class="favorite-card"
-                >
-                  <div class="favorite-image">
-                    <div class="image-placeholder">
-                      🏢
-                    </div>
-                    <button class="favorite-btn active" @click="removeFromFavorites(favorite.id)">
-                      ❤️
-                    </button>
-                  </div>
-                  
-                  <div class="favorite-content">
-                    <h4 class="favorite-name">{{ favorite.name }}</h4>
-                    <p class="favorite-category">{{ getCategoryName(favorite.category) }}</p>
-                    <p class="favorite-address">{{ favorite.address }}</p>
-                    
-                    <div class="favorite-meta">
-                      <div class="rating">
-                        <span class="rating-stars">⭐</span>
-                        <span class="rating-value">{{ favorite.rating || 'Нет' }}</span>
-                      </div>
-                    </div>
-
-                    <div class="favorite-actions">
-                      <button class="btn btn-small" @click="viewOnMap(favorite)">
-                        🗺️ На карте
-                      </button>
-                      <button class="btn btn-small btn-primary" @click="viewDetails(favorite)">
-                        👀 Подробнее
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Статистика пользователя -->
-          <div v-show="activeTab === 'stats'" class="stats-tab">
-            <div class="section-header">
-              <h3>📊 Моя статистика</h3>
-              <p>Ваша активность на платформе</p>
-            </div>
-
-            <!-- Основные метрики -->
-            <div class="metrics-grid">
-              <div class="metric-card primary">
-                <div class="metric-icon">⭐</div>
-                <div class="metric-content">
-                  <div class="metric-value">{{ userStats.totalFavorites || 0 }}</div>
-                  <div class="metric-label">Избранных мест</div>
-                </div>
-              </div>
-              <div class="metric-card success">
-                <div class="metric-icon">👁️</div>
-                <div class="metric-content">
-                  <div class="metric-value">{{ userStats.totalViews || 0 }}</div>
-                  <div class="metric-label">Просмотров</div>
-                </div>
-              </div>
-              <div class="metric-card warning">
-                <div class="metric-icon">💬</div>
-                <div class="metric-content">
-                  <div class="metric-value">{{ userStats.totalComments || 0 }}</div>
-                  <div class="metric-label">Комментариев</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Достижения -->
-            <div class="stat-section">
-              <h4>🏆 Достижения</h4>
-              <div class="achievements-grid">
-                <div 
-                  v-for="achievement in userStats.achievements" 
-                  :key="achievement.id"
-                  class="achievement-card"
-                  :class="{ unlocked: achievement.unlocked }"
-                >
-                  <div class="achievement-icon">{{ achievement.icon }}</div>
-                  <div class="achievement-content">
-                    <h5>{{ achievement.name }}</h5>
-                    <p>{{ achievement.description }}</p>
-                    <div v-if="achievement.unlocked" class="achievement-date">
-                      Получено {{ formatDate(achievement.unlockedAt) }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="session-item" v-if="user?.last_login">
+            <span class="session-label">Последний вход:</span>
+            <span class="session-value">{{ formatDate(user.last_login) }}</span>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Аватар загрузка -->
+    <input
+      ref="avatarInput"
+      type="file"
+      accept="image/*"
+      @change="handleAvatarChange"
+      style="display: none"
+    />
+
+    <!-- Модальные окна -->
+    <UnsavedChangesModal
+      :show="showUnsavedModal"
+      @confirm="confirmNavigation"
+      @cancel="cancelNavigation"
+    />
   </div>
 </template>
 
-<script>
-import { useUIStore } from '../stores/uiStore'
-import { useAuthStore } from '../stores/authStore'
-import { useProfileStore } from '../stores/profileStore'
-import { storeToRefs } from 'pinia'
-import { ref, computed, onMounted, reactive } from 'vue'
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useProfile } from '../composables/useProfile'
+import { formatDate, getRelativeTime } from '../utils/dateUtils'
 
-export default {
-  name: 'ProfilePanel',
-  setup() {
-    const uiStore = useUIStore()
-    const authStore = useAuthStore()
-    const profileStore = useProfileStore()
+// Компоненты профиля
+import ProfileEditTab from './profile/ProfileEditTab.vue'
+import ProfileStatsTab from './profile/ProfileStatsTab.vue'
+import ProfileFavoritesTab from './profile/ProfileFavoritesTab.vue'
+import ProfileNotifications from './profile/ProfileNotifications.vue'
+import ProfileSecurity from './profile/ProfileSecurity.vue'
+import UnsavedChangesModal from './profile/UnsavedChangesModal.vue'
+import LoadingSpinner from './shared/LoadingSpinner.vue'
 
-    const { closePanel, showNotification } = uiStore
-    const { initTelegramAuth, logout: authLogout } = authStore
-    const { updateUserProfile, getFavorites, removeFavorite, init } = profileStore
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    default: false
+  }
+})
 
-    const { isAuthenticated, user } = storeToRefs(authStore)
-    const { favorites, userStats } = storeToRefs(profileStore)
+const emit = defineEmits(['close'])
 
-    // State
-    const isLoading = ref(false)
-    const activeTab = ref('edit')
-    const isSubmitting = ref(false)
+const router = useRouter()
+const avatarInput = ref(null)
 
-    // Form data
-    const editForm = reactive({
-      first_name: '',
-      last_name: '',
-      username: '',
-      email: '',
-      bio: '',
-      city: '',
-      phone: '',
-      photo_url: '',
-      notifications: {
-        email: true,
-        news: true,
-        promotions: false
-      }
-    })
+// Используем композабл профиля
+const {
+  // State
+  isLoading,
+  isSubmitting,
+  activeTab,
+  formDirty,
+  validationErrors,
+  uploadProgress,
+  
+  // Computed
+  hasChanges,
+  isValidForm,
+  canSubmit,
+  isAuthenticated,
+  user,
+  favorites,
+  userStats,
+  
+  // Form
+  editForm,
+  
+  // Methods
+  validateField,
+  markFormDirty,
+  resetForm,
+  updateProfile,
+  handleAvatarUpload,
+  removeAvatar
+} = useProfile()
 
-    // Computed
-    const hasChanges = computed(() => {
-      if (!user.value) return false
-      
-      return editForm.first_name !== user.value.first_name ||
-             editForm.last_name !== user.value.last_name ||
-             editForm.username !== (user.value.username || '') ||
-             editForm.email !== (user.value.email || '') ||
-             editForm.bio !== (user.value.bio || '') ||
-             editForm.city !== (user.value.city || '') ||
-             editForm.phone !== (user.value.phone || '') ||
-             editForm.photo_url !== (user.value.photo_url || '')
-    })
+// Локальное состояние
+const showUnsavedModal = ref(false)
+const pendingAction = ref(null)
 
-    // Methods
-    const initAuth = () => {
-      initTelegramAuth()
-    }
+// Табы профиля
+const tabs = [
+  { id: 'edit', label: 'Профиль', icon: '👤' },
+  { id: 'favorites', label: 'Избранное', icon: '⭐' },
+  { id: 'stats', label: 'Статистика', icon: '📊' },
+  { id: 'notifications', label: 'Уведомления', icon: '🔔' },
+  { id: 'security', label: 'Безопасность', icon: '🔒' }
+]
 
-    const logout = () => {
-      if (confirm('Вы уверены, что хотите выйти?')) {
-        authLogout()
-        closePanel()
-        showNotification('Вы успешно вышли из аккаунта', 'success')
-      }
-    }
+// Computed
+const favoritesCount = computed(() => {
+  return favorites.value?.length || 0
+})
 
-    const getUserInitials = (user) => {
-      if (!user) return '👤'
-      const firstName = user.first_name || ''
-      const lastName = user.last_name || ''
-      return `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase() || '👤'
-    }
+const getUserInitials = computed(() => {
+  if (!user.value) return '?'
+  const first = user.value.first_name?.[0] || ''
+  const last = user.value.last_name?.[0] || ''
+  return (first + last).toUpperCase() || 'U'
+})
 
-    const formatJoinDate = (dateString) => {
-      if (!dateString) return 'недавно'
-      try {
-        return new Date(dateString).toLocaleDateString('ru-RU', {
-          year: 'numeric',
-          month: 'long'
-        })
-      } catch (e) {
-        return 'недавно'
-      }
-    }
+const formatLastActive = computed(() => {
+  if (!user.value?.last_active) return 'только что'
+  return getRelativeTime(user.value.last_active)
+})
 
-    const formatDate = (dateString) => {
-      if (!dateString) return ''
-      try {
-        return new Date(dateString).toLocaleDateString('ru-RU')
-      } catch (e) {
-        return ''
-      }
-    }
-
-    const formatUsername = () => {
-      editForm.username = editForm.username.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase()
-    }
-
-    const changeAvatar = () => {
-      showNotification('Функция смены аватара будет доступна в следующем обновлении', 'info')
-    }
-
-    const removeAvatar = () => {
-      editForm.photo_url = ''
-    }
-
-    const updateProfile = async () => {
-      if (!hasChanges.value || isSubmitting.value) return
-      
-      isSubmitting.value = true
-      try {
-        await updateUserProfile(editForm)
-        showNotification('Профиль успешно обновлен', 'success')
-      } catch (error) {
-        console.error('Error updating profile:', error)
-        showNotification('Ошибка при обновлении профиля', 'error')
-      } finally {
-        isSubmitting.value = false
-      }
-    }
-
-    const resetForm = () => {
-      if (!user.value) return
-      
-      Object.assign(editForm, {
-        first_name: user.value.first_name || '',
-        last_name: user.value.last_name || '',
-        username: user.value.username || '',
-        email: user.value.email || '',
-        bio: user.value.bio || '',
-        city: user.value.city || '',
-        phone: user.value.phone || '',
-        photo_url: user.value.photo_url || '',
-        notifications: user.value.notifications || {
-          email: true,
-          news: true,
-          promotions: false
-        }
-      })
-    }
-
-    const removeFromFavorites = async (favoriteId) => {
-      try {
-        await removeFavorite(favoriteId)
-        showNotification('Удалено из избранного', 'success')
-      } catch (error) {
-        showNotification('Ошибка при удалении из избранного', 'error')
-      }
-    }
-
-    const viewOnMap = (favorite) => {
-      showNotification(`Показать на карте: ${favorite.name}`, 'info')
-    }
-
-    const viewDetails = (favorite) => {
-      showNotification(`Подробности: ${favorite.name}`, 'info')
-    }
-
-    const exploreBusinesses = () => {
-      closePanel()
-      showNotification('Исследуйте бизнесы на карте', 'info')
-    }
-
-    const getCategoryName = (categoryId) => {
-      const categories = {
-        restaurant: 'Ресторан',
-        cafe: 'Кафе',
-        shop: 'Магазин',
-        service: 'Услуги'
-      }
-      return categories[categoryId] || 'Другое'
-    }
-
-    // Load user data
-    const loadUserData = () => {
-      if (isAuthenticated.value) {
-        resetForm()
-        init()
-      }
-    }
-
-    onMounted(() => {
-      loadUserData()
-    })
-
-    return {
-      // Stores
-      authStore,
-      profileStore,
-      
-      // State
-      isLoading,
-      activeTab,
-      editForm,
-      isSubmitting,
-      
-      // Computed
-      isAuthenticated,
-      user,
-      favorites,
-      userStats,
-      hasChanges,
-      
-      // Methods
-      closePanel,
-      initAuth,
-      logout,
-      updateProfile,
-      resetForm,
-      removeFromFavorites,
-      viewOnMap,
-      viewDetails,
-      exploreBusinesses,
-      getCategoryName,
-      getUserInitials,
-      formatJoinDate,
-      formatDate,
-      formatUsername,
-      changeAvatar,
-      removeAvatar
-    }
+// Методы
+const closePanel = () => {
+  if (hasChanges.value) {
+    showUnsavedModal.value = true
+    pendingAction.value = 'close'
+  } else {
+    emit('close')
   }
 }
+
+const switchTab = (tabId) => {
+  if (hasChanges.value && activeTab.value === 'edit') {
+    showUnsavedModal.value = true
+    pendingAction.value = { type: 'switch', tabId }
+  } else {
+    activeTab.value = tabId
+  }
+}
+
+const openAvatarUpload = () => {
+  avatarInput.value?.click()
+}
+
+const handleAvatarChange = async (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    try {
+      await handleAvatarUpload(file)
+    } catch (error) {
+      console.error('Ошибка загрузки аватара:', error)
+    }
+  }
+  event.target.value = ''
+}
+
+const redirectToLogin = () => {
+  router.push('/login')
+}
+
+const confirmNavigation = () => {
+  if (pendingAction.value === 'close') {
+    emit('close')
+  } else if (pendingAction.value?.type === 'switch') {
+    activeTab.value = pendingAction.value.tabId
+  }
+  showUnsavedModal.value = false
+  pendingAction.value = null
+}
+
+const cancelNavigation = () => {
+  showUnsavedModal.value = false
+  pendingAction.value = null
+}
+
+// Дополнительные методы (нужно реализовать)
+const removeFavorite = async (favoriteId) => {
+  console.log('Удалить избранное:', favoriteId)
+  // TODO: Реализовать удаление
+}
+
+const exportFavorites = (format) => {
+  console.log('Экспорт избранного в формате:', format)
+  // TODO: Реализовать экспорт
+}
+
+const exportStats = (format) => {
+  console.log('Экспорт статистики в формате:', format)
+  // TODO: Реализовать экспорт
+}
+
+const handlePasswordChange = async (passwordData) => {
+  console.log('Изменение пароля:', passwordData)
+  // TODO: Реализовать смену пароля
+}
+
+// Инициализация
+onMounted(() => {
+  // Можно загрузить начальные данные здесь
+})
 </script>
 
 <style scoped>
-/* Базовые стили */
 .side-panel {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
-  width: 100%;
-  max-width: 450px;
-  background: var(--bg-primary);
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+  width: 450px;
+  background: white;
+  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s ease;
 }
 
 .panel-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-primary);
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 
 .header-content {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 15px;
 }
 
 .back-button {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  color: var(--text-primary);
-  transition: all 0.3s ease;
+  transition: background 0.2s;
 }
 
 .back-button:hover {
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .panel-title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 10px;
 }
 
 .panel-content {
   flex: 1;
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: 20px;
 }
 
-/* Загрузка и состояния */
+/* Состояния */
 .loading-state,
-.auth-required,
-.empty-state {
+.auth-required {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
   text-align: center;
-  padding: 3rem 2rem;
-  color: var(--text-secondary);
 }
 
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-color);
-  border-top: 3px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
+.auth-required .auth-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  opacity: 0.7;
 }
 
-.loading-spinner-small {
-  width: 16px;
-  height: 16px;
-  border: 2px solid transparent;
-  border-top: 2px solid currentColor;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  display: inline-block;
-  margin-right: 8px;
+.auth-required h3 {
+  margin: 0 0 10px 0;
+  color: #1f2937;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.auth-required p {
+  color: #6b7280;
+  margin-bottom: 20px;
 }
 
-.auth-icon,
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-/* Шапка профиля */
-.profile-header {
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+/* Сводка профиля */
+.profile-summary {
+  margin-bottom: 30px;
+}
+
+.avatar-section {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  margin-bottom: 1.5rem;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
-.profile-avatar {
+.avatar {
+  position: relative;
   width: 80px;
   height: 80px;
   border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   overflow: hidden;
-  flex-shrink: 0;
+  cursor: pointer;
 }
 
-.profile-avatar img {
+.avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 .avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  background: var(--primary-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
   color: white;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
-.avatar-placeholder.large {
-  width: 120px;
-  height: 120px;
-  font-size: 2rem;
+.avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  color: white;
 }
 
-.profile-info {
+.avatar:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.user-info {
   flex: 1;
 }
 
 .user-name {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.3rem;
-  color: var(--text-primary);
+  margin: 0 0 5px 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
 }
 
 .user-username {
-  margin: 0 0 0.5rem 0;
-  color: var(--primary);
-  font-weight: 500;
+  margin: 0 0 5px 0;
+  color: #3b82f6;
+  font-size: 0.9rem;
 }
 
-.user-join-date {
+.user-email {
   margin: 0;
+  color: #6b7280;
   font-size: 0.9rem;
-  color: var(--text-secondary);
 }
 
-.logout-btn {
-  align-self: flex-start;
-}
-
-/* Вкладки */
-.tabs {
+/* Быстрые действия */
+.quick-actions {
   display: flex;
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  padding: 0.5rem;
-  margin-bottom: 1.5rem;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 10px;
 }
 
-.tab-btn {
-  flex: 1;
-  padding: 0.75rem 0.5rem;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  border-radius: 12px;
-  font-weight: 500;
-}
-
-.tab-btn.active {
-  background: var(--primary);
-  color: white;
-  box-shadow: var(--shadow-sm);
-}
-
-.tab-btn:hover:not(.active) {
-  background: var(--bg-tertiary);
-}
-
-/* Форма редактирования */
-.profile-form {
-  padding: 1rem 0;
-}
-
-.avatar-upload {
-  text-align: center;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-}
-
-.avatar-preview {
-  margin-bottom: 1rem;
-}
-
-.upload-actions {
+.action-btn {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group.full-width {
-  grid-column: 1 / -1;
-}
-
-.form-group label {
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.form-group input,
-.form-group textarea {
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  font-family: inherit;
+  color: #374151;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+.action-btn:hover {
+  background: #e5e7eb;
 }
 
-.input-hint {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-top: 0.25rem;
+.badge {
+  background: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 4px;
 }
 
-.char-counter {
-  text-align: right;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-top: 0.25rem;
-}
-
-/* Настройки уведомлений */
-.settings-section {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-}
-
-.settings-section h4 {
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-}
-
-.settings-list {
+/* Табы */
+.tabs-header {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  gap: 5px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f3f4f6;
 }
 
-.setting-item {
+.tab-button {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-}
-
-.setting-item input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.setting-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-.setting-icon {
-  font-size: 1.1rem;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
-}
-
-/* Избранное */
-.favorites-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.favorite-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.favorite-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.favorite-image {
-  position: relative;
-  height: 120px;
-  overflow: hidden;
-}
-
-.image-placeholder {
-  width: 100%;
-  height: 100%;
-  background: var(--bg-tertiary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-}
-
-.favorite-btn {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.9);
+  gap: 8px;
+  padding: 10px 15px;
+  background: none;
   border: none;
-  border-radius: 50%;
+  border-bottom: 2px solid transparent;
+  color: #6b7280;
+  font-size: 0.9rem;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
 }
 
-.favorite-btn.active {
-  background: #fecaca;
-  color: #dc2626;
+.tab-button:hover {
+  color: #374151;
 }
 
-.favorite-btn:hover {
-  transform: scale(1.1);
+.tab-button.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
 }
 
-.favorite-content {
-  padding: 1rem;
+.tab-content {
+  min-height: 300px;
 }
 
-.favorite-name {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  color: var(--text-primary);
+/* Контент табов */
+.edit-tab,
+.stats-tab,
+.favorites-tab,
+.notifications-tab,
+.security-tab {
+  animation: fadeIn 0.3s ease;
 }
 
-.favorite-category {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.9rem;
-  color: var(--primary);
-  font-weight: 500;
+/* Информация о сессии */
+.session-info {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #f3f4f6;
+  font-size: 0.85rem;
+  color: #6b7280;
 }
 
-.favorite-address {
-  margin: 0 0 1rem 0;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.favorite-meta {
+.session-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  margin-bottom: 8px;
 }
 
-.rating {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+.session-label {
+  font-weight: 500;
 }
 
-.favorite-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* Статистика */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.metric-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  border-radius: 16px;
-  color: white;
-}
-
-.metric-card.primary {
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
-}
-
-.metric-card.success {
-  background: linear-gradient(135deg, #10b981, #34d399);
-}
-
-.metric-card.warning {
-  background: linear-gradient(135deg, #f59e0b, #fbbf24);
-}
-
-.metric-icon {
-  font-size: 2rem;
-}
-
-.metric-value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  line-height: 1;
-  margin-bottom: 0.25rem;
-}
-
-.metric-label {
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-.stat-section {
-  padding: 1.5rem;
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-}
-
-.stat-section h4 {
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-}
-
-.achievements-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-.achievement-card {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  opacity: 0.6;
-  transition: all 0.3s ease;
-}
-
-.achievement-card.unlocked {
-  opacity: 1;
-  border-color: var(--primary);
-  background: var(--bg-secondary);
-}
-
-.achievement-icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
-
-.achievement-content {
-  flex: 1;
-}
-
-.achievement-content h5 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text-primary);
-}
-
-.achievement-content p {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.achievement-date {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-/* Кнопки */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-  text-decoration: none;
-  justify-content: center;
-  font-family: inherit;
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-secondary {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: var(--bg-secondary);
-  transform: translateY(-1px);
-}
-
-.btn-outline {
-  background: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.btn-outline:hover:not(:disabled) {
-  background: var(--bg-tertiary);
-}
-
-.btn-small {
-  padding: 0.5rem 0.75rem;
-  font-size: 0.8rem;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
   .side-panel {
-    max-width: 100%;
+    width: 100%;
   }
   
-  .profile-header {
-    flex-direction: column;
-    text-align: center;
+  .quick-actions {
+    flex-wrap: wrap;
   }
   
-  .logout-btn {
-    align-self: center;
+  .tabs-header {
+    overflow-x: auto;
+    padding-bottom: 5px;
   }
   
-  .form-grid {
-    grid-template-columns: 1fr;
+  .tab-label {
+    display: none;
   }
   
-  .tabs {
-    flex-direction: column;
-  }
-  
-  .form-actions {
-    flex-direction: column;
-  }
-  
-  .upload-actions {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 480px) {
-  .metrics-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .favorite-actions {
-    flex-direction: column;
+  .tab-button {
+    padding: 8px 12px;
   }
 }
 </style>
