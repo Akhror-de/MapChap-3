@@ -1,8 +1,8 @@
 <template>
-  <div class="side-panel modern-panel article-panel" v-if="article">
+  <div class="side-panel modern-panel">
     <div class="panel-header">
       <div class="header-content">
-        <button class="back-button" @click="closePanel">
+        <button class="back-button" @click="goBack">
           <span class="back-icon">←</span>
           <span class="back-text">Назад</span>
         </button>
@@ -13,438 +13,147 @@
       </div>
     </div>
 
-    <div class="panel-content">
-      <article class="article-full">
+    <div class="panel-content article-content">
+      <div v-if="article">
         <!-- Шапка статьи -->
-        <header class="article-header">
+        <div class="article-header">
           <div class="article-meta">
-            <div class="article-author">
-              <div class="author-avatar large">
-                <img v-if="article.author.photo_url" :src="article.author.photo_url" :alt="article.author.name" />
-                <span v-else>{{ getAuthorInitials(article.author) }}</span>
-              </div>
-              <div class="author-info">
-                <div class="author-main">
-                  <strong class="author-name">{{ article.author.name }}</strong>
-                  <span class="author-badge" :class="article.author.role">
-                    {{ getRoleDisplayName(article.author.role) }}
-                  </span>
-                </div>
-                <div class="article-dates">
-                  <span class="publish-date">Опубликовано {{ formatDate(article.created_at) }}</span>
-                  <span v-if="showUpdatedDate" class="update-date">
-                    • Обновлено {{ formatDate(article.updated_at) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="article-actions-header">
-              <button class="action-btn" @click="toggleLike" :class="{ liked: article.is_liked }">
-                <span class="action-icon">{{ article.is_liked ? '❤️' : '🤍' }}</span>
-                <span class="action-count">{{ article.likes_count || 0 }}</span>
-              </button>
-              <button class="action-btn" @click="toggleBookmark" :class="{ bookmarked: isBookmarked }">
-                <span class="action-icon">{{ isBookmarked ? '🔖' : '📑' }}</span>
-              </button>
-              <button class="action-btn" @click="shareArticle">
-                <span class="action-icon">🔗</span>
-              </button>
-            </div>
+            <span class="article-type" :class="article.author_type">
+              {{ getArticleTypeName(article.author_type) }}
+            </span>
+            <span class="article-date">{{ formatDate(article.created_at) }}</span>
+            <span class="article-read-time">🕑 {{ article.read_time || 3 }} мин</span>
           </div>
-
-          <h1 class="article-title">{{ article.title }}</h1>
           
-          <div class="article-excerpt" v-if="article.excerpt">
-            {{ article.excerpt }}
-          </div>
+          <h1 class="article-title">{{ article.title }}</h1>
+          <p class="article-excerpt">{{ article.excerpt }}</p>
 
-          <div class="article-stats-header">
-            <div class="stat-item">
+          <div class="article-author" v-if="article.author">
+            <div class="author-avatar">
+              <img v-if="article.author.avatar" :src="article.author.avatar" alt="" />
+              <span v-else>{{ article.author.name?.[0] || 'А' }}</span>
+            </div>
+            <div class="author-info">
+              <span class="author-name">{{ article.author.name }}</span>
+              <span class="author-role">{{ getRoleName(article.author.role) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Изображение -->
+        <div class="article-image" v-if="article.image">
+          <img :src="article.image" :alt="article.title" />
+        </div>
+
+        <!-- Содержание -->
+        <div class="article-body">
+          <div v-html="formattedContent"></div>
+        </div>
+
+        <!-- Теги -->
+        <div class="article-tags" v-if="article.tags && article.tags.length">
+          <span v-for="tag in article.tags" :key="tag" class="tag">
+            #{{ tag }}
+          </span>
+        </div>
+
+        <!-- Статистика и действия -->
+        <div class="article-actions">
+          <div class="article-stats">
+            <div class="stat">
               <span class="stat-icon">👁️</span>
-              <span class="stat-value">{{ formattedViews }}</span>
-              <span class="stat-label">просмотров</span>
+              <span class="stat-value">{{ article.views || 0 }}</span>
             </div>
-            <div class="stat-item">
+            <div class="stat">
               <span class="stat-icon">❤️</span>
-              <span class="stat-value">{{ article.likes_count || 0 }}</span>
-              <span class="stat-label">лайков</span>
+              <span class="stat-value">{{ article.likes || 0 }}</span>
             </div>
-            <div class="stat-item">
+            <div class="stat">
               <span class="stat-icon">💬</span>
               <span class="stat-value">{{ article.comments_count || 0 }}</span>
-              <span class="stat-label">комментариев</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-icon">⏱️</span>
-              <span class="stat-value">{{ article.reading_time || 5 }}</span>
-              <span class="stat-label">мин чтения</span>
             </div>
           </div>
 
-          <div class="article-tags" v-if="article.tags && article.tags.length > 0">
-            <span 
-              v-for="tag in article.tags" 
-              :key="tag"
-              class="tag"
-            >
-              #{{ tag }}
-            </span>
-          </div>
-
-          <div class="article-image" v-if="article.cover_image">
-            <img :src="article.cover_image" :alt="article.title" />
-            <div class="image-caption" v-if="article.image_caption">
-              {{ article.image_caption }}
-            </div>
-          </div>
-        </header>
-
-        <!-- Содержание статьи -->
-        <div class="article-content">
-          <div v-html="formatContent(article.content)"></div>
-        </div>
-
-        <!-- Действия под статьей -->
-        <footer class="article-actions-footer">
-          <div class="actions-main">
-            <button class="btn like-btn" @click="toggleLike" :class="{ liked: article.is_liked }">
-              <span class="btn-icon">{{ article.is_liked ? '❤️' : '🤍' }}</span>
-              <span class="btn-text">Нравится</span>
-              <span class="btn-count">{{ article.likes_count || 0 }}</span>
+          <div class="action-buttons">
+            <button class="action-btn" :class="{ liked: isLiked }" @click="toggleLike">
+              <span>{{ isLiked ? '❤️' : '🤍' }}</span>
+              {{ isLiked ? 'Нравится' : 'Нравится' }}
             </button>
-            
-            <button class="btn comment-btn" @click="scrollToComments">
-              <span class="btn-icon">💬</span>
-              <span class="btn-text">Комментировать</span>
-              <span class="btn-count">{{ article.comments_count || 0 }}</span>
-            </button>
-            
-            <button class="btn share-btn" @click="shareArticle">
-              <span class="btn-icon">🔗</span>
-              <span class="btn-text">Поделиться</span>
-            </button>
-            
-            <button class="btn bookmark-btn" @click="toggleBookmark" :class="{ bookmarked: isBookmarked }">
-              <span class="btn-icon">{{ isBookmarked ? '🔖' : '📑' }}</span>
-              <span class="btn-text">{{ isBookmarked ? 'В закладках' : 'В закладки' }}</span>
-            </button>
-          </div>
-        </footer>
-
-        <!-- Информация об авторе -->
-        <div class="author-card">
-          <div class="author-avatar large">
-            <img v-if="article.author.photo_url" :src="article.author.photo_url" :alt="article.author.name" />
-            <span v-else>{{ getAuthorInitials(article.author) }}</span>
-          </div>
-          <div class="author-details">
-            <h3 class="author-name">{{ article.author.name }}</h3>
-            <p class="author-role">{{ getRoleDescription(article.author.role) }}</p>
-            <p class="author-bio" v-if="article.author.bio">
-              {{ article.author.bio }}
-            </p>
-            <div class="author-stats">
-              <span class="author-stat">
-                <strong>{{ authorStats.articles || 0 }}</strong> статей
-              </span>
-              <span class="author-stat">
-                <strong>{{ authorStats.followers || 0 }}</strong> подписчиков
-              </span>
-              <span class="author-stat">
-                <strong>{{ authorStats.rating || 0 }}</strong> рейтинг
-              </span>
-            </div>
-            <button class="btn btn-outline follow-btn" @click="toggleFollow">
-              <span class="btn-icon">{{ isFollowing ? '✓' : '➕' }}</span>
-              <span class="btn-text">{{ isFollowing ? 'Вы подписаны' : 'Подписаться' }}</span>
+            <button class="action-btn" @click="shareArticle">
+              <span>🔗</span>
+              Поделиться
             </button>
           </div>
         </div>
+      </div>
 
-        <!-- Рекомендации -->
-        <div class="recommendations-section" v-if="relatedArticles.length > 0">
-          <h3>📚 Вам может понравиться</h3>
-          <div class="recommendations-grid">
-            <div 
-              v-for="related in relatedArticles" 
-              :key="related.id"
-              class="recommendation-card"
-              @click="readArticle(related)"
-            >
-              <div class="rec-category">{{ getCategoryName(related.category) }}</div>
-              <h4 class="rec-title">{{ related.title }}</h4>
-              <p class="rec-excerpt">{{ related.excerpt }}</p>
-              <div class="rec-meta">
-                <span class="rec-author">{{ related.author.name }}</span>
-                <span class="rec-date">{{ formatDate(related.created_at) }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Комментарии -->
-        <div class="comments-section">
-          <div class="comments-header">
-            <h3>💬 Комментарии ({{ article.comments_count || 0 }})</h3>
-            <button class="btn btn-primary" @click="focusCommentInput" v-if="authStore.isAuthenticated">
-              Написать комментарий
-            </button>
-            <button class="btn btn-outline" @click="initAuth" v-else>
-              Войти, чтобы комментировать
-            </button>
-          </div>
-
-          <!-- Форма комментария -->
-          <div class="comment-form" v-if="authStore.isAuthenticated">
-            <div class="comment-author">
-              <div class="author-avatar small">
-                <img v-if="authStore.user.photo_url" :src="authStore.user.photo_url" :alt="authStore.user.name" />
-                <span v-else>{{ getAuthorInitials(authStore.user) }}</span>
-              </div>
-              <div class="author-name">{{ authStore.user.first_name }} {{ authStore.user.last_name }}</div>
-            </div>
-            <div class="comment-input-container">
-              <textarea 
-                v-model="newComment"
-                placeholder="Напишите ваш комментарий..."
-                rows="3"
-                maxlength="1000"
-                ref="commentInput"
-                class="comment-input"
-              ></textarea>
-              <div class="comment-actions">
-                <div class="char-counter">{{ newComment.length }}/1000</div>
-                <button 
-                  class="btn btn-primary" 
-                  @click="addComment"
-                  :disabled="!canAddComment"
-                >
-                  Отправить
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Список комментариев -->
-          <div class="comments-list" v-if="comments.length > 0">
-            <div 
-              v-for="comment in comments" 
-              :key="comment.id"
-              class="comment-item"
-            >
-              <div class="comment-header">
-                <div class="comment-author">
-                  <div class="author-avatar small">
-                    <img v-if="comment.author.photo_url" :src="comment.author.photo_url" :alt="comment.author.name" />
-                    <span v-else>{{ getAuthorInitials(comment.author) }}</span>
-                  </div>
-                  <div class="author-info">
-                    <strong class="author-name">{{ comment.author.name }}</strong>
-                    <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
-                  </div>
-                </div>
-                <div class="comment-actions">
-                  <button 
-                    class="action-btn like-btn" 
-                    @click="handleToggleCommentLike(comment.id)"
-                    :class="{ liked: comment.is_liked }"
-                  >
-                    <span class="action-icon">{{ comment.is_liked ? '❤️' : '🤍' }}</span>
-                    <span class="action-count">{{ comment.likes_count || 0 }}</span>
-                  </button>
-                </div>
-              </div>
-              
-              <div class="comment-content">
-                {{ comment.content }}
-              </div>
-              
-              <div class="comment-footer">
-                <button class="reply-btn" @click="replyToComment(comment)">
-                  Ответить
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div v-else class="empty-comments">
-            <div class="empty-icon">💬</div>
-            <h4>Пока нет комментариев</h4>
-            <p>Будьте первым, кто оставит комментарий!</p>
-          </div>
-        </div>
-      </article>
+      <div v-else class="no-article">
+        <p>Статья не найдена</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { ref, computed } from 'vue'
 import { useUIStore } from '../stores/uiStore'
-import { useAuthStore } from '../stores/authStore'
-import { useBlogStore } from '../stores/blogStore'
-import { storeToRefs } from 'pinia'
-import { ref, computed, onMounted, nextTick } from 'vue'
 
 export default {
   name: 'ArticlePanel',
   props: {
     article: {
       type: Object,
-      required: true
+      default: null
     }
   },
   setup(props) {
     const uiStore = useUIStore()
-    const authStore = useAuthStore()
-    const blogStore = useBlogStore()
-    
-    const { isAuthenticated } = storeToRefs(authStore)
-    const { getCommentsByArticleId } = storeToRefs(blogStore)
-    
-    const { closePanel, showNotification, openArticle } = uiStore
-    const { initTelegramAuth } = authStore
-    const { 
-      incrementArticleViews, 
-      toggleArticleLike, 
-      addComment: addCommentToStore,
-      toggleCommentLike: toggleCommentLikeInStore, // Переименовано здесь
-      getRelatedArticles
-    } = blogStore
+    const { openPanel, showNotification } = uiStore
+    const isLiked = ref(false)
 
-    // State
-    const newComment = ref('')
-    const isBookmarked = ref(false)
-    const isFollowing = ref(false)
-    const commentInput = ref(null)
+    const goBack = () => {
+      openPanel('blog')
+    }
 
-    // Computed
-    const comments = computed(() => {
-      return getCommentsByArticleId.value(props.article.id) || []
-    })
-    
-    const showUpdatedDate = computed(() => {
-      return props.article.updated_at && 
-             props.article.updated_at !== props.article.created_at &&
-             new Date(props.article.updated_at) > new Date(props.article.created_at)
+    const formattedContent = computed(() => {
+      if (!props.article?.content) return ''
+      // Простая разбивка на абзацы
+      return props.article.content
+        .split('\n\n')
+        .map(p => `<p>${p}</p>`)
+        .join('')
     })
 
-    const formattedViews = computed(() => {
-      const views = props.article.views_count || 0
-      if (views >= 1000) {
-        return (views / 1000).toFixed(1) + 'k'
+    const getArticleTypeName = (type) => {
+      const names = { 
+        developer: 'От разработчиков', 
+        business: 'От бизнеса', 
+        user: 'От пользователя' 
       }
-      return views.toString()
-    })
+      return names[type] || 'Статья'
+    }
 
-    const canAddComment = computed(() => {
-      return newComment.value.trim().length > 0 && 
-             newComment.value.length <= 1000
-    })
-
-    const authorStats = computed(() => {
-      return props.article.author?.stats || {
-        articles: 0,
-        followers: 0,
-        rating: 0
+    const getRoleName = (role) => {
+      const roles = {
+        business_owner: 'Бизнес',
+        user: 'Пользователь',
+        admin: 'Администратор'
       }
-    })
+      return roles[role] || 'Автор'
+    }
 
-    const relatedArticles = computed(() => {
-      return getRelatedArticles(props.article.id) || []
-    })
-
-    // Methods
     const formatDate = (dateString) => {
-      if (!dateString) return 'недавно'
+      if (!dateString) return ''
       return new Date(dateString).toLocaleDateString('ru-RU', {
-        year: 'numeric',
+        day: 'numeric',
         month: 'long',
-        day: 'numeric'
+        year: 'numeric'
       })
     }
 
-    const formatContent = (content) => {
-      if (!content) return ''
-      // Простое форматирование текста в HTML
-      return content
-        .replace(/\n/g, '<br>')
-        .replace(/^# (.*$)/gim, '<h2>$1</h2>')
-        .replace(/^## (.*$)/gim, '<h3>$1</h3>')
-        .replace(/^### (.*$)/gim, '<h4>$1</h4>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/^- (.*$)/gim, '<li>$1</li>')
-        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-    }
-
-    const getAuthorInitials = (author) => {
-      if (!author) return '👤'
-      const name = author.name || ''
-      const parts = name.split(' ')
-      if (parts.length >= 2) {
-        return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
-      }
-      return name[0]?.toUpperCase() || '👤'
-    }
-
-    const getRoleDisplayName = (role) => {
-      const roles = {
-        founder: '👑 Основатель',
-        admin: '👑 Администратор',
-        moderator: '🛡️ Модератор',
-        author: '✍️ Автор',
-        user: '👥 Пользователь'
-      }
-      return roles[role] || '👤 Автор'
-    }
-
-    const getRoleDescription = (role) => {
-      const descriptions = {
-        founder: 'Основатель платформы MapChap',
-        admin: 'Администратор платформы',
-        moderator: 'Модератор сообщества',
-        author: 'Автор контента',
-        user: 'Активный участник сообщества'
-      }
-      return descriptions[role] || 'Автор сообщества'
-    }
-
-    const getCategoryName = (categoryId) => {
-      const category = blogStore.categories.find(cat => cat.id === categoryId)
-      return category ? category.name : 'Другое'
-    }
-
     const toggleLike = () => {
-      if (!isAuthenticated.value) {
-        showNotification('Войдите в аккаунт, чтобы ставить лайки', 'info')
-        return
-      }
-      toggleArticleLike(props.article.id)
-    }
-
-    const toggleBookmark = () => {
-      if (!isAuthenticated.value) {
-        showNotification('Войдите в аккаунт, чтобы добавлять в закладки', 'info')
-        return
-      }
-      isBookmarked.value = !isBookmarked.value
-      showNotification(
-        isBookmarked.value ? 'Статья добавлена в закладки' : 'Статья удалена из закладок',
-        'success'
-      )
-    }
-
-    const toggleFollow = () => {
-      if (!isAuthenticated.value) {
-        showNotification('Войдите в аккаунт, чтобы подписываться на авторов', 'info')
-        return
-      }
-      isFollowing.value = !isFollowing.value
-      showNotification(
-        isFollowing.value ? 'Вы подписались на автора' : 'Вы отписались от автора',
-        'success'
-      )
+      isLiked.value = !isLiked.value
+      showNotification(isLiked.value ? 'Добавлено в понравившиеся' : 'Удалено из понравившихся', 'success')
     }
 
     const shareArticle = () => {
@@ -452,908 +161,229 @@ export default {
         navigator.share({
           title: props.article.title,
           text: props.article.excerpt,
-          url: window.location.href + `?article=${props.article.id}`
-        }).catch(() => {
-          copyToClipboard()
+          url: window.location.href
         })
       } else {
-        copyToClipboard()
+        navigator.clipboard.writeText(window.location.href)
+        showNotification('Ссылка скопирована', 'success')
       }
     }
-
-    const copyToClipboard = () => {
-      const url = window.location.href + `?article=${props.article.id}`
-      navigator.clipboard.writeText(url)
-      showNotification('Ссылка скопирована в буфер обмена', 'success')
-    }
-
-    const scrollToComments = () => {
-      const commentsSection = document.querySelector('.comments-section')
-      if (commentsSection) {
-        commentsSection.scrollIntoView({ behavior: 'smooth' })
-      }
-    }
-
-    const focusCommentInput = () => {
-      if (commentInput.value) {
-        commentInput.value.focus()
-      }
-    }
-
-    const addComment = async () => {
-      if (!canAddComment.value) return
-
-      try {
-        await addCommentToStore(props.article.id, newComment.value)
-        newComment.value = ''
-        showNotification('Комментарий добавлен', 'success')
-      } catch (error) {
-        showNotification('Ошибка при добавлении комментария', 'error')
-      }
-    }
-
-    // Исправленная функция - переименована чтобы избежать конфликта
-    const handleToggleCommentLike = (commentId) => {
-      if (!isAuthenticated.value) {
-        showNotification('Войдите в аккаунт, чтобы ставить лайки', 'info')
-        return
-      }
-      toggleCommentLikeInStore(commentId)
-    }
-
-    const replyToComment = (comment) => {
-      newComment.value = `@${comment.author.name}, `
-      focusCommentInput()
-    }
-
-    const readArticle = (article) => {
-      openArticle(article)
-    }
-
-    const initAuth = () => {
-      initTelegramAuth()
-    }
-
-    // Увеличиваем счетчик просмотров при открытии
-    onMounted(() => {
-      incrementArticleViews(props.article.id)
-    })
 
     return {
-      // Stores
-      authStore,
-      
-      // State
-      newComment,
-      isBookmarked,
-      isFollowing,
-      commentInput,
-      
-      // Computed
-      isAuthenticated,
-      comments,
-      showUpdatedDate,
-      formattedViews,
-      canAddComment,
-      authorStats,
-      relatedArticles,
-      
-      // Methods
-      closePanel,
+      isLiked,
+      formattedContent,
+      goBack,
+      getArticleTypeName,
+      getRoleName,
       formatDate,
-      formatContent,
-      getAuthorInitials,
-      getRoleDisplayName,
-      getRoleDescription,
-      getCategoryName,
       toggleLike,
-      toggleBookmark,
-      toggleFollow,
-      shareArticle,
-      scrollToComments,
-      focusCommentInput,
-      addComment,
-      handleToggleCommentLike, // Исправленное имя
-      replyToComment,
-      readArticle,
-      initAuth
+      shareArticle
     }
   }
 }
 </script>
 
 <style scoped>
-.article-panel {
-  max-width: 800px;
-}
-
-.article-full {
+.article-content {
   padding: 0;
 }
 
-/* Шапка статьи */
 .article-header {
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 2rem;
+  padding: 0 20px 20px;
 }
 
 .article-meta {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.5rem;
+  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
-  gap: 1rem;
+  margin-bottom: 16px;
+}
+
+.article-type {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.article-type.developer {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.article-type.business {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.article-type.user {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.article-date,
+.article-read-time {
+  font-size: 13px;
+  color: var(--tg-hint-color);
+}
+
+.article-title {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.article-excerpt {
+  margin: 0 0 20px 0;
+  font-size: 16px;
+  color: var(--tg-hint-color);
+  line-height: 1.5;
 }
 
 .article-author {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  flex: 1;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--tg-secondary-bg-color);
+  border-radius: 12px;
 }
 
-.author-avatar.large {
-  width: 60px;
-  height: 60px;
-  background: var(--primary-gradient);
+.author-avatar {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
+  background: var(--tg-button-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  flex-shrink: 0;
   overflow: hidden;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
 }
 
-.author-avatar.large img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.author-avatar.small {
-  width: 32px;
-  height: 32px;
-  background: var(--primary-gradient);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.author-avatar.small img {
+.author-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 .author-info {
-  flex: 1;
-}
-
-.author-main {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
+  flex-direction: column;
 }
 
 .author-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.author-badge {
-  padding: 0.3rem 0.75rem;
-  border-radius: 16px;
-  font-size: 0.75rem;
+  font-size: 15px;
   font-weight: 600;
 }
 
-.author-badge.founder, .author-badge.admin {
-  background: linear-gradient(135deg, #ffd700, #ffed4e);
-  color: #000;
+.author-role {
+  font-size: 13px;
+  color: var(--tg-hint-color);
 }
 
-.author-badge.moderator {
-  background: linear-gradient(135deg, #10b981, #34d399);
-  color: white;
+.article-image {
+  margin: 20px 0;
 }
 
-.author-badge.author {
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
-  color: white;
+.article-image img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 0;
 }
 
-.author-badge.user {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+.article-body {
+  padding: 0 20px;
+  font-size: 16px;
+  line-height: 1.7;
 }
 
-.article-dates {
-  display: flex;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  flex-wrap: wrap;
-}
-
-.article-actions-header {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-}
-
-.action-btn:hover {
-  background: var(--bg-secondary);
-  transform: translateY(-1px);
-}
-
-.action-btn.liked {
-  background: #fecaca;
-  color: #dc2626;
-  border-color: #fecaca;
-}
-
-.action-btn.bookmarked {
-  background: #fef3c7;
-  color: #d97706;
-  border-color: #fef3c7;
-}
-
-.action-icon {
-  font-size: 1rem;
-}
-
-.action-count {
-  font-weight: 600;
-}
-
-.article-title {
-  font-size: 2rem;
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-  line-height: 1.2;
-  font-weight: 700;
-}
-
-.article-excerpt {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-  font-style: italic;
-}
-
-.article-stats-header {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-icon {
-  font-size: 1.25rem;
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.stat-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--primary);
-  display: block;
-  line-height: 1;
-  margin-bottom: 0.25rem;
-}
-
-.stat-label {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.article-body :deep(p) {
+  margin: 0 0 16px 0;
 }
 
 .article-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  gap: 8px;
+  padding: 20px;
 }
 
 .tag {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-}
-
-.tag:hover {
-  background: var(--primary);
-  color: white;
-  transform: translateY(-1px);
-}
-
-.article-image {
-  width: 100%;
+  padding: 6px 12px;
+  background: var(--tg-secondary-bg-color);
   border-radius: 16px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-}
-
-.article-image img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.image-caption {
-  text-align: center;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  font-style: italic;
-  margin-top: 0.5rem;
-  padding: 0 1rem;
-}
-
-/* Содержание статьи */
-.article-content {
-  padding: 2rem 0;
-  line-height: 1.8;
-  color: var(--text-primary);
-  font-size: 1.1rem;
-}
-
-.article-content :deep(h2) {
-  font-size: 1.8rem;
-  margin: 2.5rem 0 1.5rem 0;
-  color: var(--text-primary);
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.article-content :deep(h3) {
-  font-size: 1.5rem;
-  margin: 2rem 0 1rem 0;
-  color: var(--text-primary);
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.article-content :deep(h4) {
-  font-size: 1.25rem;
-  margin: 1.5rem 0 0.75rem 0;
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.article-content :deep(strong) {
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.article-content :deep(em) {
-  font-style: italic;
-}
-
-.article-content :deep(ul) {
-  margin: 1rem 0;
-  padding-left: 2rem;
-}
-
-.article-content :deep(li) {
-  margin-bottom: 0.5rem;
-  position: relative;
-}
-
-.article-content :deep(li::before) {
-  content: '•';
-  color: var(--primary);
-  font-weight: bold;
-  position: absolute;
-  left: -1rem;
-}
-
-.article-content :deep(br) {
-  content: '';
-  display: block;
-  margin-bottom: 0.75rem;
-}
-
-/* Действия под статьей */
-.article-actions-footer {
-  padding: 2rem 0;
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
-  margin: 2rem 0;
-}
-
-.actions-main {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.btn {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  font-size: 1rem;
-  justify-content: center;
-  text-decoration: none;
-}
-
-.like-btn {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.like-btn:hover {
-  background: var(--bg-secondary);
-  transform: translateY(-2px);
-}
-
-.like-btn.liked {
-  background: #fecaca;
-  color: #dc2626;
-  border-color: #fecaca;
-}
-
-.comment-btn, .share-btn, .bookmark-btn {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.comment-btn:hover, .share-btn:hover, .bookmark-btn:hover {
-  background: var(--bg-secondary);
-  transform: translateY(-2px);
-}
-
-.bookmark-btn.bookmarked {
-  background: #fef3c7;
-  color: #d97706;
-  border-color: #fef3c7;
-}
-
-.btn-icon {
-  font-size: 1.25rem;
-}
-
-.btn-text {
-  flex: 1;
-  text-align: center;
-}
-
-.btn-count {
-  background: rgba(255, 255, 255, 0.3);
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-/* Информация об авторе */
-.author-card {
-  display: flex;
-  gap: 1.5rem;
-  padding: 2rem;
-  background: var(--bg-secondary);
-  border-radius: 20px;
-  border: 1px solid var(--border-color);
-  margin: 2rem 0;
-}
-
-.author-details {
-  flex: 1;
-}
-
-.author-details .author-name {
-  font-size: 1.3rem;
-  margin: 0 0 0.5rem 0;
-}
-
-.author-role {
-  color: var(--primary);
-  font-weight: 600;
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
-}
-
-.author-bio {
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-}
-
-.author-stats {
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.author-stat {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.author-stat strong {
-  color: var(--text-primary);
-  font-size: 1.1rem;
-}
-
-.follow-btn {
-  align-self: flex-start;
-}
-
-/* Рекомендации */
-.recommendations-section {
-  margin: 3rem 0;
-}
-
-.recommendations-section h3 {
-  font-size: 1.5rem;
-  margin: 0 0 1.5rem 0;
-  color: var(--text-primary);
-}
-
-.recommendations-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
-
-.recommendation-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 1.5rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.recommendation-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
-.rec-category {
-  background: var(--primary);
-  color: white;
-  padding: 0.4rem 0.8rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  display: inline-block;
-  margin-bottom: 1rem;
-}
-
-.rec-title {
-  font-size: 1.1rem;
-  margin: 0 0 0.75rem 0;
-  color: var(--text-primary);
-  line-height: 1.3;
-}
-
-.rec-excerpt {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin-bottom: 1rem;
-}
-
-.rec-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-/* Комментарии */
-.comments-section {
-  margin: 3rem 0;
-}
-
-.comments-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.comments-header h3 {
-  font-size: 1.5rem;
-  margin: 0;
-  color: var(--text-primary);
-}
-
-.comment-form {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.comment-author {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.comment-author .author-name {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.comment-input-container {
-  position: relative;
-}
-
-.comment-input {
-  width: 100%;
-  padding: 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  resize: vertical;
-  min-height: 80px;
-  transition: all 0.3s ease;
-}
-
-.comment-input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.comment-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.75rem;
-}
-
-.char-counter {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.comments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.comment-item {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 1.5rem;
-}
-
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.comment-author {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0;
-}
-
-.comment-author .author-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.comment-author .author-name {
-  font-size: 0.9rem;
-  margin-bottom: 0.25rem;
-}
-
-.comment-date {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.comment-actions .action-btn {
-  padding: 0.4rem 0.75rem;
-  font-size: 0.8rem;
-}
-
-.comment-content {
-  color: var(--text-primary);
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
-.comment-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.reply-btn {
-  background: none;
-  border: none;
-  color: var(--primary);
-  cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 13px;
+  color: var(--tg-button-color);
   font-weight: 500;
-  transition: all 0.3s ease;
 }
 
-.reply-btn:hover {
-  color: var(--primary-dark);
-  text-decoration: underline;
+.article-actions {
+  padding: 20px;
+  border-top: 1px solid var(--tg-border-color);
+  margin-top: 20px;
 }
 
-.empty-comments {
+.article-stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-icon {
+  font-size: 18px;
+}
+
+.stat-value {
+  font-size: 14px;
+  color: var(--tg-hint-color);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--tg-border-color);
+  background: var(--tg-bg-color);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: var(--tg-secondary-bg-color);
+}
+
+.action-btn.liked {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.no-article {
   text-align: center;
-  padding: 3rem 2rem;
-  color: var(--text-secondary);
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-}
-
-.empty-comments h4 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text-primary);
-}
-
-/* Кнопки */
-.btn-primary {
-  background: var(--primary);
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-outline {
-  background: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.btn-outline:hover {
-  background: var(--bg-tertiary);
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .article-panel {
-    max-width: 100%;
-  }
-  
-  .article-meta {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .article-actions-header {
-    width: 100%;
-    justify-content: flex-end;
-  }
-  
-  .article-title {
-    font-size: 1.6rem;
-  }
-  
-  .article-stats-header {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .actions-main {
-    grid-template-columns: 1fr;
-  }
-  
-  .author-card {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .author-stats {
-    justify-content: center;
-  }
-  
-  .recommendations-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .comments-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-@media (max-width: 480px) {
-  .article-title {
-    font-size: 1.4rem;
-  }
-  
-  .article-stats-header {
-    grid-template-columns: 1fr;
-  }
-  
-  .author-stats {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  
-  .comment-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .comment-actions {
-    align-self: flex-end;
-  }
+  padding: 40px 20px;
+  color: var(--tg-hint-color);
 }
 </style>
