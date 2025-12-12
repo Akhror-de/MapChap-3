@@ -24,6 +24,13 @@
       <!-- Профессиональный хедер в стиле Telegram -->
       <header class="app-header">
         <div class="header-content">
+          <!-- Левые кнопки -->
+          <div class="header-left">
+            <button class="header-action-btn menu-btn" @click="openPanel('business')" title="Бизнес-панель">
+              <span class="action-icon">💼</span>
+            </button>
+          </div>
+          
           <!-- Логотип по центру -->
           <div class="logo">
             <h1>🗺️ MapChap</h1>
@@ -31,16 +38,17 @@
           
           <!-- Кнопки действий справа -->
           <div class="header-actions">
-            <button class="header-action-btn" @click="openPanel('business')" title="Бизнес-панель">
-              <span class="action-icon">💼</span>
-            </button>
-            
             <button class="header-action-btn" @click="openPanel('blog')" title="Блог">
               <span class="action-icon">📝</span>
             </button>
             
-            <button class="header-action-btn" @click="openPanel('profile')" title="Профиль">
-              <span class="action-icon">👤</span>
+            <button class="header-action-btn" @click="openPanel('about')" title="О приложении">
+              <span class="action-icon">ℹ️</span>
+            </button>
+            
+            <button class="header-action-btn profile-btn" @click="openPanel('profile')" title="Профиль">
+              <img v-if="userPhotoUrl" :src="userPhotoUrl" class="profile-avatar" alt="Профиль" />
+              <span v-else class="action-icon">👤</span>
             </button>
           </div>
         </div>
@@ -82,7 +90,7 @@
             </div>
           </div>
           
-          <!-- Быстрые категории -->
+          <!-- Быстрые категории с кастомными значками -->
           <div class="categories-section">
             <div class="categories-scroll">
               <button
@@ -90,6 +98,7 @@
                 :key="category.id"
                 class="category-btn"
                 :class="{ active: selectedCategory === category.id }"
+                :style="{ '--category-color': category.color }"
                 @click="selectCategory(category.id)"
               >
                 <span class="category-icon">{{ category.icon }}</span>
@@ -146,26 +155,32 @@ export default {
 
     // Store refs
     const { activePanel, currentArticle, notification } = storeToRefs(uiStore)
-    const { isAuthenticated } = storeToRefs(authStore)
+    const { isAuthenticated, user } = storeToRefs(authStore)
 
     // Store actions
     const { openPanel, closePanel, showNotification } = uiStore
     const { setSelectedCategory, setSearchQuery, searchByAddress, setUserLocation } = offersStore
 
+    // Фото пользователя
+    const userPhotoUrl = computed(() => user.value?.photo_url || '')
+
     // Инициализация при загрузке
     onMounted(() => {
       console.log('🚀 App mounted')
-      authStore.checkAuth()
+      authStore.initTelegramAuth()
       offersStore.fetchOffers()
     })
 
+    // Категории с кастомными цветами
     const quickCategories = [
-      { id: 'all', name: 'Все', icon: '🗺️' },
-      { id: 'food', name: 'Еда', icon: '🍕' },
-      { id: 'shopping', name: 'Магазины', icon: '🛍️' },
-      { id: 'beauty', name: 'Красота', icon: '💄' },
-      { id: 'services', name: 'Услуги', icon: '🔧' },
-      { id: 'medical', name: 'Медицина', icon: '⚕️' }
+      { id: 'all', name: 'Все', icon: '🗺️', color: '#667eea' },
+      { id: 'food', name: 'Еда', icon: '🍕', color: '#FF6B6B' },
+      { id: 'shopping', name: 'Магазины', icon: '🛍️', color: '#4ECDC4' },
+      { id: 'beauty', name: 'Красота', icon: '💄', color: '#FFD166' },
+      { id: 'services', name: 'Услуги', icon: '🔧', color: '#06D6A0' },
+      { id: 'medical', name: 'Медицина', icon: '⚕️', color: '#118AB2' },
+      { id: 'pharmacy', name: 'Аптеки', icon: '💊', color: '#EF476F' },
+      { id: 'entertainment', name: 'Развлечения', icon: '🎭', color: '#7209B7' }
     ]
 
     const selectedCategory = computed(() => offersStore.selectedCategory)
@@ -189,6 +204,17 @@ export default {
       try {
         const location = await getCurrentLocation()
         setUserLocation(location)
+        
+        // Отправляем локацию на сервер для уведомлений
+        if (authStore.isAuthenticated && user.value?.telegram_id) {
+          try {
+            const { apiService } = await import('./services/api.js')
+            await apiService.updateLocation(user.value.telegram_id, location.latitude, location.longitude)
+          } catch (e) {
+            console.log('Location update skipped:', e)
+          }
+        }
+        
         showNotification(`Местоположение получено!`, 'success')
       } catch (error) {
         console.error('Ошибка получения местоположения:', error)
@@ -204,7 +230,9 @@ export default {
       currentArticle,
       notification,
       isAuthenticated,
+      userPhotoUrl,
       isTelegram,
+      themeClass,
       openPanel,
       closePanel,
       selectCategory,
@@ -218,7 +246,6 @@ export default {
 <style>
 /* Telegram-стили CSS переменные */
 :root {
-  /* Основные цвета Telegram */
   --tg-bg-color: #ffffff;
   --tg-text-color: #000000;
   --tg-hint-color: #707579;
@@ -228,18 +255,12 @@ export default {
   --tg-secondary-bg-color: #f1f1f1;
   --tg-section-bg-color: #ffffff;
   --tg-border-color: #e5e5e5;
-  
-  /* Дополнительные цвета */
   --tg-success-color: #34c759;
   --tg-warning-color: #ff9500;
   --tg-error-color: #ff3b30;
-  
-  /* Тени */
   --tg-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.1);
   --tg-shadow-2: 0 2px 6px rgba(0, 0, 0, 0.1);
   --tg-shadow-3: 0 4px 12px rgba(0, 0, 0, 0.1);
-  
-  /* Скругления */
   --tg-border-radius-small: 8px;
   --tg-border-radius-medium: 12px;
   --tg-border-radius-large: 16px;
@@ -258,7 +279,6 @@ export default {
   --tg-border-color: #3d3d3f;
 }
 
-/* Базовые стили */
 * {
   margin: 0;
   padding: 0;
@@ -280,7 +300,6 @@ body {
   position: relative;
 }
 
-/* Overlay для панелей */
 .panel-overlay {
   position: fixed;
   top: 0;
@@ -293,13 +312,12 @@ body {
   animation: fadeIn 0.2s ease;
 }
 
-/* Панели */
 .side-panels {
   position: fixed;
   top: 0;
   right: 0;
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   height: 100vh;
   z-index: 1001;
   pointer-events: none;
@@ -314,7 +332,6 @@ body {
   transition: filter 0.3s ease;
 }
 
-/* Профессиональный хедер в стиле Telegram */
 .app-header {
   background: var(--tg-section-bg-color);
   border-bottom: 0.5px solid var(--tg-border-color);
@@ -332,6 +349,11 @@ body {
   justify-content: space-between;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.header-left {
+  display: flex;
+  gap: 8px;
 }
 
 .logo h1 {
@@ -358,6 +380,7 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   color: var(--tg-text-color);
+  overflow: hidden;
 }
 
 .header-action-btn:hover {
@@ -369,7 +392,26 @@ body {
   font-size: 20px;
 }
 
-/* Уведомления в стиле Telegram */
+.profile-btn {
+  padding: 0;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--tg-border-radius-medium);
+}
+
+.menu-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.menu-btn:hover {
+  background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+}
+
 .notification {
   position: fixed;
   top: 80px;
@@ -403,19 +445,10 @@ body {
   color: var(--tg-text-color);
 }
 
-.notification.success {
-  border-left: 4px solid var(--tg-success-color);
-}
+.notification.success { border-left: 4px solid var(--tg-success-color); }
+.notification.error { border-left: 4px solid var(--tg-error-color); }
+.notification.info { border-left: 4px solid var(--tg-button-color); }
 
-.notification.error {
-  border-left: 4px solid var(--tg-error-color);
-}
-
-.notification.info {
-  border-left: 4px solid var(--tg-button-color);
-}
-
-/* Основной контент */
 .app-main {
   flex: 1;
   position: relative;
@@ -424,11 +457,10 @@ body {
 
 .map-container {
   width: 100%;
-  height: calc(100vh - 68px); /* Высота минус хедер */
+  height: calc(100vh - 68px);
   position: relative;
 }
 
-/* Плавающие контролы в стиле Telegram */
 .floating-controls {
   position: fixed;
   top: 80px;
@@ -440,7 +472,6 @@ body {
   gap: 12px;
 }
 
-/* Поиск */
 .search-section {
   width: 100%;
 }
@@ -487,7 +518,6 @@ body {
   font-size: 18px;
 }
 
-/* Категории */
 .categories-section {
   width: 100%;
   overflow-x: auto;
@@ -526,9 +556,9 @@ body {
 }
 
 .category-btn.active {
-  background: var(--tg-button-color);
+  background: var(--category-color, var(--tg-button-color));
   color: var(--tg-button-text-color);
-  border-color: var(--tg-button-color);
+  border-color: var(--category-color, var(--tg-button-color));
 }
 
 .category-icon {
@@ -539,7 +569,6 @@ body {
   font-weight: 500;
 }
 
-/* Кнопка местоположения */
 .location-btn {
   position: fixed;
   bottom: 24px;
@@ -569,7 +598,6 @@ body {
   box-shadow: var(--tg-shadow-3);
 }
 
-/* Анимации */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -586,7 +614,6 @@ body {
   }
 }
 
-/* Скрываем scrollbar для категорий */
 .categories-scroll::-webkit-scrollbar {
   display: none;
 }
@@ -596,7 +623,6 @@ body {
   scrollbar-width: none;
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
   .floating-controls {
     left: 12px;
@@ -643,7 +669,6 @@ body {
   }
 }
 
-/* Улучшенная прокрутка для вебкитов */
 ::-webkit-scrollbar {
   width: 4px;
 }
