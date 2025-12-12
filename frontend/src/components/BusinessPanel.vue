@@ -30,43 +30,180 @@
         </button>
       </div>
 
-      <!-- Не бизнес-аккаунт -->
-      <div v-else-if="!authStore.isBusinessOwner" class="upgrade-required">
-        <div class="upgrade-icon">🚀</div>
-        <h3>Станьте партнером MapChap</h3>
-        <p>Подключите бизнес-аккаунт для размещения объявлений и управления компанией</p>
-        
+      <!-- Не бизнес-аккаунт - показываем верификацию -->
+      <div v-else-if="!authStore.isBusinessOwner" class="verification-section">
+        <div class="verification-header">
+          <div class="upgrade-icon">🚀</div>
+          <h3>Станьте партнером MapChap</h3>
+          <p>Подключите бизнес-аккаунт для размещения объявлений</p>
+        </div>
+
+        <!-- Выбор способа верификации -->
+        <div class="verification-tabs">
+          <button 
+            class="verification-tab"
+            :class="{ active: verificationMethod === 'inn' }"
+            @click="verificationMethod = 'inn'"
+          >
+            <span class="tab-icon">🏢</span>
+            <span class="tab-label">По ИНН</span>
+          </button>
+          <button 
+            class="verification-tab"
+            :class="{ active: verificationMethod === 'manual' }"
+            @click="verificationMethod = 'manual'"
+          >
+            <span class="tab-icon">📝</span>
+            <span class="tab-label">Вручную</span>
+          </button>
+        </div>
+
+        <!-- Верификация по ИНН -->
+        <div v-if="verificationMethod === 'inn'" class="verification-form">
+          <div class="form-section">
+            <h4>🏢 Верификация по ИНН</h4>
+            <p class="form-description">
+              Введите ИНН вашей компании для автоматической проверки через DaData
+            </p>
+            
+            <div class="form-group">
+              <label>ИНН компании *</label>
+              <input 
+                v-model="innForm.inn"
+                type="text" 
+                placeholder="10 или 12 цифр"
+                maxlength="12"
+                @input="validateINN"
+              >
+              <span v-if="innError" class="field-error">{{ innError }}</span>
+            </div>
+
+            <!-- Результат проверки -->
+            <div v-if="innVerificationResult" class="verification-result" :class="{ success: innVerificationResult.success }">
+              <div v-if="innVerificationResult.success" class="result-success">
+                <span class="result-icon">✅</span>
+                <div class="result-content">
+                  <h5>{{ innVerificationResult.verification.name }}</h5>
+                  <p>ИНН: {{ innVerificationResult.verification.inn }}</p>
+                  <p v-if="innVerificationResult.verification.ogrn">ОГРН: {{ innVerificationResult.verification.ogrn }}</p>
+                </div>
+              </div>
+              <div v-else class="result-error">
+                <span class="result-icon">❌</span>
+                <p>{{ innVerificationResult.error }}</p>
+              </div>
+            </div>
+
+            <button 
+              class="btn btn-primary btn-block" 
+              @click="verifyByINN"
+              :disabled="isVerifying || !isValidINN"
+            >
+              <span v-if="isVerifying" class="btn-loading"></span>
+              {{ isVerifying ? 'Проверка...' : 'Проверить ИНН' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Ручная верификация -->
+        <div v-if="verificationMethod === 'manual'" class="verification-form">
+          <div class="form-section">
+            <h4>📝 Ручная верификация</h4>
+            <p class="form-description">
+              Заполните контактные данные для связи
+            </p>
+            
+            <div class="form-group">
+              <label>Название компании *</label>
+              <input 
+                v-model="manualForm.company_name"
+                type="text" 
+                placeholder="ООО 'Ваша компания'"
+              >
+            </div>
+
+            <div class="form-group">
+              <label>Телефон *</label>
+              <input 
+                v-model="manualForm.phone"
+                type="tel" 
+                placeholder="+7 (999) 123-45-67"
+              >
+            </div>
+
+            <div class="form-group">
+              <label>Email *</label>
+              <input 
+                v-model="manualForm.email"
+                type="email" 
+                placeholder="your@email.com"
+              >
+            </div>
+
+            <div class="form-group">
+              <label>Социальная сеть *</label>
+              <div class="social-select">
+                <button 
+                  class="social-btn"
+                  :class="{ active: manualForm.social_type === 'telegram' }"
+                  @click="manualForm.social_type = 'telegram'"
+                >
+                  💬 Telegram
+                </button>
+                <button 
+                  class="social-btn"
+                  :class="{ active: manualForm.social_type === 'instagram' }"
+                  @click="manualForm.social_type = 'instagram'"
+                >
+                  📷 Instagram
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Username {{ manualForm.social_type === 'telegram' ? 'Telegram' : 'Instagram' }} *</label>
+              <input 
+                v-model="manualForm.social_username"
+                type="text" 
+                :placeholder="manualForm.social_type === 'telegram' ? '@username' : '@instagram_name'"
+              >
+            </div>
+
+            <button 
+              class="btn btn-primary btn-block" 
+              @click="verifyManually"
+              :disabled="isVerifying || !isValidManualForm"
+            >
+              <span v-if="isVerifying" class="btn-loading"></span>
+              {{ isVerifying ? 'Отправка...' : 'Подтвердить' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Преимущества -->
         <div class="upgrade-benefits">
+          <h4>⭐ Преимущества бизнес-аккаунта</h4>
           <div class="benefit-item">
             <span class="benefit-icon">📊</span>
             <div class="benefit-content">
-              <h4>Расширенная аналитика</h4>
+              <h5>Расширенная аналитика</h5>
               <p>Отслеживайте просмотры, клики и конверсии</p>
             </div>
           </div>
           <div class="benefit-item">
             <span class="benefit-icon">🎯</span>
             <div class="benefit-content">
-              <h4>Продвижение объявлений</h4>
+              <h5>Продвижение объявлений</h5>
               <p>Увеличивайте видимость вашего бизнеса</p>
             </div>
           </div>
           <div class="benefit-item">
-            <span class="benefit-icon">👥</span>
+            <span class="benefit-icon">🔔</span>
             <div class="benefit-content">
-              <h4>Управление командой</h4>
-              <p>Добавляйте сотрудников для управления</p>
+              <h5>Уведомления клиентам</h5>
+              <p>Отправляйте push-уведомления близким пользователям</p>
             </div>
           </div>
-        </div>
-
-        <div class="upgrade-actions">
-          <button class="btn btn-primary" @click="registerBusiness">
-            Подключить бизнес-аккаунт
-          </button>
-          <button class="btn btn-outline" @click="showPricing">
-            Тарифы и условия
-          </button>
         </div>
       </div>
 
@@ -86,7 +223,7 @@
             :class="{ active: activeTab === 'offers' }"
             @click="activeTab = 'offers'"
           >
-            🏢 Объявления
+            🏢 Мои объявления
           </button>
           <button 
             class="tab-btn"
@@ -102,6 +239,9 @@
           <!-- Обзор -->
           <div v-if="activeTab === 'overview'" class="overview-tab">
             <div class="welcome-section">
+              <div class="verified-badge" v-if="authStore.user?.is_verified">
+                <span>✅</span> Верифицировано
+              </div>
               <h3>Добро пожаловать, {{ businessInfo.companyName }}! 👋</h3>
               <p>Статистика и управление вашим бизнесом на MapChap</p>
             </div>
@@ -139,47 +279,17 @@
             </div>
 
             <!-- Быстрые действия -->
-            <div class="quick-actions">
+            <div class="quick-actions-section">
               <h4>⚡ Быстрые действия</h4>
               <div class="actions-grid">
                 <button class="action-btn" @click="activeTab = 'create'">
                   <span class="action-icon">➕</span>
                   <span class="action-text">Новое объявление</span>
                 </button>
-                <button class="action-btn" @click="manageOffers">
+                <button class="action-btn" @click="activeTab = 'offers'">
                   <span class="action-icon">📋</span>
-                  <span class="action-text">Управление объявлениями</span>
+                  <span class="action-text">Управление</span>
                 </button>
-                <button class="action-btn" @click="showAnalytics">
-                  <span class="action-icon">📈</span>
-                  <span class="action-text">Детальная аналитика</span>
-                </button>
-                <button class="action-btn" @click="showSettings">
-                  <span class="action-icon">⚙️</span>
-                  <span class="action-text">Настройки бизнеса</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Последняя активность -->
-            <div class="recent-activity">
-              <h4>📝 Последняя активность</h4>
-              <div class="activity-list">
-                <div v-if="recentActivities.length === 0" class="empty-activities">
-                  <p>Пока нет активности</p>
-                  <button class="btn btn-primary" @click="activeTab = 'create'">
-                    Создать первое объявление
-                  </button>
-                </div>
-                <div v-else class="activity-items">
-                  <div v-for="activity in recentActivities" :key="activity.id" class="activity-item">
-                    <span class="activity-icon">{{ activity.icon }}</span>
-                    <div class="activity-content">
-                      <p class="activity-text">{{ activity.text }}</p>
-                      <span class="activity-time">{{ activity.time }}</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -188,14 +298,11 @@
           <div v-if="activeTab === 'offers'" class="offers-tab">
             <div class="section-header">
               <h3>Мои объявления</h3>
-              <div class="header-actions">
-                <button class="btn btn-primary" @click="activeTab = 'create'">
-                  ➕ Новое объявление
-                </button>
-              </div>
+              <button class="btn btn-primary" @click="activeTab = 'create'">
+                ➕ Новое
+              </button>
             </div>
 
-            <!-- Список объявлений -->
             <div v-if="userOffers.length === 0" class="empty-state">
               <div class="empty-icon">🏢</div>
               <h4>Пока нет объявлений</h4>
@@ -217,7 +324,7 @@
                     <h4 class="offer-title">{{ offer.title }}</h4>
                     <div class="offer-meta">
                       <span class="offer-category">{{ getCategoryName(offer.category) }}</span>
-                      <span class="offer-date">{{ formatDate(offer.updatedAt) }}</span>
+                      <span class="offer-date">{{ formatDate(offer.updated_at || offer.updatedAt) }}</span>
                     </div>
                   </div>
                   <div class="offer-status" :class="offer.status">
@@ -231,33 +338,23 @@
                   <div class="stat">
                     <span class="stat-icon">👁️</span>
                     <span class="stat-value">{{ offer.views || 0 }}</span>
-                    <span class="stat-label">просмотров</span>
                   </div>
                   <div class="stat">
                     <span class="stat-icon">❤️</span>
                     <span class="stat-value">{{ offer.likes || 0 }}</span>
-                    <span class="stat-label">лайков</span>
-                  </div>
-                  <div class="stat">
-                    <span class="stat-icon">💬</span>
-                    <span class="stat-value">{{ offer.reviews || 0 }}</span>
-                    <span class="stat-label">отзывов</span>
                   </div>
                 </div>
 
-                <!-- Действия -->
                 <div class="offer-actions">
                   <button class="btn btn-small" @click="editOffer(offer)">
-                    <span class="btn-icon">✏️</span>
-                    Редактировать
+                    ✏️ Редактировать
                   </button>
                   <button 
                     class="btn btn-small" 
-                    :class="getStatusButtonClass(offer.status)"
+                    :class="offer.status === 'active' ? 'btn-warning' : 'btn-success'"
                     @click="handleToggleOfferStatus(offer.id)"
                   >
-                    <span class="btn-icon">{{ getStatusButtonIcon(offer.status) }}</span>
-                    {{ getStatusButtonText(offer.status) }}
+                    {{ offer.status === 'active' ? '⏸️ Пауза' : '▶️ Активировать' }}
                   </button>
                 </div>
               </div>
@@ -267,7 +364,7 @@
           <!-- Создание объявления -->
           <div v-if="activeTab === 'create'" class="create-tab">
             <div class="section-header">
-              <h3>{{ editingOffer ? 'Редактировать объявление' : 'Создать новое объявление' }}</h3>
+              <h3>{{ editingOffer ? 'Редактировать' : 'Новое объявление' }}</h3>
               <button v-if="editingOffer" class="btn btn-secondary" @click="cancelEdit">
                 Отменить
               </button>
@@ -297,7 +394,7 @@
                       :key="category.id" 
                       :value="category.id"
                     >
-                      {{ category.name }}
+                      {{ category.icon }} {{ category.name }}
                     </option>
                   </select>
                 </div>
@@ -315,7 +412,7 @@
               </div>
 
               <div class="form-section">
-                <h4>📞 Контактная информация</h4>
+                <h4>📞 Контакты</h4>
                 
                 <div class="form-group">
                   <label>Адрес *</label>
@@ -336,15 +433,32 @@
                     required
                   >
                 </div>
+
+                <div class="form-group">
+                  <label>Координаты (широта, долгота)</label>
+                  <div class="coordinates-input">
+                    <input 
+                      v-model.number="offerForm.lat"
+                      type="number" 
+                      step="0.000001"
+                      placeholder="55.751244"
+                    >
+                    <input 
+                      v-model.number="offerForm.lng"
+                      type="number" 
+                      step="0.000001"
+                      placeholder="37.618423"
+                    >
+                  </div>
+                </div>
               </div>
 
-              <!-- Действия формы -->
               <div class="form-actions">
                 <button type="button" class="btn btn-secondary" @click="cancelEdit" v-if="editingOffer">
                   Отменить
                 </button>
                 <button type="submit" class="btn btn-primary" :disabled="!canSubmit">
-                  {{ editingOffer ? '💾 Сохранить изменения' : '🚀 Опубликовать объявление' }}
+                  {{ editingOffer ? '💾 Сохранить' : '🚀 Опубликовать' }}
                 </button>
               </div>
             </form>
@@ -359,6 +473,7 @@
 import { useUIStore } from '../stores/uiStore'
 import { useAuthStore } from '../stores/authStore'
 import { useBusinessStore } from '../stores/businessStore'
+import { apiService } from '../services/api'
 import { storeToRefs } from 'pinia'
 import { ref, computed, reactive, onMounted } from 'vue'
 
@@ -371,12 +486,7 @@ export default {
     
     const { closePanel, showNotification } = uiStore
     const { initTelegramAuth, registerAsBusiness } = authStore
-    const { 
-      createOffer, 
-      updateOffer, 
-      toggleOfferStatus: toggleOfferStatusInStore, // Переименовано здесь
-      getCategoryById 
-    } = businessStore
+    const { createOffer, updateOffer, toggleOfferStatus: toggleOfferStatusInStore, getCategoryById } = businessStore
 
     const { isAuthenticated, isBusinessOwner, user } = storeToRefs(authStore)
     const { getUserOffers, categories } = storeToRefs(businessStore)
@@ -384,23 +494,37 @@ export default {
     // State
     const activeTab = ref('overview')
     const editingOffer = ref(null)
+    const verificationMethod = ref('inn')
+    const isVerifying = ref(false)
+    const innVerificationResult = ref(null)
+    const innError = ref('')
 
-    // Form data
+    // Forms
+    const innForm = reactive({ inn: '' })
+    const manualForm = reactive({
+      company_name: '',
+      phone: '',
+      email: '',
+      social_type: 'telegram',
+      social_username: ''
+    })
     const offerForm = reactive({
       title: '',
       category: '',
       description: '',
       address: '',
-      phone: ''
+      phone: '',
+      lat: 55.751244,
+      lng: 37.618423
     })
 
     // Computed
     const userOffers = computed(() => getUserOffers.value)
     
     const businessInfo = computed(() => {
-      return user.value?.businessInfo || {
-        companyName: user.value?.name || 'Ваш бизнес',
-        registrationDate: new Date().toISOString()
+      return {
+        companyName: user.value?.company_name || user.value?.first_name || 'Ваш бизнес',
+        registrationDate: user.value?.created_at || new Date().toISOString()
       }
     })
 
@@ -410,42 +534,24 @@ export default {
       const totalLikes = offers.reduce((sum, offer) => sum + (offer.likes || 0), 0)
       const activeOffers = offers.filter(offer => offer.status === 'active').length
       
-      // Calculate average rating
       const ratedOffers = offers.filter(offer => offer.rating && offer.rating > 0)
       const averageRating = ratedOffers.length > 0 
         ? (ratedOffers.reduce((sum, offer) => sum + offer.rating, 0) / ratedOffers.length).toFixed(1)
         : null
 
-      return {
-        totalViews,
-        totalLikes,
-        activeOffers,
-        averageRating
-      }
+      return { totalViews, totalLikes, activeOffers, averageRating }
     })
 
-    const recentActivities = computed(() => {
-      // Generate recent activities from offers
-      const activities = []
-      userOffers.value.forEach(offer => {
-        if (offer.views > 0) {
-          activities.push({
-            id: `view-${offer.id}`,
-            icon: '👁️',
-            text: `"${offer.title}" получил ${offer.views} просмотров`,
-            time: 'Недавно'
-          })
-        }
-        if (offer.likes > 0) {
-          activities.push({
-            id: `like-${offer.id}`,
-            icon: '❤️',
-            text: `"${offer.title}" получил ${offer.likes} лайков`,
-            time: 'Недавно'
-          })
-        }
-      })
-      return activities.slice(0, 5) // Return only 5 most recent
+    const isValidINN = computed(() => {
+      const inn = innForm.inn.replace(/\D/g, '')
+      return inn.length === 10 || inn.length === 12
+    })
+
+    const isValidManualForm = computed(() => {
+      return manualForm.company_name.length >= 2 &&
+             manualForm.phone.length >= 10 &&
+             manualForm.email.includes('@') &&
+             manualForm.social_username.length >= 2
     })
 
     const canSubmit = computed(() => {
@@ -461,28 +567,72 @@ export default {
       initTelegramAuth()
     }
 
-    const registerBusiness = async () => {
+    const validateINN = () => {
+      const inn = innForm.inn.replace(/\D/g, '')
+      innForm.inn = inn
+      
+      if (inn.length > 0 && inn.length !== 10 && inn.length !== 12) {
+        innError.value = 'ИНН должен содержать 10 или 12 цифр'
+      } else {
+        innError.value = ''
+      }
+      innVerificationResult.value = null
+    }
+
+    const verifyByINN = async () => {
+      if (!isValidINN.value || isVerifying.value) return
+      
+      isVerifying.value = true
+      innVerificationResult.value = null
+      
       try {
-        const businessData = {
-          companyName: user.value?.name || 'Мой бизнес',
-          type: 'individual',
-          registrationDate: new Date().toISOString()
-        }
+        const result = await apiService.verifyByINN(user.value.telegram_id, innForm.inn)
+        innVerificationResult.value = result
         
-        await registerAsBusiness(businessData)
-        showNotification('Бизнес-аккаунт успешно подключен!', 'success')
+        if (result.success) {
+          // Обновляем локальное состояние
+          await authStore.registerAsBusiness({
+            companyName: result.verification.name,
+            inn: innForm.inn,
+            verificationType: 'inn'
+          })
+          showNotification('🎉 Бизнес успешно верифицирован!', 'success')
+        }
       } catch (error) {
-        showNotification('Ошибка при подключении бизнес-аккаунта', 'error')
+        innVerificationResult.value = { success: false, error: error.message || 'Ошибка проверки ИНН' }
+        showNotification(error.message || 'Ошибка проверки ИНН', 'error')
+      } finally {
+        isVerifying.value = false
       }
     }
 
-    const showPricing = () => {
-      showNotification('Информация о тарифах будет доступна в следующем обновлении', 'info')
+    const verifyManually = async () => {
+      if (!isValidManualForm.value || isVerifying.value) return
+      
+      isVerifying.value = true
+      
+      try {
+        const result = await apiService.verifyManually(user.value.telegram_id, manualForm)
+        
+        if (result.success) {
+          await authStore.registerAsBusiness({
+            companyName: manualForm.company_name,
+            phone: manualForm.phone,
+            email: manualForm.email,
+            verificationType: 'manual'
+          })
+          showNotification('🎉 Бизнес-аккаунт активирован!', 'success')
+        }
+      } catch (error) {
+        showNotification(error.message || 'Ошибка верификации', 'error')
+      } finally {
+        isVerifying.value = false
+      }
     }
 
     const getCategoryName = (categoryId) => {
       const category = getCategoryById(categoryId)
-      return category ? category.name : 'Неизвестно'
+      return category ? `${category.icon} ${category.name}` : 'Неизвестно'
     }
 
     const getStatusText = (status) => {
@@ -494,18 +644,6 @@ export default {
       return statuses[status] || status
     }
 
-    const getStatusButtonText = (status) => {
-      return status === 'active' ? 'Пауза' : 'Активировать'
-    }
-
-    const getStatusButtonIcon = (status) => {
-      return status === 'active' ? '⏸️' : '▶️'
-    }
-
-    const getStatusButtonClass = (status) => {
-      return status === 'active' ? 'btn-warning' : 'btn-success'
-    }
-
     const formatDate = (dateString) => {
       if (!dateString) return ''
       return new Date(dateString).toLocaleDateString('ru-RU', {
@@ -514,31 +652,28 @@ export default {
       })
     }
 
-    const manageOffers = () => {
-      activeTab.value = 'offers'
-    }
-
-    const showAnalytics = () => {
-      showNotification('Детальная аналитика будет доступна в следующем обновлении', 'info')
-    }
-
-    const showSettings = () => {
-      showNotification('Настройки бизнеса будут доступны в следующем обновлении', 'info')
-    }
-
     const submitOffer = async () => {
       try {
+        const offerData = {
+          title: offerForm.title,
+          description: offerForm.description,
+          category: offerForm.category,
+          address: offerForm.address,
+          phone: offerForm.phone,
+          coordinates: [offerForm.lat, offerForm.lng]
+        }
+
         if (editingOffer.value) {
-          await updateOffer(editingOffer.value.id, offerForm)
-          showNotification('Объявление успешно обновлено!', 'success')
+          await updateOffer(editingOffer.value.id, offerData)
+          showNotification('Объявление обновлено!', 'success')
         } else {
-          await createOffer(offerForm)
-          showNotification('Объявление успешно создано!', 'success')
+          await createOffer(offerData)
+          showNotification('Объявление создано!', 'success')
         }
         resetForm()
         activeTab.value = 'offers'
       } catch (error) {
-        showNotification('Ошибка при сохранении объявления', 'error')
+        showNotification('Ошибка при сохранении', 'error')
       }
     }
 
@@ -549,7 +684,9 @@ export default {
         category: offer.category,
         description: offer.description,
         address: offer.address,
-        phone: offer.phone
+        phone: offer.phone,
+        lat: offer.coordinates?.[0] || 55.751244,
+        lng: offer.coordinates?.[1] || 37.618423
       })
       activeTab.value = 'create'
     }
@@ -560,11 +697,10 @@ export default {
       activeTab.value = 'offers'
     }
 
-    // Исправленная функция - переименована чтобы избежать конфликта
     const handleToggleOfferStatus = async (offerId) => {
       try {
         await toggleOfferStatusInStore(offerId)
-        showNotification('Статус объявления изменен', 'success')
+        showNotification('Статус изменен', 'success')
       } catch (error) {
         showNotification('Ошибка при изменении статуса', 'error')
       }
@@ -577,54 +713,49 @@ export default {
         category: '',
         description: '',
         address: '',
-        phone: ''
+        phone: '',
+        lat: 55.751244,
+        lng: 37.618423
       })
     }
 
-    // Load user offers on mount
     onMounted(() => {
       if (isAuthenticated.value && isBusinessOwner.value) {
-        // Offers are already loaded in the store
-        console.log('Business panel mounted, offers:', userOffers.value.length)
+        console.log('Business panel mounted')
       }
     })
 
     return {
-      // Stores
       authStore,
       businessStore,
-      
-      // State
       activeTab,
       editingOffer,
+      verificationMethod,
+      isVerifying,
+      innVerificationResult,
+      innError,
+      innForm,
+      manualForm,
       offerForm,
-      
-      // Computed
       isAuthenticated,
       isBusinessOwner,
       userOffers,
       businessInfo,
       businessStats,
-      recentActivities,
+      isValidINN,
+      isValidManualForm,
       canSubmit,
-      
-      // Methods
       closePanel,
       initAuth,
-      registerBusiness,
-      showPricing,
+      validateINN,
+      verifyByINN,
+      verifyManually,
       submitOffer,
       editOffer,
       cancelEdit,
-      handleToggleOfferStatus, // Исправленное имя
-      manageOffers,
-      showAnalytics,
-      showSettings,
+      handleToggleOfferStatus,
       getCategoryName,
       getStatusText,
-      getStatusButtonText,
-      getStatusButtonIcon,
-      getStatusButtonClass,
       formatDate
     }
   }
@@ -632,121 +763,594 @@ export default {
 </script>
 
 <style scoped>
-/* Стили для новых элементов BusinessPanel */
+.verification-section {
+  padding: 0;
+}
 
-.upgrade-required {
+.verification-header {
   text-align: center;
-  padding: 2rem;
+  padding: 24px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px;
+  margin-bottom: 20px;
+}
+
+.upgrade-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.verification-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+}
+
+.verification-header p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+.verification-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.verification-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px;
+  border: 2px solid var(--tg-border-color);
+  background: var(--tg-secondary-bg-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.verification-tab.active {
+  border-color: var(--tg-button-color);
+  background: var(--tg-button-color);
+  color: white;
+}
+
+.tab-icon {
+  font-size: 24px;
+}
+
+.tab-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.verification-form {
+  margin-bottom: 24px;
+}
+
+.form-section {
+  background: var(--tg-secondary-bg-color);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.form-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: var(--tg-text-color);
+}
+
+.form-description {
+  margin: 0 0 16px 0;
+  font-size: 13px;
+  color: var(--tg-hint-color);
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tg-text-color);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--tg-border-color);
+  border-radius: 10px;
+  background: var(--tg-bg-color);
+  color: var(--tg-text-color);
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--tg-button-color);
+}
+
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--tg-error-color);
+}
+
+.social-select {
+  display: flex;
+  gap: 8px;
+}
+
+.social-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--tg-border-color);
+  background: var(--tg-bg-color);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.social-btn.active {
+  border-color: var(--tg-button-color);
+  background: var(--tg-button-color);
+  color: white;
+}
+
+.coordinates-input {
+  display: flex;
+  gap: 8px;
+}
+
+.coordinates-input input {
+  flex: 1;
+}
+
+.verification-result {
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.verification-result.success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.result-success,
+.result-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.result-icon {
+  font-size: 24px;
+}
+
+.result-content h5 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #166534;
+}
+
+.result-content p {
+  margin: 0;
+  font-size: 13px;
+  color: #15803d;
+}
+
+.result-error p {
+  margin: 0;
+  color: #dc2626;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--tg-button-color);
+  color: var(--tg-button-text-color);
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--tg-secondary-bg-color);
+  color: var(--tg-text-color);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-small {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.btn-warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-loading {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .upgrade-benefits {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin: 2rem 0;
+  background: var(--tg-secondary-bg-color);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.upgrade-benefits h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
 }
 
 .benefit-item {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--tg-border-color);
+}
+
+.benefit-item:last-child {
+  border-bottom: none;
 }
 
 .benefit-icon {
-  font-size: 2rem;
-  width: 50px;
-  height: 50px;
-  background: var(--primary-gradient);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
 }
 
-.benefit-content h4 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text-primary);
+.benefit-content h5 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
 }
 
 .benefit-content p {
   margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 13px;
+  color: var(--tg-hint-color);
 }
 
-.upgrade-actions {
+/* Business content styles */
+.tabs {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.empty-activities {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
-}
-
-.activity-items {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.activity-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem;
-  background: var(--bg-secondary);
+  gap: 4px;
+  background: var(--tg-secondary-bg-color);
+  padding: 4px;
   border-radius: 12px;
-  border: 1px solid var(--border-color);
+  margin-bottom: 20px;
 }
 
-.activity-icon {
-  font-size: 1.25rem;
-  width: 40px;
-  height: 40px;
-  background: var(--bg-tertiary);
-  border-radius: 10px;
+.tab-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tg-hint-color);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: var(--tg-button-color);
+  color: white;
+}
+
+.welcome-section {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.verified-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.welcome-section h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+}
+
+.welcome-section p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--tg-secondary-bg-color);
+  border-radius: 12px;
 }
 
-.activity-content {
+.metric-icon {
+  font-size: 24px;
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: var(--tg-hint-color);
+  margin-top: 2px;
+}
+
+.quick-actions-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background: var(--tg-secondary-bg-color);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: var(--tg-border-color);
+}
+
+.action-icon {
+  font-size: 24px;
+}
+
+.action-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tg-text-color);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.empty-state h4 {
+  margin: 0 0 8px 0;
+}
+
+.empty-state p {
+  margin: 0 0 16px 0;
+  color: var(--tg-hint-color);
+}
+
+.offers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.offer-card {
+  background: var(--tg-secondary-bg-color);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.offer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.offer-title {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+}
+
+.offer-meta {
+  font-size: 12px;
+  color: var(--tg-hint-color);
+}
+
+.offer-status {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.offer-status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.offer-status.paused {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.offer-description {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--tg-hint-color);
+  line-height: 1.4;
+}
+
+.offer-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--tg-hint-color);
+}
+
+.offer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.form-actions .btn {
   flex: 1;
 }
 
-.activity-text {
-  margin: 0 0 0.25rem 0;
-  font-weight: 500;
-  color: var(--text-primary);
+/* Panel base styles */
+.loading-state,
+.auth-required {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
 }
 
-.activity-time {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--tg-border-color);
+  border-top-color: var(--tg-button-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-  .upgrade-actions {
-    flex-direction: column;
+.auth-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.auth-required h3 {
+  margin: 0 0 8px 0;
+}
+
+.auth-required p {
+  margin: 0 0 20px 0;
+  color: var(--tg-hint-color);
+}
+
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
   }
   
-  .benefit-item {
-    flex-direction: column;
-    text-align: center;
+  .actions-grid {
+    grid-template-columns: 1fr;
   }
   
-  .activity-item {
+  .offer-header {
     flex-direction: column;
-    text-align: center;
+    gap: 8px;
   }
 }
 </style>
