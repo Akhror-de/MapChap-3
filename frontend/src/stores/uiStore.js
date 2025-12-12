@@ -3,76 +3,54 @@ import { ref, computed } from 'vue'
 
 export const useUIStore = defineStore('ui', () => {
   // State
-  const isDarkTheme = ref(false)
   const activePanel = ref(null)
-  const currentArticle = ref(null)
   const notification = ref(null)
-  const isLoading = ref(false)
-
-  // Computed
-  const isAnyPanelOpen = computed(() => activePanel.value !== null)
+  const currentArticle = ref(null)
+  const selectedOffer = ref(null)
+  const isMapReady = ref(false)
 
   // Actions
   const openPanel = (panelName) => {
-    console.log('🎯 Opening panel:', panelName)
     activePanel.value = panelName
+    console.log(`📂 Panel opened: ${panelName}`)
   }
 
   const closePanel = () => {
-    console.log('📪 Closing panel')
     activePanel.value = null
-    currentArticle.value = null
+    console.log('📁 Panel closed')
   }
 
-  const openArticle = (article) => {
+  const setCurrentArticle = (article) => {
     currentArticle.value = article
-    activePanel.value = 'article'
   }
 
-  const showNotification = (message, type = 'info', duration = 3000) => {
+  const setSelectedOffer = (offer) => {
+    selectedOffer.value = offer
+  }
+
+  const showNotification = (message, type = 'info') => {
     notification.value = { message, type }
+    
     setTimeout(() => {
       notification.value = null
-    }, duration)
+    }, 3000)
   }
 
-  const initTheme = () => {
-    const saved = localStorage.getItem('mapchap-theme')
-    isDarkTheme.value = saved === 'dark'
-    document.documentElement.classList.toggle('dark-theme', isDarkTheme.value)
+  const setMapReady = (ready) => {
+    isMapReady.value = ready
   }
-
-  const toggleTheme = () => {
-    isDarkTheme.value = !isDarkTheme.value
-    localStorage.setItem('mapchap-theme', isDarkTheme.value ? 'dark' : 'light')
-    document.documentElement.classList.toggle('dark-theme', isDarkTheme.value)
-  }
-
-  const setLoading = (loading) => {
-    isLoading.value = loading
-  }
-
-  // Инициализация
-  initTheme()
 
   return {
-    // State
-    isDarkTheme,
     activePanel,
-    currentArticle,
     notification,
-    isLoading,
-    
-    // Computed
-    isAnyPanelOpen,
-    
-    // Actions
+    currentArticle,
+    selectedOffer,
+    isMapReady,
     openPanel,
     closePanel,
-    openArticle,
+    setCurrentArticle,
+    setSelectedOffer,
     showNotification,
-    toggleTheme,
-    initTheme,
-    setLoading
+    setMapReady
   }
 })
