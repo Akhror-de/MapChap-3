@@ -2,8 +2,9 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 
-// Импортируем Telegram стили
+// Импортируем стили
 import './styles/telegram.css'
+import './styles/panels.css'
 
 // Create app
 const app = createApp(App)
