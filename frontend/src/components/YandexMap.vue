@@ -163,6 +163,22 @@ export default {
       console.log(`📍 Added ${placemarks.length} markers to map`)
     }
 
+    // Создаем кастомный анимированный маркер пользователя
+    const createUserMarkerLayout = () => {
+      if (!ymaps) return null
+      
+      return ymaps.templateLayoutFactory.createClass(`
+        <div class="user-marker-container">
+          <div class="user-marker-pulse"></div>
+          <div class="user-marker-pulse-delay"></div>
+          <div class="user-marker-core">
+            <div class="user-marker-icon">📍</div>
+          </div>
+          <div class="user-marker-direction"></div>
+        </div>
+      `)
+    }
+
     const setUserMarker = (location) => {
       if (!map || !ymaps || !location) return
 
@@ -172,20 +188,37 @@ export default {
 
       const coords = [location.latitude || location[0], location.longitude || location[1]]
 
+      // Создаем кастомный layout для маркера
+      const UserMarkerLayout = createUserMarkerLayout()
+
       userMarker = new ymaps.Placemark(
         coords,
         {
           hintContent: 'Ваше местоположение',
-          balloonContent: 'Вы здесь'
+          balloonContent: `
+            <div class="user-balloon">
+              <div class="user-balloon-header">
+                <span class="user-balloon-icon">📍</span>
+                <strong>Вы здесь</strong>
+              </div>
+              <p class="user-balloon-coords">${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}</p>
+            </div>
+          `
         },
         {
-          preset: 'islands#geolocationIcon',
-          iconColor: '#4CAF50'
+          iconLayout: UserMarkerLayout,
+          iconShape: {
+            type: 'Circle',
+            coordinates: [0, 0],
+            radius: 30
+          }
         }
       )
 
       map.geoObjects.add(userMarker)
       map.setCenter(coords, 14, { duration: 500 })
+      
+      console.log('📍 User marker set at:', coords)
     }
 
     // Следим за изменениями
