@@ -491,7 +491,7 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
 }
-.action-btn:hover { background: #1a1a1a; color: #fff; border-color: #00ff88; }
+.action-btn:hover { background: #1a1a1a; color: #fff; border-color: #ff6b00; }
 .action-btn span { font-size: 20px; }
 
 .offers-list { display: flex; flex-direction: column; gap: 12px; }
