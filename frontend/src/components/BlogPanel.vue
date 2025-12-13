@@ -4,11 +4,11 @@
       <div class="header-content">
         <button class="back-button" @click="closePanel">
           <span class="back-icon">←</span>
-          <span class="back-text">Назад</span>
+          <span class="back-text">{{ t('back') }}</span>
         </button>
         <h2 class="panel-title">
           <span class="title-icon">📝</span>
-          Блог
+          {{ t('blog_title') }}
         </h2>
       </div>
     </div>
@@ -31,7 +31,7 @@
       <!-- Загрузка -->
       <div v-if="isLoading" class="loading-state">
         <div class="loading-spinner"></div>
-        <p>Загрузка статей...</p>
+        <p>{{ t('blog_loading') }}</p>
       </div>
 
       <!-- Статьи -->
@@ -39,10 +39,10 @@
         <!-- Пустой стейт -->
         <div v-if="filteredArticles.length === 0" class="empty-state">
           <div class="empty-icon">📝</div>
-          <h3>Пока нет статей</h3>
-          <p>{{ getEmptyMessage }}</p>
-          <button v-if="canCreateArticle" class="btn btn-primary" @click="showCreateForm = true">
-            Написать статью
+          <h3>{{ t('blog_no_articles') }}</h3>
+          <p>{{ t('blog_be_first') }}</p>
+          <button v-if="isAuthenticated" class="btn btn-primary" @click="showCreateForm = true">
+            {{ t('blog_write') }}
           </button>
         </div>
 
@@ -52,12 +52,11 @@
             v-for="article in filteredArticles" 
             :key="article.id"
             class="article-card"
-            @click="openArticle(article)"
           >
-            <div class="article-image" v-if="article.image">
+            <div class="article-image" v-if="article.image" @click="openArticle(article)">
               <img :src="article.image" :alt="article.title" />
             </div>
-            <div class="article-placeholder" v-else>
+            <div class="article-placeholder" v-else @click="openArticle(article)">
               <span>{{ getArticleTypeIcon(article.author_type) }}</span>
             </div>
             
@@ -66,24 +65,26 @@
                 <span class="article-type" :class="article.author_type">
                   {{ getArticleTypeName(article.author_type) }}
                 </span>
-                <span class="article-date">{{ formatDate(article.created_at) }}</span>
+                <span class="article-date">{{ formatDate(article.created_at || article.createdAt) }}</span>
               </div>
               
-              <h3 class="article-title">{{ article.title }}</h3>
+              <h3 class="article-title" @click="openArticle(article)">{{ article.title }}</h3>
               <p class="article-excerpt">{{ article.excerpt }}</p>
               
               <div class="article-footer">
                 <div class="article-author" v-if="article.author">
                   <div class="author-avatar">
-                    <img v-if="article.author.avatar" :src="article.author.avatar" alt="" />
-                    <span v-else>{{ article.author.name?.[0] || 'А' }}</span>
+                    <img v-if="article.author.avatar && !article.author.avatar.startsWith('�')" :src="article.author.avatar" alt="" />
+                    <span v-else>{{ article.author.avatar || article.author.name?.[0] || 'А' }}</span>
                   </div>
                   <span class="author-name">{{ article.author.name }}</span>
                 </div>
                 <div class="article-stats">
                   <span>👁️ {{ article.views || 0 }}</span>
-                  <span>❤️ {{ article.likes || 0 }}</span>
-                  <span>💬 {{ article.comments_count || 0 }}</span>
+                  <button class="like-btn" :class="{ liked: article.isLiked }" @click.stop="toggleLike(article)">
+                    {{ article.isLiked ? '❤️' : '🤍' }} {{ article.likes || 0 }}
+                  </button>
+                  <span>💬 {{ article.comments_count || article.commentsCount || 0 }}</span>
                 </div>
               </div>
             </div>
@@ -92,7 +93,7 @@
 
         <!-- Кнопка создания -->
         <button 
-          v-if="canCreateArticle && !showCreateForm && filteredArticles.length > 0" 
+          v-if="isAuthenticated && !showCreateForm && filteredArticles.length > 0" 
           class="fab-btn"
           @click="showCreateForm = true"
         >
@@ -104,67 +105,68 @@
       <div v-if="showCreateForm" class="create-form-overlay">
         <div class="create-form">
           <div class="form-header">
-            <h3>Новая статья</h3>
+            <h3>{{ t('blog_new_article') }}</h3>
             <button class="close-btn" @click="showCreateForm = false">×</button>
           </div>
 
           <form @submit.prevent="submitArticle">
             <div class="form-group">
-              <label>Заголовок *</label>
+              <label>{{ t('blog_article_title') }} *</label>
               <input 
                 v-model="articleForm.title"
                 type="text" 
-                placeholder="Введите заголовок"
+                :placeholder="t('blog_article_title_placeholder')"
                 required
               >
             </div>
 
             <div class="form-group">
-              <label>Краткое описание *</label>
+              <label>{{ t('blog_article_excerpt') }} *</label>
               <input 
                 v-model="articleForm.excerpt"
                 type="text" 
-                placeholder="Кратко о чем статья"
+                :placeholder="t('blog_article_excerpt_placeholder')"
                 required
               >
             </div>
 
             <div class="form-group">
-              <label>Категория</label>
+              <label>{{ t('blog_article_category') }}</label>
               <select v-model="articleForm.category">
-                <option value="news">Новости</option>
-                <option value="tips">Советы</option>
-                <option value="guide">Гайды</option>
-                <option value="review">Обзоры</option>
-                <option value="other">Другое</option>
+                <option value="news">📢 Новости</option>
+                <option value="tips">💡 Советы</option>
+                <option value="guide">📖 Гайды</option>
+                <option value="review">⭐ Обзоры</option>
+                <option value="success">🚀 Истории успеха</option>
+                <option value="other">🔮 Другое</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label>Содержание *</label>
+              <label>{{ t('blog_article_content') }} *</label>
               <textarea 
                 v-model="articleForm.content"
-                rows="6"
-                placeholder="Напишите вашу статью..."
+                rows="8"
+                :placeholder="t('blog_article_content_placeholder')"
                 required
               ></textarea>
             </div>
 
             <div class="form-group">
-              <label>Теги (через запятую)</label>
+              <label>{{ t('blog_article_tags') }}</label>
               <input 
                 v-model="articleForm.tagsInput"
                 type="text" 
-                placeholder="бизнес, советы, развитие"
+                :placeholder="t('blog_article_tags_placeholder')"
               >
             </div>
 
             <div class="form-actions">
               <button type="button" class="btn btn-secondary" @click="showCreateForm = false">
-                Отмена
+                {{ t('cancel') }}
               </button>
-              <button type="submit" class="btn btn-primary" :disabled="!canSubmit">
-                Опубликовать
+              <button type="submit" class="btn btn-primary" :disabled="!canSubmit || isSubmitting">
+                {{ isSubmitting ? t('loading') : t('blog_publish') }}
               </button>
             </div>
           </form>
@@ -178,19 +180,24 @@
 import { ref, computed, reactive, onMounted } from 'vue'
 import { useUIStore } from '../stores/uiStore'
 import { useAuthStore } from '../stores/authStore'
+import { useBlogStore } from '../stores/blogStore'
 import { storeToRefs } from 'pinia'
 import { apiService } from '../services/api'
+import { useLocale } from '../composables/useLocale'
 
 export default {
   name: 'BlogPanel',
   setup() {
     const uiStore = useUIStore()
     const authStore = useAuthStore()
+    const blogStore = useBlogStore()
     const { closePanel, openPanel, showNotification } = uiStore
     const { user, isAuthenticated, isBusinessOwner } = storeToRefs(authStore)
+    const { t } = useLocale()
 
     // State
     const isLoading = ref(false)
+    const isSubmitting = ref(false)
     const activeFilter = ref('all')
     const articles = ref([])
     const showCreateForm = ref(false)
@@ -203,21 +210,17 @@ export default {
     })
 
     // Filters
-    const blogFilters = [
-      { id: 'all', label: 'Все', icon: '📚' },
-      { id: 'developer', label: 'От разработчиков', icon: '👨‍💻' },
-      { id: 'business', label: 'От бизнеса', icon: '💼' },
-      { id: 'user', label: 'От пользователей', icon: '👤' }
-    ]
+    const blogFilters = computed(() => [
+      { id: 'all', label: t('blog_all'), icon: '📚' },
+      { id: 'developer', label: t('blog_developers'), icon: '👨‍💻' },
+      { id: 'business', label: t('blog_business'), icon: '💼' },
+      { id: 'user', label: t('blog_users'), icon: '👤' }
+    ])
 
     // Computed
     const filteredArticles = computed(() => {
       if (activeFilter.value === 'all') return articles.value
       return articles.value.filter(a => a.author_type === activeFilter.value)
-    })
-
-    const canCreateArticle = computed(() => {
-      return isAuthenticated.value
     })
 
     const canSubmit = computed(() => {
@@ -226,74 +229,63 @@ export default {
              articleForm.content.length > 0
     })
 
-    const getEmptyMessage = computed(() => {
-      const messages = {
-        all: 'Будьте первым, кто напишет статью!',
-        developer: 'Статей от разработчиков пока нет',
-        business: 'Статей от бизнеса пока нет',
-        user: 'Статей от пользователей пока нет'
-      }
-      return messages[activeFilter.value]
-    })
-
     // Methods
     const loadArticles = async () => {
       isLoading.value = true
       try {
         const result = await apiService.getArticles({ limit: 50 })
         articles.value = result.articles || []
+        
+        // Если нет статей с сервера, используем демо
+        if (articles.value.length === 0) {
+          articles.value = blogStore.getArticles
+        }
       } catch (error) {
         console.log('Articles load error:', error)
-        // Заглушка для демо
-        articles.value = [
-          {
-            id: '1',
-            title: 'Добро пожаловать в MapChap!',
-            excerpt: 'Наше приложение для поиска локального бизнеса',
-            content: 'Полное содержание статьи...',
-            author_type: 'developer',
-            author: { name: 'Команда MapChap', avatar: '' },
-            created_at: new Date().toISOString(),
-            views: 256,
-            likes: 45,
-            comments_count: 12
-          },
-          {
-            id: '2',
-            title: 'Как привлечь клиентов через MapChap',
-            excerpt: 'Советы по продвижению вашего бизнеса',
-            content: 'Полное содержание статьи...',
-            author_type: 'business',
-            author: { name: 'Иван Петров', avatar: '' },
-            created_at: new Date(Date.now() - 86400000).toISOString(),
-            views: 128,
-            likes: 23,
-            comments_count: 5
-          },
-          {
-            id: '3',
-            title: 'Мой опыт использования приложения',
-            excerpt: 'Делюсь впечатлениями от MapChap',
-            content: 'Полное содержание статьи...',
-            author_type: 'user',
-            author: { name: 'Мария Сидорова', avatar: '' },
-            created_at: new Date(Date.now() - 172800000).toISOString(),
-            views: 64,
-            likes: 18,
-            comments_count: 3
-          }
-        ]
+        // Используем данные из store
+        articles.value = blogStore.getArticles
       } finally {
         isLoading.value = false
       }
     }
 
     const openArticle = (article) => {
+      // Увеличиваем просмотры
+      if (article.id) {
+        blogStore.incrementArticleViews(article.id)
+        const idx = articles.value.findIndex(a => a.id === article.id)
+        if (idx !== -1) {
+          articles.value[idx].views = (articles.value[idx].views || 0) + 1
+        }
+      }
+      
       uiStore.setCurrentArticle(article)
       openPanel('article')
     }
 
+    const toggleLike = (article) => {
+      if (!isAuthenticated.value) {
+        showNotification(t('profile_login_required'), 'error')
+        return
+      }
+      
+      // Обновляем локально
+      article.isLiked = !article.isLiked
+      article.likes = (article.likes || 0) + (article.isLiked ? 1 : -1)
+      
+      // Обновляем в store
+      if (article.id) {
+        blogStore.toggleArticleLike(article.id)
+      }
+      
+      showNotification(article.isLiked ? t('blog_added_likes') : t('blog_removed_likes'), 'success')
+    }
+
     const submitArticle = async () => {
+      if (!canSubmit.value || isSubmitting.value) return
+      
+      isSubmitting.value = true
+      
       try {
         const articleData = {
           title: articleForm.title,
@@ -304,14 +296,25 @@ export default {
           author_type: isBusinessOwner.value ? 'business' : 'user'
         }
 
-        await apiService.createArticle(user.value.telegram_id, articleData)
+        // Пробуем отправить на сервер
+        try {
+          await apiService.createArticle(user.value.telegram_id, articleData)
+        } catch {
+          // Если сервер недоступен, сохраняем локально
+          await blogStore.createArticle({
+            ...articleData,
+            image: ''
+          })
+        }
         
-        showNotification('Статья опубликована!', 'success')
+        showNotification(t('blog_article_published'), 'success')
         showCreateForm.value = false
         resetForm()
         loadArticles()
       } catch (error) {
-        showNotification('Ошибка при публикации', 'error')
+        showNotification(t('error'), 'error')
+      } finally {
+        isSubmitting.value = false
       }
     }
 
@@ -331,8 +334,12 @@ export default {
     }
 
     const getArticleTypeName = (type) => {
-      const names = { developer: 'От разработчиков', business: 'От бизнеса', user: 'От пользователя' }
-      return names[type] || 'Статья'
+      const names = { 
+        developer: t('blog_developers'), 
+        business: t('blog_business'), 
+        user: t('blog_users') 
+      }
+      return names[type] || t('blog_article')
     }
 
     const formatDate = (dateString) => {
@@ -349,21 +356,23 @@ export default {
 
     return {
       isLoading,
+      isSubmitting,
       activeFilter,
       blogFilters,
       articles,
       filteredArticles,
       showCreateForm,
       articleForm,
-      canCreateArticle,
+      isAuthenticated,
       canSubmit,
-      getEmptyMessage,
       closePanel,
       openArticle,
+      toggleLike,
       submitArticle,
       getArticleTypeIcon,
       getArticleTypeName,
-      formatDate
+      formatDate,
+      t
     }
   }
 }
@@ -383,20 +392,26 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 10px 16px;
-  border: none;
-  background: var(--tg-secondary-bg-color);
+  border: 1px solid #2a2a2a;
+  background: #141414;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--tg-text-color);
+  color: #888;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 }
 
 .filter-btn.active {
-  background: var(--tg-button-color);
-  color: white;
+  background: #ff6b00;
+  border-color: #ff6b00;
+  color: #fff;
+}
+
+.filter-btn:hover:not(.active) {
+  background: #1a1a1a;
+  color: #fff;
 }
 
 .filter-icon {
@@ -414,8 +429,8 @@ export default {
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--tg-border-color);
-  border-top-color: var(--tg-button-color);
+  border: 3px solid #2a2a2a;
+  border-top-color: #ff6b00;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 12px;
@@ -438,11 +453,12 @@ export default {
 .empty-state h3 {
   margin: 0 0 8px 0;
   font-size: 18px;
+  color: #fff;
 }
 
 .empty-state p {
   margin: 0 0 20px 0;
-  color: var(--tg-hint-color);
+  color: #666;
 }
 
 .articles-list {
@@ -452,22 +468,22 @@ export default {
 }
 
 .article-card {
-  background: var(--tg-secondary-bg-color);
+  background: #141414;
+  border: 1px solid #2a2a2a;
   border-radius: 16px;
   overflow: hidden;
-  cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .article-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--tg-shadow-2);
+  border-color: #ff6b00;
 }
 
 .article-image {
   width: 100%;
   height: 160px;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .article-image img {
@@ -479,11 +495,12 @@ export default {
 .article-placeholder {
   width: 100%;
   height: 100px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
+  cursor: pointer;
 }
 
 .article-content {
@@ -505,23 +522,23 @@ export default {
 }
 
 .article-type.developer {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
 }
 
 .article-type.business {
-  background: #fef3c7;
-  color: #b45309;
+  background: rgba(255, 107, 0, 0.15);
+  color: #ff6b00;
 }
 
 .article-type.user {
-  background: #dcfce7;
-  color: #166534;
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
 }
 
 .article-date {
   font-size: 12px;
-  color: var(--tg-hint-color);
+  color: #666;
 }
 
 .article-title {
@@ -529,12 +546,18 @@ export default {
   font-size: 16px;
   font-weight: 600;
   line-height: 1.3;
+  color: #fff;
+  cursor: pointer;
+}
+
+.article-title:hover {
+  color: #ff6b00;
 }
 
 .article-excerpt {
   margin: 0 0 12px 0;
   font-size: 14px;
-  color: var(--tg-hint-color);
+  color: #888;
   line-height: 1.4;
 }
 
@@ -554,7 +577,7 @@ export default {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--tg-button-color);
+  background: #ff6b00;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -572,14 +595,35 @@ export default {
 
 .author-name {
   font-size: 13px;
-  color: var(--tg-hint-color);
+  color: #888;
 }
 
 .article-stats {
   display: flex;
   gap: 10px;
   font-size: 12px;
-  color: var(--tg-hint-color);
+  color: #666;
+  align-items: center;
+}
+
+.like-btn {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.like-btn:hover {
+  background: rgba(255, 107, 0, 0.1);
+  color: #ff6b00;
+}
+
+.like-btn.liked {
+  color: #ff4444;
 }
 
 .fab-btn {
@@ -589,12 +633,12 @@ export default {
   width: 56px;
   height: 56px;
   border: none;
-  background: var(--tg-button-color);
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
   border-radius: 50%;
   font-size: 24px;
   color: white;
   cursor: pointer;
-  box-shadow: var(--tg-shadow-3);
+  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.4);
   transition: transform 0.2s;
   z-index: 100;
 }
@@ -610,7 +654,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--tg-bg-color);
+  background: #0a0a0a;
   z-index: 1000;
   overflow-y: auto;
 }
@@ -631,13 +675,14 @@ export default {
 .form-header h3 {
   margin: 0;
   font-size: 20px;
+  color: #fff;
 }
 
 .close-btn {
   background: none;
   border: none;
   font-size: 28px;
-  color: var(--tg-hint-color);
+  color: #666;
   cursor: pointer;
   padding: 0;
   line-height: 1;
@@ -652,6 +697,7 @@ export default {
   margin-bottom: 6px;
   font-size: 14px;
   font-weight: 500;
+  color: #888;
 }
 
 .form-group input,
@@ -659,16 +705,24 @@ export default {
 .form-group textarea {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid var(--tg-border-color);
+  border: 1px solid #2a2a2a;
   border-radius: 10px;
-  background: var(--tg-secondary-bg-color);
-  color: var(--tg-text-color);
+  background: #141414;
+  color: #fff;
   font-size: 16px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #ff6b00;
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
 }
 
 .form-group textarea {
   resize: vertical;
-  min-height: 120px;
+  min-height: 150px;
 }
 
 .form-actions {
@@ -689,13 +743,14 @@ export default {
 }
 
 .btn-primary {
-  background: var(--tg-button-color);
-  color: var(--tg-button-text-color);
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  color: #fff;
 }
 
 .btn-secondary {
-  background: var(--tg-secondary-bg-color);
-  color: var(--tg-text-color);
+  background: #1a1a1a;
+  color: #fff;
+  border: 1px solid #2a2a2a;
 }
 
 .btn:disabled {
