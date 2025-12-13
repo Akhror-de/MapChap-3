@@ -504,8 +504,8 @@ export default {
 .offer-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
 .offer-header h4 { margin: 0; font-size: 15px; color: #fff; }
 .offer-status { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
-.offer-status.active { background: rgba(0, 255, 136, 0.15); color: #00ff88; }
-.offer-status.paused { background: rgba(255, 107, 0, 0.15); color: #ff6b00; }
+.offer-status.active { background: rgba(255, 107, 0, 0.15); color: #ff6b00; }
+.offer-status.paused { background: rgba(255, 165, 0, 0.15); color: #ffa500; }
 .offer-desc { margin: 0 0 12px; font-size: 13px; color: #666; }
 .offer-stats { display: flex; gap: 16px; margin-bottom: 12px; font-size: 13px; color: #888; }
 .offer-actions { display: flex; gap: 8px; }
