@@ -212,7 +212,7 @@ export default {
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #00ff88;
+  border: 3px solid #ff6b00;
 }
 
 .avatar-placeholder {
@@ -220,7 +220,7 @@ export default {
   align-items: center;
   justify-content: center;
   background: #141414;
-  color: #00ff88;
+  color: #ff6b00;
   font-size: 28px;
   font-weight: 700;
 }
