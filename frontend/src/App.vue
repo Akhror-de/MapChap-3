@@ -437,8 +437,8 @@ export default {
 }
 
 .search-box:focus-within {
-  border-color: var(--mc-green);
-  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.15);
+  border-color: var(--mc-orange);
+  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.15);
 }
 
 .search-icon {
