@@ -121,14 +121,14 @@ body {
 }
 
 .btn-primary {
-  background: var(--mc-gradient-green);
-  color: #000000;
-  box-shadow: var(--mc-shadow-green);
+  background: var(--mc-gradient-primary);
+  color: #ffffff;
+  box-shadow: var(--mc-shadow-orange);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(0, 255, 136, 0.35);
+  box-shadow: 0 6px 24px rgba(255, 107, 0, 0.35);
 }
 
 .btn-secondary {
@@ -142,14 +142,14 @@ body {
 }
 
 .btn-orange {
-  background: var(--mc-gradient-orange);
+  background: var(--mc-gradient-fire);
   color: #ffffff;
   box-shadow: var(--mc-shadow-orange);
 }
 
 .btn-orange:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(255, 107, 0, 0.35);
+  box-shadow: 0 6px 24px rgba(255, 69, 0, 0.35);
 }
 
 .btn-ghost {
