@@ -307,7 +307,7 @@ export default {
 
 .content-header h4 { margin: 0; font-size: 16px; color: #fff; }
 .content-hint { margin: 4px 0 0; font-size: 12px; color: #666; }
-.link-btn { background: none; border: none; color: #00ff88; font-size: 13px; cursor: pointer; }
+.link-btn { background: none; border: none; color: #ff6b00; font-size: 13px; cursor: pointer; }
 
 .empty-mini {
   text-align: center;
