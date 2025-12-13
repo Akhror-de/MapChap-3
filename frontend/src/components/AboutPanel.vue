@@ -4,11 +4,11 @@
       <div class="header-content">
         <button class="back-button" @click="closePanel">
           <span class="back-icon">←</span>
-          <span class="back-text">Назад</span>
+          <span class="back-text">{{ t('back') }}</span>
         </button>
         <h2 class="panel-title">
           <span class="title-icon">ℹ️</span>
-          О приложении
+          {{ t('about_title') }}
         </h2>
       </div>
     </div>
@@ -17,60 +17,60 @@
       <!-- Герой -->
       <div class="about-hero">
         <div class="hero-logo">🗺️</div>
-        <h1 class="hero-title">MapChap</h1>
-        <p class="hero-tagline">Путеводитель по локальному бизнесу</p>
+        <h1 class="hero-title">{{ t('app_name') }}</h1>
+        <p class="hero-tagline">{{ t('app_tagline') }}</p>
         <div class="hero-version">
           <span class="version-tag">v3.0.0</span>
-          <span class="version-year">2024</span>
+          <span class="version-year">2025</span>
         </div>
       </div>
 
       <!-- О проекте -->
       <div class="section-card">
-        <h3>🚀 О проекте</h3>
-        <p>Telegram Mini App для поиска и размещения бизнес-объявлений на карте. Соединяем предпринимателей с клиентами.</p>
+        <h3>🚀 {{ t('about_project') }}</h3>
+        <p>{{ t('about_project_desc') }}</p>
       </div>
 
       <!-- Возможности -->
       <div class="features-grid">
         <div class="feature-card">
           <span class="feature-icon">🗺️</span>
-          <strong>Карта</strong>
-          <p>Бизнесы рядом</p>
+          <strong>{{ t('about_map') }}</strong>
+          <p>{{ t('about_map_desc') }}</p>
         </div>
         <div class="feature-card orange">
           <span class="feature-icon">💼</span>
-          <strong>Бизнес</strong>
-          <p>Размещение</p>
+          <strong>{{ t('about_business') }}</strong>
+          <p>{{ t('about_business_desc') }}</p>
         </div>
         <div class="feature-card">
           <span class="feature-icon">🔔</span>
-          <strong>Уведомления</strong>
-          <p>Push ближним</p>
+          <strong>{{ t('about_notifications') }}</strong>
+          <p>{{ t('about_notifications_desc') }}</p>
         </div>
         <div class="feature-card orange">
           <span class="feature-icon">✅</span>
-          <strong>Верификация</strong>
-          <p>DaData ИНН</p>
+          <strong>{{ t('about_verification') }}</strong>
+          <p>{{ t('about_verification_desc') }}</p>
         </div>
       </div>
 
       <!-- Команда -->
       <div class="section-card">
-        <h3>👥 Команда</h3>
+        <h3>👥 {{ t('about_team') }}</h3>
         <div class="team-list">
           <div class="team-member">
             <div class="member-avatar">👨‍💻</div>
             <div>
               <strong>Хабибуллаев Ахрор</strong>
-              <p>Основатель и CEO</p>
+              <p>{{ t('about_founder') }}</p>
             </div>
           </div>
           <div class="team-member">
             <div class="member-avatar">👩‍💼</div>
             <div>
               <strong>Яна Владимировна Ивченко</strong>
-              <p>Финансовый директор</p>
+              <p>{{ t('about_finance') }}</p>
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@
 
       <!-- Контакты -->
       <div class="section-card">
-        <h3>📞 Контакты</h3>
+        <h3>📞 {{ t('about_contacts') }}</h3>
         <div class="contacts-list">
           <a href="mailto:khabibullaevakhrorjon@gmail.com" class="contact-item">
             <span>✉️</span>
@@ -106,8 +106,8 @@
 
       <!-- Футер -->
       <div class="about-footer">
-        <p>Сделано с ❤️ в России</p>
-        <p>© 2024 MapChap</p>
+        <p>{{ t('about_footer') }}</p>
+        <p>© 2025 MapChap</p>
       </div>
     </div>
   </div>
@@ -115,12 +115,14 @@
 
 <script>
 import { useUIStore } from '../stores/uiStore'
+import { useLocale } from '../composables/useLocale'
 
 export default {
   name: 'AboutPanel',
   setup() {
     const uiStore = useUIStore()
-    return { closePanel: uiStore.closePanel }
+    const { t } = useLocale()
+    return { closePanel: uiStore.closePanel, t }
   }
 }
 </script>
