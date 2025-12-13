@@ -537,7 +537,7 @@ export default {
   font-weight: 600;
 }
 
-/* FAB кнопка локации */
+/* FAB кнопка локации с анимацией */
 .location-fab {
   position: fixed;
   bottom: 24px;
@@ -554,6 +554,40 @@ export default {
   transition: all 0.3s ease;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   z-index: 90;
+  overflow: hidden;
+}
+
+.location-fab .fab-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 107, 0, 0.3);
+  border-radius: 16px;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.3s ease;
+}
+
+.location-fab .fab-pulse.delay {
+  animation-delay: 0.3s;
+}
+
+.location-fab.locating .fab-pulse {
+  animation: fabPulse 1.5s ease-out infinite;
+}
+
+.location-fab.locating .fab-pulse.delay {
+  animation: fabPulse 1.5s ease-out infinite 0.5s;
+}
+
+.location-fab.located {
+  background: linear-gradient(135deg, var(--mc-orange) 0%, #ff8533 100%);
+  border-color: var(--mc-orange);
+  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.4);
+}
+
+.location-fab.located .fab-icon {
+  filter: grayscale(1) brightness(10);
 }
 
 .location-fab:hover {
@@ -564,7 +598,41 @@ export default {
 }
 
 .location-fab:hover .fab-icon {
-  filter: grayscale(1) brightness(0);
+  filter: grayscale(1) brightness(10);
+}
+
+.location-fab:active {
+  transform: scale(0.95);
+}
+
+.fab-icon {
+  font-size: 24px;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.fab-icon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes fabPulse {
+  0% {
+    opacity: 1;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .fab-icon {
