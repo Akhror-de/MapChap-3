@@ -4,11 +4,11 @@
       <div class="header-content">
         <button class="back-button" @click="closePanel">
           <span class="back-icon">←</span>
-          <span class="back-text">Назад</span>
+          <span class="back-text">{{ t('back') }}</span>
         </button>
         <h2 class="panel-title">
           <span class="title-icon">👤</span>
-          Профиль
+          {{ t('profile_title') }}
         </h2>
       </div>
     </div>
@@ -16,14 +16,14 @@
     <div class="panel-content">
       <div v-if="isLoading" class="loading-state">
         <div class="loading-spinner"></div>
-        <p>Загрузка...</p>
+        <p>{{ t('loading') }}</p>
       </div>
 
       <div v-else-if="!isAuthenticated" class="auth-required">
         <div class="auth-icon">🔐</div>
-        <h3>Требуется вход</h3>
-        <p>Войдите для просмотра профиля</p>
-        <button class="btn btn-primary" @click="initAuth">Войти</button>
+        <h3>{{ t('profile_login_required') }}</h3>
+        <p>{{ t('profile_login_message') }}</p>
+        <button class="btn btn-primary" @click="initAuth">{{ t('profile_login') }}</button>
       </div>
 
       <div v-else class="profile-content">
@@ -37,7 +37,7 @@
           <h3 class="user-name">{{ user?.first_name }} {{ user?.last_name }}</h3>
           <p v-if="user?.username" class="user-handle">@{{ user.username }}</p>
           <div v-if="user?.role === 'business_owner'" class="verified-tag">
-            <span>✅</span> {{ user?.is_verified ? 'Верифицирован' : 'Бизнес' }}
+            <span>✅</span> {{ user?.is_verified ? t('profile_verified') : t('profile_business') }}
           </div>
         </div>
 
@@ -52,12 +52,12 @@
         <!-- История -->
         <div v-if="activeTab === 'history'" class="tab-content">
           <div class="content-header">
-            <h4>🕰️ История</h4>
-            <button v-if="viewHistory.length > 0" class="link-btn" @click="clearHistory">Очистить</button>
+            <h4>🕰️ {{ t('profile_history') }}</h4>
+            <button v-if="viewHistory.length > 0" class="link-btn" @click="clearHistory">{{ t('profile_clear') }}</button>
           </div>
           <div v-if="viewHistory.length === 0" class="empty-mini">
             <span>👁️</span>
-            <p>Нет просмотров</p>
+            <p>{{ t('profile_no_history') }}</p>
           </div>
           <div v-else class="items-list">
             <div v-for="item in viewHistory" :key="item.id" class="list-item" @click="openOffer(item)">
@@ -73,10 +73,10 @@
 
         <!-- Избранное -->
         <div v-if="activeTab === 'favorites'" class="tab-content">
-          <div class="content-header"><h4>⭐ Избранное</h4></div>
+          <div class="content-header"><h4>⭐ {{ t('profile_favorites') }}</h4></div>
           <div v-if="favorites.length === 0" class="empty-mini">
             <span>⭐</span>
-            <p>Нет избранного</p>
+            <p>{{ t('profile_no_favorites') }}</p>
           </div>
           <div v-else class="items-list">
             <div v-for="item in favorites" :key="item.id" class="list-item">
@@ -93,8 +93,8 @@
         <!-- Категории -->
         <div v-if="activeTab === 'categories'" class="tab-content">
           <div class="content-header">
-            <h4>🎯 Любимые категории</h4>
-            <p class="content-hint">Уведомления о близких местах</p>
+            <h4>🎯 {{ t('profile_categories') }}</h4>
+            <p class="content-hint">{{ t('profile_categories_hint') }}</p>
           </div>
           <div class="categories-grid">
             <button v-for="cat in allCategories" :key="cat.id" class="cat-btn" :class="{ active: favoriteCategories.includes(cat.id) }" @click="toggleFavoriteCategory(cat.id)">
@@ -104,20 +104,21 @@
             </button>
           </div>
           <button class="btn btn-primary btn-block" @click="saveFavoriteCategories" :disabled="isSavingCategories">
-            {{ isSavingCategories ? 'Сохранение...' : 'Сохранить' }}
+            {{ isSavingCategories ? t('loading') : t('profile_save_categories') }}
           </button>
         </div>
 
         <!-- Настройки -->
         <div v-if="activeTab === 'settings'" class="tab-content">
-          <div class="content-header"><h4>⚙️ Настройки</h4></div>
+          <div class="content-header"><h4>⚙️ {{ t('profile_settings') }}</h4></div>
           <div class="settings-list">
+            <!-- Уведомления -->
             <div class="setting-item">
               <div class="setting-info">
                 <span>🔔</span>
                 <div>
-                  <strong>Уведомления</strong>
-                  <p>О близких местах</p>
+                  <strong>{{ t('profile_notifications') }}</strong>
+                  <p>{{ t('profile_notifications_desc') }}</p>
                 </div>
               </div>
               <label class="toggle">
@@ -125,8 +126,33 @@
                 <span class="toggle-slider"></span>
               </label>
             </div>
+            
+            <!-- Язык -->
+            <div class="setting-item language-setting">
+              <div class="setting-info">
+                <span>🌍</span>
+                <div>
+                  <strong>{{ t('profile_language') }}</strong>
+                  <p>{{ t('profile_language_desc') }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Выбор языка -->
+            <div class="language-selector">
+              <button 
+                v-for="lang in languages" 
+                :key="lang.code" 
+                class="lang-btn"
+                :class="{ active: language === lang.code }"
+                @click="changeLanguage(lang.code)"
+              >
+                <span class="lang-flag">{{ lang.flag }}</span>
+                <span class="lang-name">{{ lang.name }}</span>
+              </button>
+            </div>
           </div>
-          <button class="btn btn-danger btn-block" @click="logout">🚪 Выйти</button>
+          <button class="btn btn-danger btn-block" @click="logout">🚪 {{ t('profile_logout') }}</button>
         </div>
       </div>
     </div>
@@ -140,6 +166,7 @@ import { useUIStore } from '../stores/uiStore'
 import { useOffersStore } from '../stores/offersStore'
 import { storeToRefs } from 'pinia'
 import { apiService } from '../services/api'
+import { useLocale } from '../composables/useLocale'
 
 export default {
   name: 'ProfilePanel',
@@ -150,6 +177,9 @@ export default {
     const { closePanel, showNotification } = uiStore
     const { user, isAuthenticated } = storeToRefs(authStore)
     const { categories: allCategories } = storeToRefs(offersStore)
+    
+    // Локализация
+    const { t, language, languages, setLanguage } = useLocale()
 
     const isLoading = ref(false)
     const activeTab = ref('history')
@@ -172,20 +202,101 @@ export default {
     })
 
     const initAuth = () => authStore.initTelegramAuth()
-    const loadHistory = async () => { try { const r = await apiService.getUserHistory(user.value.telegram_id); viewHistory.value = r.history || [] } catch { viewHistory.value = [] } }
-    const loadFavorites = async () => { try { const r = await apiService.getUserFavorites(user.value.telegram_id); favorites.value = r.favorites || [] } catch { favorites.value = [] } }
-    const clearHistory = () => { viewHistory.value = []; showNotification('Очищено', 'success') }
-    const removeFavorite = async (id) => { try { await apiService.updateFavorites(user.value.telegram_id, id); favorites.value = favorites.value.filter(f => f.id !== id); showNotification('Удалено', 'success') } catch { showNotification('Ошибка', 'error') } }
-    const toggleFavoriteCategory = (id) => { const i = favoriteCategories.value.indexOf(id); i > -1 ? favoriteCategories.value.splice(i, 1) : favoriteCategories.value.push(id) }
-    const saveFavoriteCategories = async () => { isSavingCategories.value = true; try { await apiService.updateFavoriteCategories(user.value.telegram_id, favoriteCategories.value); showNotification('Сохранено', 'success') } catch { showNotification('Ошибка', 'error') } finally { isSavingCategories.value = false } }
-    const saveNotificationSettings = async () => { try { await apiService.updateUser(user.value.telegram_id, { notifications_enabled: notificationsEnabled.value }); showNotification(notificationsEnabled.value ? 'Включены' : 'Отключены', 'success') } catch {} }
-    const openOffer = (o) => { offersStore.setSelectedOffer(o); closePanel() }
-    const logout = () => { authStore.logout(); closePanel(); showNotification('Вышли', 'info') }
-    const getCategoryIcon = (id) => ({ food: '🍕', shopping: '🛍️', beauty: '💄', services: '🔧', medical: '⚕️', pharmacy: '💊', entertainment: '🎭' }[id] || '📍')
+    
+    const loadHistory = async () => { 
+      try { 
+        const r = await apiService.getUserHistory(user.value.telegram_id)
+        viewHistory.value = r.history || [] 
+      } catch { 
+        viewHistory.value = [] 
+      } 
+    }
+    
+    const loadFavorites = async () => { 
+      try { 
+        const r = await apiService.getUserFavorites(user.value.telegram_id)
+        favorites.value = r.favorites || [] 
+      } catch { 
+        favorites.value = [] 
+      } 
+    }
+    
+    const clearHistory = () => { 
+      viewHistory.value = []
+      showNotification(t('notif_cleared'), 'success') 
+    }
+    
+    const removeFavorite = async (id) => { 
+      try { 
+        await apiService.updateFavorites(user.value.telegram_id, id)
+        favorites.value = favorites.value.filter(f => f.id !== id)
+        showNotification(t('notif_removed'), 'success') 
+      } catch { 
+        showNotification(t('error'), 'error') 
+      } 
+    }
+    
+    const toggleFavoriteCategory = (id) => { 
+      const i = favoriteCategories.value.indexOf(id)
+      i > -1 ? favoriteCategories.value.splice(i, 1) : favoriteCategories.value.push(id) 
+    }
+    
+    const saveFavoriteCategories = async () => { 
+      isSavingCategories.value = true
+      try { 
+        await apiService.updateFavoriteCategories(user.value.telegram_id, favoriteCategories.value)
+        showNotification(t('notif_saved'), 'success') 
+      } catch { 
+        showNotification(t('error'), 'error') 
+      } finally { 
+        isSavingCategories.value = false 
+      } 
+    }
+    
+    const saveNotificationSettings = async () => { 
+      try { 
+        await apiService.updateUser(user.value.telegram_id, { notifications_enabled: notificationsEnabled.value })
+        showNotification(notificationsEnabled.value ? t('notif_enabled') : t('notif_disabled'), 'success') 
+      } catch {} 
+    }
+    
+    const openOffer = (o) => { 
+      offersStore.setSelectedOffer(o)
+      closePanel() 
+    }
+    
+    const logout = () => { 
+      authStore.logout()
+      closePanel()
+      showNotification(t('notif_logged_out'), 'info') 
+    }
+    
+    const changeLanguage = (langCode) => {
+      setLanguage(langCode)
+      showNotification(t('notif_language_changed'), 'success')
+    }
+    
+    const getCategoryIcon = (id) => ({ 
+      food: '🍕', shopping: '🛍️', beauty: '💄', services: '🔧', 
+      medical: '⚕️', pharmacy: '💊', entertainment: '🎭' 
+    }[id] || '📍')
 
-    watch(isAuthenticated, (v) => { if (v && user.value) { loadHistory(); loadFavorites(); favoriteCategories.value = user.value.favorite_categories || []; notificationsEnabled.value = user.value.notifications_enabled !== false } }, { immediate: true })
+    watch(isAuthenticated, (v) => { 
+      if (v && user.value) { 
+        loadHistory()
+        loadFavorites()
+        favoriteCategories.value = user.value.favorite_categories || []
+        notificationsEnabled.value = user.value.notifications_enabled !== false 
+      } 
+    }, { immediate: true })
 
-    return { isLoading, activeTab, tabs, viewHistory, favorites, favoriteCategories, notificationsEnabled, isSavingCategories, allCategories, user, isAuthenticated, getUserInitials, closePanel, initAuth, clearHistory, removeFavorite, toggleFavoriteCategory, saveFavoriteCategories, saveNotificationSettings, openOffer, logout, getCategoryIcon }
+    return { 
+      isLoading, activeTab, tabs, viewHistory, favorites, favoriteCategories, 
+      notificationsEnabled, isSavingCategories, allCategories, user, isAuthenticated, 
+      getUserInitials, closePanel, initAuth, clearHistory, removeFavorite, 
+      toggleFavoriteCategory, saveFavoriteCategories, saveNotificationSettings, 
+      openOffer, logout, getCategoryIcon, t, language, languages, changeLanguage
+    }
   }
 }
 </script>
@@ -303,10 +414,11 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .content-header h4 { margin: 0; font-size: 16px; color: #fff; }
-.content-hint { margin: 4px 0 0; font-size: 12px; color: #666; }
+.content-hint { margin: 4px 0 0; font-size: 12px; color: #666; width: 100%; }
 .link-btn { background: none; border: none; color: #ff6b00; font-size: 13px; cursor: pointer; }
 
 .empty-mini {
@@ -386,6 +498,42 @@ export default {
 .setting-info span { font-size: 24px; }
 .setting-info strong { display: block; font-size: 14px; color: #fff; }
 .setting-info p { margin: 2px 0 0; font-size: 12px; color: #666; }
+
+.language-setting { margin-bottom: 0; }
+
+.language-selector {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #888;
+}
+
+.lang-btn:hover {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+.lang-btn.active {
+  background: #ff6b00;
+  border-color: #ff6b00;
+  color: #fff;
+}
+
+.lang-flag { font-size: 20px; }
+.lang-name { font-size: 13px; font-weight: 500; }
 
 .toggle { position: relative; width: 50px; height: 28px; }
 .toggle input { opacity: 0; width: 0; height: 0; }
