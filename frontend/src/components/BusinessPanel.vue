@@ -4,11 +4,11 @@
       <div class="header-content">
         <button class="back-button" @click="closePanel">
           <span class="back-icon">←</span>
-          <span class="back-text">Назад</span>
+          <span class="back-text">{{ t('back') }}</span>
         </button>
         <h2 class="panel-title">
           <span class="title-icon">⚡</span>
-          Бизнес
+          {{ t('business_title') }}
         </h2>
       </div>
     </div>
@@ -17,15 +17,15 @@
       <!-- Загрузка -->
       <div v-if="businessStore.isLoading" class="loading-state">
         <div class="loading-spinner"></div>
-        <p>Загрузка...</p>
+        <p>{{ t('loading') }}</p>
       </div>
 
       <!-- Не авторизован -->
       <div v-else-if="!authStore.isAuthenticated" class="auth-required">
         <div class="auth-icon">🔐</div>
-        <h3>Требуется вход</h3>
-        <p>Войдите для управления бизнесом</p>
-        <button class="btn btn-primary" @click="initAuth">Войти</button>
+        <h3>{{ t('profile_login_required') }}</h3>
+        <p>{{ t('profile_login_message') }}</p>
+        <button class="btn btn-primary" @click="initAuth">{{ t('profile_login') }}</button>
       </div>
 
       <!-- Верификация -->
@@ -33,8 +33,8 @@
         <!-- Хедер -->
         <div class="hero-card">
           <div class="hero-icon">🚀</div>
-          <h3>Станьте партнером</h3>
-          <p>Размещайте объявления и привлекайте клиентов</p>
+          <h3>{{ t('business_become_partner') }}</h3>
+          <p>{{ t('business_partner_desc') }}</p>
         </div>
 
         <!-- Табы верификации -->
@@ -44,28 +44,28 @@
             :class="{ active: verificationMethod === 'inn' }"
             @click="verificationMethod = 'inn'"
           >
-            <span>🏢</span> По ИНН
+            <span>🏢</span> {{ t('business_verify_inn') }}
           </button>
           <button 
             class="tab-btn"
             :class="{ active: verificationMethod === 'manual' }"
             @click="verificationMethod = 'manual'"
           >
-            <span>📝</span> Вручную
+            <span>📝</span> {{ t('business_verify_manual') }}
           </button>
         </div>
 
         <!-- Форма ИНН -->
         <div v-if="verificationMethod === 'inn'" class="section-card">
-          <div class="section-title">Проверка ИНН</div>
-          <p class="section-description">Введите ИНН для автоматической проверки через DaData</p>
+          <div class="section-title">{{ t('business_inn_check') }}</div>
+          <p class="section-description">{{ t('business_inn_desc') }}</p>
           
           <div class="form-group">
-            <label>ИНН компании</label>
+            <label>{{ t('business_inn_label') }}</label>
             <input 
               v-model="innForm.inn"
               type="text" 
-              placeholder="10 или 12 цифр"
+              :placeholder="t('business_inn_placeholder')"
               maxlength="12"
               @input="validateINN"
             >
@@ -87,31 +87,31 @@
           </div>
 
           <button class="btn btn-primary btn-block" @click="verifyByINN" :disabled="isVerifying || !isValidINN">
-            {{ isVerifying ? 'Проверка...' : 'Проверить' }}
+            {{ isVerifying ? t('loading') : t('business_check') }}
           </button>
         </div>
 
         <!-- Ручная форма -->
         <div v-if="verificationMethod === 'manual'" class="section-card">
-          <div class="section-title">Ручная верификация</div>
+          <div class="section-title">{{ t('business_manual_verification') }}</div>
           
           <div class="form-group">
-            <label>Название компании</label>
+            <label>{{ t('business_company_name') }}</label>
             <input v-model="manualForm.company_name" type="text" placeholder="ООО 'Ваша компания'">
           </div>
 
           <div class="form-group">
-            <label>Телефон</label>
+            <label>{{ t('business_phone') }}</label>
             <input v-model="manualForm.phone" type="tel" placeholder="+7 (999) 123-45-67">
           </div>
 
           <div class="form-group">
-            <label>Email</label>
+            <label>{{ t('business_email') }}</label>
             <input v-model="manualForm.email" type="email" placeholder="email@company.com">
           </div>
 
           <div class="form-group">
-            <label>Соцсеть</label>
+            <label>{{ t('business_social') }}</label>
             <div class="social-btns">
               <button 
                 class="social-btn"
@@ -127,12 +127,12 @@
           </div>
 
           <div class="form-group">
-            <label>Username</label>
+            <label>{{ t('business_username') }}</label>
             <input v-model="manualForm.social_username" type="text" placeholder="@username">
           </div>
 
           <button class="btn btn-primary btn-block" @click="verifyManually" :disabled="isVerifying || !isValidManualForm">
-            {{ isVerifying ? 'Отправка...' : 'Подтвердить' }}
+            {{ isVerifying ? t('loading') : t('business_confirm') }}
           </button>
         </div>
 
@@ -141,15 +141,15 @@
           <div class="benefit-item">
             <span class="benefit-icon">📊</span>
             <div>
-              <strong>Аналитика</strong>
-              <p>Просмотры и конверсии</p>
+              <strong>{{ t('business_analytics') }}</strong>
+              <p>{{ t('business_analytics_desc') }}</p>
             </div>
           </div>
           <div class="benefit-item">
             <span class="benefit-icon">🔔</span>
             <div>
-              <strong>Уведомления</strong>
-              <p>Push близким клиентам</p>
+              <strong>{{ t('business_push_notifications') }}</strong>
+              <p>{{ t('business_push_desc') }}</p>
             </div>
           </div>
         </div>
@@ -158,47 +158,47 @@
       <!-- Бизнес контент -->
       <div v-else class="business-content">
         <div class="tabs">
-          <button class="tab-btn" :class="{ active: activeTab === 'overview' }" @click="activeTab = 'overview'">📊 Обзор</button>
-          <button class="tab-btn" :class="{ active: activeTab === 'offers' }" @click="activeTab = 'offers'">🏢 Мои</button>
-          <button class="tab-btn" :class="{ active: activeTab === 'create' }" @click="activeTab = 'create'">➕ Новое</button>
+          <button class="tab-btn" :class="{ active: activeTab === 'overview' }" @click="activeTab = 'overview'">📊 {{ t('business_overview') }}</button>
+          <button class="tab-btn" :class="{ active: activeTab === 'offers' }" @click="activeTab = 'offers'">🏢 {{ t('business_my_offers') }}</button>
+          <button class="tab-btn" :class="{ active: activeTab === 'create' }" @click="activeTab = 'create'">➕ {{ t('business_new_offer') }}</button>
         </div>
 
         <!-- Обзор -->
         <div v-if="activeTab === 'overview'">
           <div class="welcome-card">
-            <span v-if="authStore.user?.is_verified" class="verified-badge">✅ Верифицировано</span>
-            <h3>Привет, {{ businessInfo.companyName }}!</h3>
+            <span v-if="authStore.user?.is_verified" class="verified-badge">✅ {{ t('business_verified_badge') }}</span>
+            <h3>{{ t('business_welcome') }}, {{ businessInfo.companyName }}!</h3>
           </div>
 
           <div class="metrics-grid">
             <div class="metric-card">
               <span class="metric-icon">👁️</span>
               <div class="metric-value">{{ businessStats.totalViews }}</div>
-              <div class="metric-label">Просмотры</div>
+              <div class="metric-label">{{ t('business_views') }}</div>
             </div>
             <div class="metric-card orange">
               <span class="metric-icon">❤️</span>
               <div class="metric-value">{{ businessStats.totalLikes }}</div>
-              <div class="metric-label">Лайки</div>
+              <div class="metric-label">{{ t('business_likes') }}</div>
             </div>
             <div class="metric-card">
               <span class="metric-icon">🏢</span>
               <div class="metric-value">{{ businessStats.activeOffers }}</div>
-              <div class="metric-label">Объявления</div>
+              <div class="metric-label">{{ t('business_offers') }}</div>
             </div>
             <div class="metric-card orange">
               <span class="metric-icon">⭐</span>
               <div class="metric-value">{{ businessStats.averageRating || '-' }}</div>
-              <div class="metric-label">Рейтинг</div>
+              <div class="metric-label">{{ t('business_rating') }}</div>
             </div>
           </div>
 
           <div class="quick-actions">
             <button class="action-btn" @click="activeTab = 'create'">
-              <span>➕</span> Новое объявление
+              <span>➕</span> {{ t('business_new_offer_btn') }}
             </button>
             <button class="action-btn" @click="activeTab = 'offers'">
-              <span>📋</span> Управление
+              <span>📋</span> {{ t('business_manage') }}
             </button>
           </div>
         </div>
@@ -207,9 +207,9 @@
         <div v-if="activeTab === 'offers'">
           <div v-if="userOffers.length === 0" class="empty-state">
             <div class="empty-icon">🏢</div>
-            <h4>Нет объявлений</h4>
-            <p>Создайте первое</p>
-            <button class="btn btn-primary" @click="activeTab = 'create'">Создать</button>
+            <h4>{{ t('business_no_offers') }}</h4>
+            <p>{{ t('business_create_first') }}</p>
+            <button class="btn btn-primary" @click="activeTab = 'create'">{{ t('create') }}</button>
           </div>
 
           <div v-else class="offers-list">
@@ -224,10 +224,11 @@
                 <span>❤️ {{ offer.likes || 0 }}</span>
               </div>
               <div class="offer-actions">
-                <button class="btn btn-small btn-secondary" @click="editOffer(offer)">✏️</button>
+                <button class="btn btn-small btn-secondary" @click="editOffer(offer)">✏️ {{ t('edit') }}</button>
                 <button class="btn btn-small" :class="offer.status === 'active' ? 'btn-orange' : 'btn-primary'" @click="handleToggleOfferStatus(offer.id)">
                   {{ offer.status === 'active' ? '⏸️' : '▶️' }}
                 </button>
+                <button class="btn btn-small btn-danger" @click="handleDeleteOffer(offer.id)">🗑️</button>
               </div>
             </div>
           </div>
@@ -236,17 +237,17 @@
         <!-- Создание -->
         <div v-if="activeTab === 'create'">
           <div class="section-card">
-            <div class="section-title">{{ editingOffer ? 'Редактирование' : 'Новое объявление' }}</div>
+            <div class="section-title">{{ editingOffer ? t('business_editing') : t('business_new_offer_btn') }}</div>
             
             <div class="form-group">
-              <label>Название</label>
-              <input v-model="offerForm.title" type="text" placeholder="Название бизнеса">
+              <label>{{ t('business_offer_title') }} *</label>
+              <input v-model="offerForm.title" type="text" :placeholder="t('business_offer_title')">
             </div>
 
             <div class="form-group">
-              <label>Категория</label>
+              <label>{{ t('business_offer_category') }} *</label>
               <select v-model="offerForm.category">
-                <option value="">Выберите</option>
+                <option value="">{{ t('business_offer_select') }}</option>
                 <option v-for="cat in businessStore.categories" :key="cat.id" :value="cat.id">
                   {{ cat.icon }} {{ cat.name }}
                 </option>
@@ -254,24 +255,34 @@
             </div>
 
             <div class="form-group">
-              <label>Описание</label>
-              <textarea v-model="offerForm.description" rows="3" placeholder="Опишите ваш бизнес..."></textarea>
+              <label>{{ t('business_offer_desc') }} *</label>
+              <textarea v-model="offerForm.description" rows="4" :placeholder="t('business_offer_desc')"></textarea>
             </div>
 
             <div class="form-group">
-              <label>Адрес</label>
+              <label>{{ t('business_offer_address') }} *</label>
               <input v-model="offerForm.address" type="text" placeholder="Город, улица, дом">
             </div>
 
             <div class="form-group">
-              <label>Телефон</label>
+              <label>{{ t('business_phone') }} *</label>
               <input v-model="offerForm.phone" type="tel" placeholder="+7 (999) 123-45-67">
+            </div>
+            
+            <div class="form-group">
+              <label>{{ t('business_email') }}</label>
+              <input v-model="offerForm.email" type="email" placeholder="email@company.com">
+            </div>
+
+            <div class="form-group">
+              <label>Часы работы</label>
+              <input v-model="offerForm.working_hours" type="text" placeholder="Пн-Пт: 9:00-18:00">
             </div>
 
             <div class="form-actions">
-              <button v-if="editingOffer" class="btn btn-secondary" @click="cancelEdit">Отмена</button>
-              <button class="btn btn-primary" :class="{ 'btn-block': !editingOffer }" @click="submitOffer" :disabled="!canSubmit">
-                {{ editingOffer ? 'Сохранить' : 'Опубликовать' }}
+              <button v-if="editingOffer" class="btn btn-secondary" @click="cancelEdit">{{ t('cancel') }}</button>
+              <button class="btn btn-primary" :class="{ 'btn-block': !editingOffer }" @click="submitOffer" :disabled="!canSubmit || isSubmitting">
+                {{ isSubmitting ? t('loading') : (editingOffer ? t('save') : t('business_publish')) }}
               </button>
             </div>
           </div>
@@ -287,7 +298,8 @@ import { useAuthStore } from '../stores/authStore'
 import { useBusinessStore } from '../stores/businessStore'
 import { apiService } from '../services/api'
 import { storeToRefs } from 'pinia'
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted, watch } from 'vue'
+import { useLocale } from '../composables/useLocale'
 
 export default {
   name: 'BusinessPanel',
@@ -297,17 +309,29 @@ export default {
     const businessStore = useBusinessStore()
     const { closePanel, showNotification } = uiStore
     const { getUserOffers } = storeToRefs(businessStore)
+    const { t } = useLocale()
 
     const activeTab = ref('overview')
     const editingOffer = ref(null)
     const verificationMethod = ref('inn')
     const isVerifying = ref(false)
+    const isSubmitting = ref(false)
     const innVerificationResult = ref(null)
     const innError = ref('')
 
     const innForm = reactive({ inn: '' })
     const manualForm = reactive({ company_name: '', phone: '', email: '', social_type: 'telegram', social_username: '' })
-    const offerForm = reactive({ title: '', category: '', description: '', address: '', phone: '', lat: 55.751244, lng: 37.618423 })
+    const offerForm = reactive({ 
+      title: '', 
+      category: '', 
+      description: '', 
+      address: '', 
+      phone: '', 
+      email: '',
+      working_hours: '',
+      lat: 55.751244, 
+      lng: 37.618423 
+    })
 
     const userOffers = computed(() => getUserOffers.value)
     const businessInfo = computed(() => ({ companyName: authStore.user?.company_name || authStore.user?.first_name || 'Бизнес' }))
@@ -322,12 +346,33 @@ export default {
       }
     })
 
-    const isValidINN = computed(() => { const inn = innForm.inn.replace(/\D/g, ''); return inn.length === 10 || inn.length === 12 })
-    const isValidManualForm = computed(() => manualForm.company_name.length >= 2 && manualForm.phone.length >= 10 && manualForm.email.includes('@') && manualForm.social_username.length >= 2)
-    const canSubmit = computed(() => offerForm.title && offerForm.category && offerForm.description && offerForm.address && offerForm.phone)
+    const isValidINN = computed(() => { 
+      const inn = innForm.inn.replace(/\D/g, '')
+      return inn.length === 10 || inn.length === 12 
+    })
+    
+    const isValidManualForm = computed(() => 
+      manualForm.company_name.length >= 2 && 
+      manualForm.phone.length >= 10 && 
+      manualForm.email.includes('@') && 
+      manualForm.social_username.length >= 2
+    )
+    
+    const canSubmit = computed(() => 
+      offerForm.title && 
+      offerForm.category && 
+      offerForm.description && 
+      offerForm.address && 
+      offerForm.phone
+    )
 
     const initAuth = () => authStore.initTelegramAuth()
-    const validateINN = () => { innForm.inn = innForm.inn.replace(/\D/g, ''); innError.value = innForm.inn.length > 0 && !isValidINN.value ? 'ИНН: 10 или 12 цифр' : ''; innVerificationResult.value = null }
+    
+    const validateINN = () => { 
+      innForm.inn = innForm.inn.replace(/\D/g, '')
+      innError.value = innForm.inn.length > 0 && !isValidINN.value ? 'ИНН: 10 или 12 цифр' : ''
+      innVerificationResult.value = null 
+    }
     
     const verifyByINN = async () => {
       if (!isValidINN.value) return
@@ -337,12 +382,14 @@ export default {
         innVerificationResult.value = result
         if (result.success) {
           await authStore.registerAsBusiness({ companyName: result.verification.name, inn: innForm.inn, verificationType: 'inn' })
-          showNotification('Верифицировано!', 'success')
+          showNotification(t('notif_verified'), 'success')
         }
       } catch (e) {
         innVerificationResult.value = { success: false, error: e.message }
         showNotification(e.message, 'error')
-      } finally { isVerifying.value = false }
+      } finally { 
+        isVerifying.value = false 
+      }
     }
 
     const verifyManually = async () => {
@@ -351,29 +398,112 @@ export default {
       try {
         await apiService.verifyManually(authStore.user.telegram_id, manualForm)
         await authStore.registerAsBusiness({ companyName: manualForm.company_name, verificationType: 'manual' })
-        showNotification('Активировано!', 'success')
-      } catch (e) { showNotification(e.message, 'error') } finally { isVerifying.value = false }
+        showNotification(t('notif_activated'), 'success')
+      } catch (e) { 
+        showNotification(e.message, 'error') 
+      } finally { 
+        isVerifying.value = false 
+      }
     }
 
-    const getStatusText = (s) => ({ active: 'Активно', paused: 'Пауза' }[s] || s)
+    const getStatusText = (s) => {
+      const statuses = { 
+        active: t('business_offer_active'), 
+        paused: t('business_offer_paused') 
+      }
+      return statuses[s] || s
+    }
     
     const submitOffer = async () => {
+      if (!canSubmit.value || isSubmitting.value) return
+      
+      isSubmitting.value = true
       try {
-        const data = { ...offerForm, coordinates: [offerForm.lat, offerForm.lng] }
-        if (editingOffer.value) await businessStore.updateOffer(editingOffer.value.id, data)
-        else await businessStore.createOffer(data)
-        showNotification(editingOffer.value ? 'Сохранено!' : 'Опубликовано!', 'success')
+        const data = { 
+          ...offerForm, 
+          coordinates: [offerForm.lat, offerForm.lng] 
+        }
+        
+        if (editingOffer.value) {
+          await businessStore.updateOffer(editingOffer.value.id, data)
+          showNotification(t('notif_saved'), 'success')
+        } else {
+          await businessStore.createOffer(data)
+          showNotification(t('notif_published'), 'success')
+        }
+        
         resetForm()
         activeTab.value = 'offers'
-      } catch (e) { showNotification('Ошибка', 'error') }
+      } catch (e) { 
+        showNotification(t('error'), 'error') 
+      } finally {
+        isSubmitting.value = false
+      }
     }
 
-    const editOffer = (o) => { editingOffer.value = o; Object.assign(offerForm, o); activeTab.value = 'create' }
-    const cancelEdit = () => { editingOffer.value = null; resetForm(); activeTab.value = 'offers' }
-    const handleToggleOfferStatus = async (id) => { await businessStore.toggleOfferStatus(id); showNotification('Статус изменен', 'success') }
-    const resetForm = () => { editingOffer.value = null; Object.assign(offerForm, { title: '', category: '', description: '', address: '', phone: '', lat: 55.751244, lng: 37.618423 }) }
+    const editOffer = (o) => { 
+      editingOffer.value = o
+      Object.assign(offerForm, {
+        title: o.title || '',
+        category: o.category || '',
+        description: o.description || '',
+        address: o.address || '',
+        phone: o.phone || '',
+        email: o.email || '',
+        working_hours: o.working_hours || '',
+        lat: o.coordinates?.[0] || 55.751244,
+        lng: o.coordinates?.[1] || 37.618423
+      })
+      activeTab.value = 'create' 
+    }
+    
+    const cancelEdit = () => { 
+      editingOffer.value = null
+      resetForm()
+      activeTab.value = 'offers' 
+    }
+    
+    const handleToggleOfferStatus = async (id) => { 
+      await businessStore.toggleOfferStatus(id)
+      showNotification(t('notif_status_changed'), 'success') 
+    }
+    
+    const handleDeleteOffer = async (id) => {
+      if (confirm('Удалить объявление?')) {
+        await businessStore.deleteOffer(id)
+        showNotification(t('notif_removed'), 'success')
+      }
+    }
+    
+    const resetForm = () => { 
+      editingOffer.value = null
+      Object.assign(offerForm, { 
+        title: '', 
+        category: '', 
+        description: '', 
+        address: '', 
+        phone: '', 
+        email: '',
+        working_hours: '',
+        lat: 55.751244, 
+        lng: 37.618423 
+      }) 
+    }
+    
+    // Загружаем объявления при входе
+    watch(() => authStore.isBusinessOwner, (isBusiness) => {
+      if (isBusiness) {
+        businessStore.loadUserOffers()
+      }
+    }, { immediate: true })
 
-    return { authStore, businessStore, activeTab, editingOffer, verificationMethod, isVerifying, innVerificationResult, innError, innForm, manualForm, offerForm, userOffers, businessInfo, businessStats, isValidINN, isValidManualForm, canSubmit, closePanel, initAuth, validateINN, verifyByINN, verifyManually, submitOffer, editOffer, cancelEdit, handleToggleOfferStatus, getStatusText }
+    return { 
+      authStore, businessStore, activeTab, editingOffer, verificationMethod, 
+      isVerifying, isSubmitting, innVerificationResult, innError, innForm, manualForm, offerForm, 
+      userOffers, businessInfo, businessStats, isValidINN, isValidManualForm, canSubmit, 
+      closePanel, initAuth, validateINN, verifyByINN, verifyManually, submitOffer, 
+      editOffer, cancelEdit, handleToggleOfferStatus, handleDeleteOffer, getStatusText, t 
+    }
   }
 }
 </script>
@@ -460,7 +590,7 @@ export default {
   margin-bottom: 16px;
   color: #fff;
 }
-.verified-badge { display: inline-block; padding: 4px 10px; background: rgba(0,0,0,0.2); border-radius: 20px; font-size: 12px; margin-bottom: 8px; }
+.verified-badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 12px; margin-bottom: 8px; }
 .welcome-card h3 { margin: 0; font-size: 18px; }
 
 .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
@@ -522,4 +652,9 @@ export default {
 }
 .section-title { font-size: 16px; font-weight: 600; color: #fff; margin: 0 0 8px; }
 .section-description { font-size: 13px; color: #666; margin: 0 0 16px; }
+
+.btn-danger { 
+  background: linear-gradient(135deg, #ff4444 0%, #cc3333 100%) !important; 
+  color: #fff !important; 
+}
 </style>
