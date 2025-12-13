@@ -4,15 +4,26 @@ export function useGeolocation() {
   const isLoading = ref(false)
   const error = ref(null)
 
+  // Демо координаты Москвы для тестирования
+  const DEMO_LOCATION = {
+    latitude: 55.753215,
+    longitude: 37.622504,
+    accuracy: 100,
+    isDemo: true
+  }
+
   const getCurrentLocation = () => {
     return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error('Geolocation is not supported by this browser'))
-        return
-      }
-
       isLoading.value = true
       error.value = null
+
+      // Проверяем поддержку геолокации
+      if (!navigator.geolocation) {
+        console.log('📍 Geolocation not supported, using demo location')
+        isLoading.value = false
+        resolve(DEMO_LOCATION)
+        return
+      }
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -25,12 +36,13 @@ export function useGeolocation() {
         },
         (err) => {
           isLoading.value = false
-          error.value = err.message
-          reject(err)
+          console.log('📍 Geolocation error, using demo location:', err.message)
+          // Используем демо локацию при ошибке
+          resolve(DEMO_LOCATION)
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000,
+          timeout: 5000,
           maximumAge: 60000
         }
       )
