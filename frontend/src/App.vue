@@ -296,7 +296,7 @@ export default {
 .logo-text {
   font-size: 20px;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--mc-green) 0%, #00cc6a 100%);
+  background: linear-gradient(135deg, var(--mc-orange) 0%, var(--mc-orange-light) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -318,7 +318,7 @@ export default {
 
 .header-btn:hover {
   background: var(--mc-bg-elevated);
-  border-color: var(--mc-green);
+  border-color: var(--mc-orange);
   transform: translateY(-1px);
 }
 
