@@ -1,5 +1,5 @@
 <template>
-  <div class="side-panel modern-panel">
+  <div class="side-panel">
     <div class="panel-header">
       <div class="header-content">
         <button class="back-button" @click="closePanel">
@@ -8,226 +8,125 @@
         </button>
         <h2 class="panel-title">
           <span class="title-icon">👤</span>
-          Мой профиль
+          Профиль
         </h2>
       </div>
     </div>
 
     <div class="panel-content">
-      <!-- Загрузка -->
       <div v-if="isLoading" class="loading-state">
         <div class="loading-spinner"></div>
-        <p>Загрузка профиля...</p>
+        <p>Загрузка...</p>
       </div>
 
-      <!-- Не авторизован -->
       <div v-else-if="!isAuthenticated" class="auth-required">
         <div class="auth-icon">🔐</div>
-        <h3>Требуется авторизация</h3>
-        <p>Войдите в систему, чтобы просмотреть профиль</p>
-        <button class="btn btn-primary" @click="initAuth">
-          Войти через Telegram
-        </button>
+        <h3>Требуется вход</h3>
+        <p>Войдите для просмотра профиля</p>
+        <button class="btn btn-primary" @click="initAuth">Войти</button>
       </div>
 
-      <!-- Контент профиля -->
       <div v-else class="profile-content">
-        <!-- Аватар и основная информация -->
-        <div class="profile-summary">
-          <div class="avatar-section">
-            <div class="avatar">
-              <img v-if="user?.photo_url" :src="user.photo_url" alt="Avatar" />
-              <div v-else class="avatar-placeholder">
-                {{ getUserInitials }}
-              </div>
-              <div class="role-badge" v-if="user?.role === 'business_owner'">
-                💼
-              </div>
-            </div>
-            <div class="user-info">
-              <h3 class="user-name">{{ user?.first_name }} {{ user?.last_name }}</h3>
-              <p class="user-username" v-if="user?.username">
-                @{{ user.username }}
-              </p>
-              <div class="user-role" v-if="user?.role === 'business_owner'">
-                <span class="role-icon">✅</span>
-                <span>{{ user?.is_verified ? 'Верифицированный бизнес' : 'Бизнес-аккаунт' }}</span>
-              </div>
-            </div>
+        <!-- Аватар -->
+        <div class="profile-hero">
+          <div class="avatar-wrapper">
+            <img v-if="user?.photo_url" :src="user.photo_url" class="avatar-img" />
+            <div v-else class="avatar-placeholder">{{ getUserInitials }}</div>
+            <span v-if="user?.role === 'business_owner'" class="role-badge">💼</span>
+          </div>
+          <h3 class="user-name">{{ user?.first_name }} {{ user?.last_name }}</h3>
+          <p v-if="user?.username" class="user-handle">@{{ user.username }}</p>
+          <div v-if="user?.role === 'business_owner'" class="verified-tag">
+            <span>✅</span> {{ user?.is_verified ? 'Верифицирован' : 'Бизнес' }}
           </div>
         </div>
 
-        <!-- Табы профиля -->
+        <!-- Табы -->
         <div class="profile-tabs">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            class="tab-button"
-            :class="{ active: activeTab === tab.id }"
-            @click="activeTab = tab.id"
-          >
+          <button v-for="tab in tabs" :key="tab.id" class="tab-btn" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id">
             <span class="tab-icon">{{ tab.icon }}</span>
-            <span class="tab-label">{{ tab.label }}</span>
-            <span v-if="tab.count > 0" class="tab-count">{{ tab.count }}</span>
+            <span v-if="tab.count > 0" class="tab-badge">{{ tab.count }}</span>
           </button>
         </div>
 
-        <div class="tab-content">
-          <!-- История просмотров -->
-          <div v-if="activeTab === 'history'" class="history-tab">
-            <div class="section-header">
-              <h4>🕰️ История просмотров</h4>
-              <button v-if="viewHistory.length > 0" class="btn-link" @click="clearHistory">
-                Очистить
-              </button>
-            </div>
-
-            <div v-if="isLoadingHistory" class="loading-inline">
-              <div class="loading-spinner-small"></div>
-              <span>Загрузка...</span>
-            </div>
-
-            <div v-else-if="viewHistory.length === 0" class="empty-state-small">
-              <span class="empty-icon">👁️</span>
-              <p>Вы еще не просматривали объявления</p>
-            </div>
-
-            <div v-else class="history-list">
-              <div 
-                v-for="item in viewHistory" 
-                :key="item.id"
-                class="history-item"
-                @click="openOffer(item)"
-              >
-                <div class="history-icon">
-                  {{ getCategoryIcon(item.category) }}
-                </div>
-                <div class="history-content">
-                  <h5 class="history-title">{{ item.title }}</h5>
-                  <p class="history-address">{{ item.address }}</p>
-                  <span class="history-time">{{ formatTime(item.viewed_at) }}</span>
-                </div>
-                <div class="history-arrow">›</div>
+        <!-- История -->
+        <div v-if="activeTab === 'history'" class="tab-content">
+          <div class="content-header">
+            <h4>🕰️ История</h4>
+            <button v-if="viewHistory.length > 0" class="link-btn" @click="clearHistory">Очистить</button>
+          </div>
+          <div v-if="viewHistory.length === 0" class="empty-mini">
+            <span>👁️</span>
+            <p>Нет просмотров</p>
+          </div>
+          <div v-else class="items-list">
+            <div v-for="item in viewHistory" :key="item.id" class="list-item" @click="openOffer(item)">
+              <span class="item-icon">{{ getCategoryIcon(item.category) }}</span>
+              <div class="item-info">
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.address }}</span>
               </div>
+              <span class="item-arrow">›</span>
             </div>
           </div>
+        </div>
 
-          <!-- Избранное -->
-          <div v-if="activeTab === 'favorites'" class="favorites-tab">
-            <div class="section-header">
-              <h4>⭐ Избранные места</h4>
-            </div>
-
-            <div v-if="isLoadingFavorites" class="loading-inline">
-              <div class="loading-spinner-small"></div>
-              <span>Загрузка...</span>
-            </div>
-
-            <div v-else-if="favorites.length === 0" class="empty-state-small">
-              <span class="empty-icon">⭐</span>
-              <p>Добавьте места в избранное</p>
-            </div>
-
-            <div v-else class="favorites-list">
-              <div 
-                v-for="item in favorites" 
-                :key="item.id"
-                class="favorite-item"
-              >
-                <div class="favorite-icon">
-                  {{ getCategoryIcon(item.category) }}
-                </div>
-                <div class="favorite-content">
-                  <h5 class="favorite-title">{{ item.title }}</h5>
-                  <p class="favorite-address">{{ item.address }}</p>
-                  <div class="favorite-stats">
-                    <span>⭐ {{ item.rating || 0 }}</span>
-                    <span>👁️ {{ item.views || 0 }}</span>
-                  </div>
-                </div>
-                <button class="remove-favorite-btn" @click="removeFavorite(item.id)">
-                  ❤️
-                </button>
+        <!-- Избранное -->
+        <div v-if="activeTab === 'favorites'" class="tab-content">
+          <div class="content-header"><h4>⭐ Избранное</h4></div>
+          <div v-if="favorites.length === 0" class="empty-mini">
+            <span>⭐</span>
+            <p>Нет избранного</p>
+          </div>
+          <div v-else class="items-list">
+            <div v-for="item in favorites" :key="item.id" class="list-item">
+              <span class="item-icon">{{ getCategoryIcon(item.category) }}</span>
+              <div class="item-info">
+                <strong>{{ item.title }}</strong>
+                <span>⭐ {{ item.rating || 0 }} • 👁️ {{ item.views || 0 }}</span>
               </div>
+              <button class="remove-btn" @click="removeFavorite(item.id)">❤️</button>
             </div>
           </div>
+        </div>
 
-          <!-- Любимые категории -->
-          <div v-if="activeTab === 'categories'" class="categories-tab">
-            <div class="section-header">
-              <h4>🎯 Любимые категории</h4>
-              <p class="section-description">
-                Выберите категории, чтобы получать уведомления о близких местах
-              </p>
-            </div>
-
-            <div class="categories-grid">
-              <button
-                v-for="category in allCategories"
-                :key="category.id"
-                class="category-toggle"
-                :class="{ active: favoriteCategories.includes(category.id) }"
-                :style="{ '--category-color': category.color }"
-                @click="toggleFavoriteCategory(category.id)"
-              >
-                <span class="category-icon">{{ category.icon }}</span>
-                <span class="category-name">{{ category.name }}</span>
-                <span class="category-check" v-if="favoriteCategories.includes(category.id)">✓</span>
-              </button>
-            </div>
-
-            <button 
-              class="btn btn-primary btn-block" 
-              @click="saveFavoriteCategories"
-              :disabled="isSavingCategories"
-            >
-              {{ isSavingCategories ? 'Сохранение...' : 'Сохранить настройки' }}
+        <!-- Категории -->
+        <div v-if="activeTab === 'categories'" class="tab-content">
+          <div class="content-header">
+            <h4>🎯 Любимые категории</h4>
+            <p class="content-hint">Уведомления о близких местах</p>
+          </div>
+          <div class="categories-grid">
+            <button v-for="cat in allCategories" :key="cat.id" class="cat-btn" :class="{ active: favoriteCategories.includes(cat.id) }" @click="toggleFavoriteCategory(cat.id)">
+              <span>{{ cat.icon }}</span>
+              <span>{{ cat.name }}</span>
+              <span v-if="favoriteCategories.includes(cat.id)" class="cat-check">✓</span>
             </button>
           </div>
+          <button class="btn btn-primary btn-block" @click="saveFavoriteCategories" :disabled="isSavingCategories">
+            {{ isSavingCategories ? 'Сохранение...' : 'Сохранить' }}
+          </button>
+        </div>
 
-          <!-- Настройки -->
-          <div v-if="activeTab === 'settings'" class="settings-tab">
-            <div class="section-header">
-              <h4>⚙️ Настройки</h4>
-            </div>
-
-            <div class="settings-list">
-              <div class="setting-item">
-                <div class="setting-info">
-                  <span class="setting-icon">🔔</span>
-                  <div class="setting-text">
-                    <h5>Уведомления</h5>
-                    <p>Получать уведомления о близких местах</p>
-                  </div>
+        <!-- Настройки -->
+        <div v-if="activeTab === 'settings'" class="tab-content">
+          <div class="content-header"><h4>⚙️ Настройки</h4></div>
+          <div class="settings-list">
+            <div class="setting-item">
+              <div class="setting-info">
+                <span>🔔</span>
+                <div>
+                  <strong>Уведомления</strong>
+                  <p>О близких местах</p>
                 </div>
-                <label class="toggle-switch">
-                  <input 
-                    type="checkbox" 
-                    v-model="notificationsEnabled"
-                    @change="saveNotificationSettings"
-                  >
-                  <span class="toggle-slider"></span>
-                </label>
               </div>
-
-              <div class="setting-item">
-                <div class="setting-info">
-                  <span class="setting-icon">🌙</span>
-                  <div class="setting-text">
-                    <h5>Темная тема</h5>
-                    <p>Использовать тему Telegram</p>
-                  </div>
-                </div>
-                <span class="setting-value">Авто</span>
-              </div>
-            </div>
-
-            <div class="logout-section">
-              <button class="btn btn-danger btn-block" @click="logout">
-                🚪 Выйти из аккаунта
-              </button>
+              <label class="toggle">
+                <input type="checkbox" v-model="notificationsEnabled" @change="saveNotificationSettings">
+                <span class="toggle-slider"></span>
+              </label>
             </div>
           </div>
+          <button class="btn btn-danger btn-block" @click="logout">🚪 Выйти</button>
         </div>
       </div>
     </div>
@@ -248,249 +147,82 @@ export default {
     const authStore = useAuthStore()
     const uiStore = useUIStore()
     const offersStore = useOffersStore()
-    
     const { closePanel, showNotification } = uiStore
     const { user, isAuthenticated } = storeToRefs(authStore)
     const { categories: allCategories } = storeToRefs(offersStore)
 
-    // State
     const isLoading = ref(false)
-    const isLoadingHistory = ref(false)
-    const isLoadingFavorites = ref(false)
-    const isSavingCategories = ref(false)
     const activeTab = ref('history')
     const viewHistory = ref([])
     const favorites = ref([])
     const favoriteCategories = ref([])
     const notificationsEnabled = ref(true)
+    const isSavingCategories = ref(false)
 
-    // Tabs
     const tabs = computed(() => [
-      { id: 'history', label: 'История', icon: '🕰️', count: viewHistory.value.length },
-      { id: 'favorites', label: 'Избранное', icon: '⭐', count: favorites.value.length },
-      { id: 'categories', label: 'Категории', icon: '🎯', count: favoriteCategories.value.length },
-      { id: 'settings', label: 'Настройки', icon: '⚙️', count: 0 }
+      { id: 'history', icon: '🕰️', count: viewHistory.value.length },
+      { id: 'favorites', icon: '⭐', count: favorites.value.length },
+      { id: 'categories', icon: '🎯', count: favoriteCategories.value.length },
+      { id: 'settings', icon: '⚙️', count: 0 }
     ])
 
-    // Computed
     const getUserInitials = computed(() => {
       if (!user.value) return '?'
-      const first = user.value.first_name?.[0] || ''
-      const last = user.value.last_name?.[0] || ''
-      return (first + last).toUpperCase() || 'U'
+      return ((user.value.first_name?.[0] || '') + (user.value.last_name?.[0] || '')).toUpperCase() || 'U'
     })
 
-    // Methods
-    const initAuth = () => {
-      authStore.initTelegramAuth()
-    }
+    const initAuth = () => authStore.initTelegramAuth()
+    const loadHistory = async () => { try { const r = await apiService.getUserHistory(user.value.telegram_id); viewHistory.value = r.history || [] } catch { viewHistory.value = [] } }
+    const loadFavorites = async () => { try { const r = await apiService.getUserFavorites(user.value.telegram_id); favorites.value = r.favorites || [] } catch { favorites.value = [] } }
+    const clearHistory = () => { viewHistory.value = []; showNotification('Очищено', 'success') }
+    const removeFavorite = async (id) => { try { await apiService.updateFavorites(user.value.telegram_id, id); favorites.value = favorites.value.filter(f => f.id !== id); showNotification('Удалено', 'success') } catch { showNotification('Ошибка', 'error') } }
+    const toggleFavoriteCategory = (id) => { const i = favoriteCategories.value.indexOf(id); i > -1 ? favoriteCategories.value.splice(i, 1) : favoriteCategories.value.push(id) }
+    const saveFavoriteCategories = async () => { isSavingCategories.value = true; try { await apiService.updateFavoriteCategories(user.value.telegram_id, favoriteCategories.value); showNotification('Сохранено', 'success') } catch { showNotification('Ошибка', 'error') } finally { isSavingCategories.value = false } }
+    const saveNotificationSettings = async () => { try { await apiService.updateUser(user.value.telegram_id, { notifications_enabled: notificationsEnabled.value }); showNotification(notificationsEnabled.value ? 'Включены' : 'Отключены', 'success') } catch {} }
+    const openOffer = (o) => { offersStore.setSelectedOffer(o); closePanel() }
+    const logout = () => { authStore.logout(); closePanel(); showNotification('Вышли', 'info') }
+    const getCategoryIcon = (id) => ({ food: '🍕', shopping: '🛍️', beauty: '💄', services: '🔧', medical: '⚕️', pharmacy: '💊', entertainment: '🎭' }[id] || '📍')
 
-    const loadHistory = async () => {
-      if (!user.value?.telegram_id) return
-      
-      isLoadingHistory.value = true
-      try {
-        const result = await apiService.getUserHistory(user.value.telegram_id)
-        viewHistory.value = result.history || []
-      } catch (error) {
-        console.log('History load error:', error)
-        viewHistory.value = []
-      } finally {
-        isLoadingHistory.value = false
-      }
-    }
+    watch(isAuthenticated, (v) => { if (v && user.value) { loadHistory(); loadFavorites(); favoriteCategories.value = user.value.favorite_categories || []; notificationsEnabled.value = user.value.notifications_enabled !== false } }, { immediate: true })
 
-    const loadFavorites = async () => {
-      if (!user.value?.telegram_id) return
-      
-      isLoadingFavorites.value = true
-      try {
-        const result = await apiService.getUserFavorites(user.value.telegram_id)
-        favorites.value = result.favorites || []
-      } catch (error) {
-        console.log('Favorites load error:', error)
-        favorites.value = []
-      } finally {
-        isLoadingFavorites.value = false
-      }
-    }
-
-    const clearHistory = () => {
-      viewHistory.value = []
-      showNotification('История очищена', 'success')
-    }
-
-    const removeFavorite = async (offerId) => {
-      try {
-        await apiService.updateFavorites(user.value.telegram_id, offerId)
-        favorites.value = favorites.value.filter(f => f.id !== offerId)
-        showNotification('Удалено из избранного', 'success')
-      } catch (error) {
-        showNotification('Ошибка при удалении', 'error')
-      }
-    }
-
-    const toggleFavoriteCategory = (categoryId) => {
-      const index = favoriteCategories.value.indexOf(categoryId)
-      if (index > -1) {
-        favoriteCategories.value.splice(index, 1)
-      } else {
-        favoriteCategories.value.push(categoryId)
-      }
-    }
-
-    const saveFavoriteCategories = async () => {
-      isSavingCategories.value = true
-      try {
-        await apiService.updateFavoriteCategories(user.value.telegram_id, favoriteCategories.value)
-        showNotification('Категории сохранены', 'success')
-      } catch (error) {
-        showNotification('Ошибка при сохранении', 'error')
-      } finally {
-        isSavingCategories.value = false
-      }
-    }
-
-    const saveNotificationSettings = async () => {
-      try {
-        await apiService.updateUser(user.value.telegram_id, {
-          notifications_enabled: notificationsEnabled.value
-        })
-        showNotification(
-          notificationsEnabled.value ? 'Уведомления включены' : 'Уведомления отключены',
-          'success'
-        )
-      } catch (error) {
-        console.log('Settings save error:', error)
-      }
-    }
-
-    const openOffer = (offer) => {
-      offersStore.setSelectedOffer(offer)
-      closePanel()
-    }
-
-    const logout = () => {
-      authStore.logout()
-      closePanel()
-      showNotification('Вы вышли из аккаунта', 'info')
-    }
-
-    const getCategoryIcon = (categoryId) => {
-      const icons = {
-        food: '🍕', shopping: '🛍️', beauty: '💄', services: '🔧',
-        medical: '⚕️', furniture: '🛋️', pharmacy: '💊', entertainment: '🎭',
-        education: '📚', auto: '🚗', hotel: '🏨'
-      }
-      return icons[categoryId] || '📍'
-    }
-
-    const formatTime = (dateString) => {
-      if (!dateString) return ''
-      const date = new Date(dateString)
-      const now = new Date()
-      const diff = now - date
-      
-      if (diff < 60000) return 'Только что'
-      if (diff < 3600000) return `${Math.floor(diff / 60000)} мин. назад`
-      if (diff < 86400000) return `${Math.floor(diff / 3600000)} ч. назад`
-      return date.toLocaleDateString('ru-RU')
-    }
-
-    // Watch for auth changes
-    watch(isAuthenticated, (newVal) => {
-      if (newVal && user.value) {
-        loadHistory()
-        loadFavorites()
-        favoriteCategories.value = user.value.favorite_categories || []
-        notificationsEnabled.value = user.value.notifications_enabled !== false
-      }
-    }, { immediate: true })
-
-    onMounted(() => {
-      if (isAuthenticated.value && user.value) {
-        loadHistory()
-        loadFavorites()
-        favoriteCategories.value = user.value.favorite_categories || []
-        notificationsEnabled.value = user.value.notifications_enabled !== false
-      }
-    })
-
-    return {
-      isLoading,
-      isLoadingHistory,
-      isLoadingFavorites,
-      isSavingCategories,
-      activeTab,
-      tabs,
-      viewHistory,
-      favorites,
-      favoriteCategories,
-      notificationsEnabled,
-      allCategories,
-      user,
-      isAuthenticated,
-      getUserInitials,
-      closePanel,
-      initAuth,
-      clearHistory,
-      removeFavorite,
-      toggleFavoriteCategory,
-      saveFavoriteCategories,
-      saveNotificationSettings,
-      openOffer,
-      logout,
-      getCategoryIcon,
-      formatTime
-    }
+    return { isLoading, activeTab, tabs, viewHistory, favorites, favoriteCategories, notificationsEnabled, isSavingCategories, allCategories, user, isAuthenticated, getUserInitials, closePanel, initAuth, clearHistory, removeFavorite, toggleFavoriteCategory, saveFavoriteCategories, saveNotificationSettings, openOffer, logout, getCategoryIcon }
   }
 }
 </script>
 
 <style scoped>
-.profile-content {
-  padding: 0;
-}
-
-.profile-summary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 24px 20px;
-  border-radius: 16px;
+.profile-hero {
+  text-align: center;
+  padding: 32px 20px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+  border: 1px solid #2a2a2a;
+  border-radius: 20px;
   margin-bottom: 20px;
-  color: white;
 }
 
-.avatar-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.avatar {
+.avatar-wrapper {
   position: relative;
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  overflow: hidden;
-  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 16px;
 }
 
-.avatar img {
-  width: 100%;
-  height: 100%;
+.avatar-img, .avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
   object-fit: cover;
+  border: 3px solid #00ff88;
 }
 
 .avatar-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  font-size: 24px;
+  background: #141414;
+  color: #00ff88;
+  font-size: 28px;
   font-weight: 700;
-  color: white;
 }
 
 .role-badge {
@@ -499,364 +231,172 @@ export default {
   right: -4px;
   width: 28px;
   height: 28px;
-  background: white;
+  background: #ff6b00;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-.user-info {
-  flex: 1;
-}
-
-.user-name {
-  margin: 0 0 4px 0;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.user-username {
-  margin: 0 0 8px 0;
-  opacity: 0.9;
-  font-size: 14px;
-}
-
-.user-role {
+.user-name { margin: 0 0 4px; font-size: 22px; color: #fff; }
+.user-handle { margin: 0 0 12px; color: #666; font-size: 14px; }
+.verified-tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 12px;
+  padding: 6px 12px;
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 20px;
+  color: #00ff88;
   font-size: 12px;
-  font-weight: 500;
 }
 
 .profile-tabs {
   display: flex;
-  gap: 4px;
-  background: var(--tg-secondary-bg-color);
-  padding: 4px;
-  border-radius: 12px;
+  gap: 8px;
   margin-bottom: 20px;
-  overflow-x: auto;
 }
 
-.tab-button {
+.tab-btn {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 10px 8px;
-  border: none;
-  background: transparent;
-  border-radius: 8px;
+  gap: 4px;
+  padding: 14px 8px;
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 70px;
+  position: relative;
 }
 
-.tab-button.active {
-  background: var(--tg-button-color);
-  color: white;
+.tab-btn.active {
+  background: #00ff88;
+  border-color: #00ff88;
 }
 
-.tab-icon {
-  font-size: 18px;
-}
-
-.tab-label {
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.tab-count {
+.tab-btn.active .tab-icon { filter: grayscale(1) brightness(0); }
+.tab-icon { font-size: 20px; }
+.tab-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: #ff6b00;
+  border-radius: 9px;
+  color: #fff;
   font-size: 10px;
-  background: rgba(0,0,0,0.1);
-  padding: 1px 6px;
-  border-radius: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.tab-button.active .tab-count {
-  background: rgba(255,255,255,0.2);
-}
-
-.section-header {
+.content-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
 }
 
-.section-header h4 {
-  margin: 0;
-  font-size: 16px;
-}
+.content-header h4 { margin: 0; font-size: 16px; color: #fff; }
+.content-hint { margin: 4px 0 0; font-size: 12px; color: #666; }
+.link-btn { background: none; border: none; color: #00ff88; font-size: 13px; cursor: pointer; }
 
-.section-description {
-  margin: 4px 0 0 0;
-  font-size: 13px;
-  color: var(--tg-hint-color);
-}
-
-.btn-link {
-  background: none;
-  border: none;
-  color: var(--tg-button-color);
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.loading-inline {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 20px;
-  color: var(--tg-hint-color);
-}
-
-.loading-spinner-small {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--tg-border-color);
-  border-top-color: var(--tg-button-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.empty-state-small {
+.empty-mini {
   text-align: center;
-  padding: 30px 20px;
-  color: var(--tg-hint-color);
+  padding: 40px 20px;
+  color: #666;
 }
+.empty-mini span { font-size: 32px; display: block; margin-bottom: 8px; }
+.empty-mini p { margin: 0; }
 
-.empty-icon {
-  font-size: 32px;
-  display: block;
-  margin-bottom: 8px;
-}
-
-.empty-state-small p {
-  margin: 0;
-  font-size: 14px;
-}
-
-/* History list */
-.history-list,
-.favorites-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.history-item,
-.favorite-item {
+.items-list { display: flex; flex-direction: column; gap: 8px; }
+.list-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: var(--tg-secondary-bg-color);
+  padding: 14px;
+  background: #141414;
+  border: 1px solid #2a2a2a;
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
-
-.history-item:hover,
-.favorite-item:hover {
-  background: var(--tg-border-color);
-}
-
-.history-icon,
-.favorite-icon {
-  width: 44px;
-  height: 44px;
-  background: var(--tg-bg-color);
-  border-radius: 12px;
+.list-item:hover { background: #1a1a1a; border-color: #00ff88; }
+.item-icon {
+  width: 40px;
+  height: 40px;
+  background: #0a0a0a;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.history-content,
-.favorite-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.history-title,
-.favorite-title {
-  margin: 0 0 2px 0;
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.history-address,
-.favorite-address {
-  margin: 0;
-  font-size: 12px;
-  color: var(--tg-hint-color);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.history-time {
-  font-size: 11px;
-  color: var(--tg-hint-color);
-}
-
-.favorite-stats {
-  display: flex;
-  gap: 12px;
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--tg-hint-color);
-}
-
-.history-arrow {
-  font-size: 20px;
-  color: var(--tg-hint-color);
-}
-
-.remove-favorite-btn {
-  background: none;
-  border: none;
   font-size: 18px;
-  cursor: pointer;
-  padding: 8px;
-  opacity: 0.7;
-  transition: opacity 0.2s;
 }
+.item-info { flex: 1; }
+.item-info strong { display: block; font-size: 14px; color: #fff; margin-bottom: 2px; }
+.item-info span { font-size: 12px; color: #666; }
+.item-arrow { color: #444; font-size: 20px; }
+.remove-btn { background: none; border: none; font-size: 18px; cursor: pointer; opacity: 0.7; }
+.remove-btn:hover { opacity: 1; }
 
-.remove-favorite-btn:hover {
-  opacity: 1;
-}
-
-/* Categories grid */
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-.category-toggle {
+.cat-btn {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px;
-  border: 2px solid var(--tg-border-color);
-  background: var(--tg-secondary-bg-color);
+  background: #141414;
+  border: 1px solid #2a2a2a;
   border-radius: 12px;
+  color: #888;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
 }
+.cat-btn.active { background: #00ff88; border-color: #00ff88; color: #000; }
+.cat-check { margin-left: auto; font-weight: 700; }
 
-.category-toggle.active {
-  border-color: var(--category-color, var(--tg-button-color));
-  background: var(--category-color, var(--tg-button-color));
-  color: white;
-}
-
-.category-toggle .category-icon {
-  font-size: 20px;
-}
-
-.category-toggle .category-name {
-  font-size: 12px;
-  font-weight: 500;
-  flex: 1;
-}
-
-.category-check {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-/* Settings */
-.settings-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
+.settings-list { margin-bottom: 20px; }
 .setting-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  background: var(--tg-secondary-bg-color);
+  background: #141414;
+  border: 1px solid #2a2a2a;
   border-radius: 12px;
+  margin-bottom: 8px;
 }
+.setting-info { display: flex; align-items: center; gap: 12px; }
+.setting-info span { font-size: 24px; }
+.setting-info strong { display: block; font-size: 14px; color: #fff; }
+.setting-info p { margin: 2px 0 0; font-size: 12px; color: #666; }
 
-.setting-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.setting-icon {
-  font-size: 24px;
-}
-
-.setting-text h5 {
-  margin: 0 0 2px 0;
-  font-size: 14px;
-}
-
-.setting-text p {
-  margin: 0;
-  font-size: 12px;
-  color: var(--tg-hint-color);
-}
-
-.setting-value {
-  font-size: 13px;
-  color: var(--tg-hint-color);
-}
-
-/* Toggle switch */
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 28px;
-}
-
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
+.toggle { position: relative; width: 50px; height: 28px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
   position: absolute;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--tg-border-color);
-  transition: 0.3s;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #2a2a2a;
   border-radius: 28px;
+  transition: 0.3s;
 }
-
 .toggle-slider:before {
   position: absolute;
   content: "";
@@ -864,102 +404,12 @@ export default {
   width: 22px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background: #fff;
+  border-radius: 50%;
   transition: 0.3s;
-  border-radius: 50%;
 }
+.toggle input:checked + .toggle-slider { background: #00ff88; }
+.toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
 
-.toggle-switch input:checked + .toggle-slider {
-  background-color: var(--tg-button-color);
-}
-
-.toggle-switch input:checked + .toggle-slider:before {
-  transform: translateX(22px);
-}
-
-.logout-section {
-  margin-top: 20px;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-primary {
-  background: var(--tg-button-color);
-  color: var(--tg-button-text-color);
-}
-
-.btn-danger {
-  background: #ef4444;
-  color: white;
-}
-
-.btn-block {
-  width: 100%;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Auth required */
-.loading-state,
-.auth-required {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--tg-border-color);
-  border-top-color: var(--tg-button-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-.auth-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-.auth-required h3 {
-  margin: 0 0 8px 0;
-}
-
-.auth-required p {
-  margin: 0 0 20px 0;
-  color: var(--tg-hint-color);
-}
-
-@media (max-width: 480px) {
-  .categories-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .tab-label {
-    display: none;
-  }
-  
-  .tab-button {
-    min-width: 50px;
-  }
-}
+.btn-danger { background: linear-gradient(135deg, #ff4444 0%, #cc3333 100%); color: #fff; }
 </style>
