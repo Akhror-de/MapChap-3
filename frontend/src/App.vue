@@ -151,6 +151,8 @@ export default {
     const { getCurrentLocation } = useGeolocation()
     
     const searchQuery = ref('')
+    const isLocating = ref(false)
+    const hasLocation = ref(false)
     const { activePanel, currentArticle, notification } = storeToRefs(uiStore)
     const { user } = storeToRefs(authStore)
     const { openPanel, closePanel, showNotification } = uiStore
