@@ -368,7 +368,7 @@ export default {
   transition: all 0.2s;
   position: relative;
 }
-.cat-btn.active { background: #00ff88; border-color: #00ff88; color: #000; }
+.cat-btn.active { background: #ff6b00; border-color: #ff6b00; color: #fff; }
 .cat-check { margin-left: auto; font-weight: 700; }
 
 .settings-list { margin-bottom: 20px; }
