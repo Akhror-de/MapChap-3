@@ -275,11 +275,11 @@ export default {
 }
 
 .tab-btn.active {
-  background: #00ff88;
-  border-color: #00ff88;
+  background: #ff6b00;
+  border-color: #ff6b00;
 }
 
-.tab-btn.active .tab-icon { filter: grayscale(1) brightness(0); }
+.tab-btn.active .tab-icon { filter: grayscale(1) brightness(10); }
 .tab-icon { font-size: 20px; }
 .tab-badge {
   position: absolute;
@@ -288,7 +288,7 @@ export default {
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  background: #ff6b00;
+  background: #ff4500;
   border-radius: 9px;
   color: #fff;
   font-size: 10px;
