@@ -146,13 +146,13 @@ export default {
 .hero-version { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .version-tag {
   padding: 4px 12px;
-  background: rgba(0,0,0,0.2);
+  background: rgba(255,255,255,0.2);
   border-radius: 12px;
-  color: #000;
+  color: #fff;
   font-size: 12px;
   font-weight: 600;
 }
-.version-year { color: rgba(0,0,0,0.6); font-size: 12px; }
+.version-year { color: rgba(255,255,255,0.7); font-size: 12px; }
 
 .section-card {
   background: #141414;
