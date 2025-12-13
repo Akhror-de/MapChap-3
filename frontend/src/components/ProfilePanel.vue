@@ -329,7 +329,7 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
 }
-.list-item:hover { background: #1a1a1a; border-color: #00ff88; }
+.list-item:hover { background: #1a1a1a; border-color: #ff6b00; }
 .item-icon {
   width: 40px;
   height: 40px;
