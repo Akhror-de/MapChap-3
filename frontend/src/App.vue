@@ -194,12 +194,19 @@ export default {
     }
 
     const getUserLocation = async () => {
+      if (isLocating.value) return
+      
+      isLocating.value = true
       try {
         const location = await getCurrentLocation()
         setUserLocation(location)
-        showNotification('Местоположение получено', 'success')
+        hasLocation.value = true
+        showNotification('📍 Местоположение получено', 'success')
       } catch (error) {
-        showNotification('Не удалось получить локацию', 'error')
+        hasLocation.value = false
+        showNotification('❌ Не удалось получить локацию', 'error')
+      } finally {
+        isLocating.value = false
       }
     }
 
@@ -211,6 +218,8 @@ export default {
       currentArticle,
       notification,
       userPhotoUrl,
+      isLocating,
+      hasLocation,
       openPanel,
       closePanel,
       selectCategory,
