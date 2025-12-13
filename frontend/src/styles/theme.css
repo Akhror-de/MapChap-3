@@ -183,8 +183,8 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: var(--mc-green);
-  box-shadow: 0 0 0 3px var(--mc-green-glow);
+  border-color: var(--mc-orange);
+  box-shadow: 0 0 0 3px var(--mc-orange-glow);
 }
 
 input::placeholder, textarea::placeholder {
