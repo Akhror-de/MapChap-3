@@ -539,10 +539,10 @@ export default {
 }
 
 .location-fab:hover {
-  background: var(--mc-green);
-  border-color: var(--mc-green);
+  background: var(--mc-orange);
+  border-color: var(--mc-orange);
   transform: scale(1.05);
-  box-shadow: 0 6px 25px rgba(0, 255, 136, 0.3);
+  box-shadow: 0 6px 25px rgba(255, 107, 0, 0.3);
 }
 
 .location-fab:hover .fab-icon {
