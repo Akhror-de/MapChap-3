@@ -274,6 +274,145 @@ export default {
   overflow: hidden;
 }
 
+/* Кастомный анимированный маркер пользователя */
+:deep(.user-marker-container) {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  transform: translate(-50%, -50%);
+}
+
+:deep(.user-marker-pulse) {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 107, 0, 0.25);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 2s ease-out infinite;
+}
+
+:deep(.user-marker-pulse-delay) {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 107, 0, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 2s ease-out infinite 0.5s;
+}
+
+:deep(.user-marker-core) {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+  animation: bounce 1.5s ease-in-out infinite;
+  z-index: 10;
+}
+
+:deep(.user-marker-icon) {
+  font-size: 14px;
+  animation: rotate 3s linear infinite;
+}
+
+:deep(.user-marker-direction) {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 16px solid #ff6b00;
+  transform: translate(-50%, -130%) rotate(0deg);
+  filter: drop-shadow(0 2px 4px rgba(255, 107, 0, 0.4));
+  animation: directionPulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -55%) scale(1.05);
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes directionPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: translate(-50%, -130%) rotate(0deg) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translate(-50%, -140%) rotate(0deg) scale(0.9);
+  }
+}
+
+/* User balloon стили */
+:deep(.user-balloon) {
+  padding: 10px;
+  text-align: center;
+}
+
+:deep(.user-balloon-header) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+:deep(.user-balloon-icon) {
+  font-size: 20px;
+}
+
+:deep(.user-balloon-header strong) {
+  color: #ff6b00;
+  font-size: 15px;
+}
+
+:deep(.user-balloon-coords) {
+  margin: 0;
+  font-size: 11px;
+  color: #888;
+  font-family: monospace;
+}
+
 /* Стили для балунов */
 :deep(.map-balloon) {
   padding: 12px;
