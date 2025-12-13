@@ -367,8 +367,8 @@ export default {
 }
 
 .notification.success {
-  border-color: var(--mc-green);
-  box-shadow: 0 8px 32px rgba(0, 255, 136, 0.15);
+  border-color: var(--mc-orange);
+  box-shadow: 0 8px 32px rgba(255, 107, 0, 0.15);
 }
 
 .notification.error {
