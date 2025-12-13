@@ -3,7 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 
 // Импортируем стили
-import './styles/telegram.css'
+import './styles/theme.css'
 import './styles/panels.css'
 
 // Create app

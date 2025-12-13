@@ -1,0 +1,244 @@
+/* MapChap - Минималистичный черный стиль с зелеными и оранжевыми акцентами */
+
+:root {
+  /* Основные цвета - черная тема */
+  --mc-bg-primary: #0a0a0a;
+  --mc-bg-secondary: #141414;
+  --mc-bg-tertiary: #1a1a1a;
+  --mc-bg-card: #1e1e1e;
+  --mc-bg-elevated: #242424;
+  
+  /* Текст */
+  --mc-text-primary: #ffffff;
+  --mc-text-secondary: #a0a0a0;
+  --mc-text-tertiary: #666666;
+  --mc-text-muted: #444444;
+  
+  /* Акцентные цвета - зеленый и оранжевый */
+  --mc-green: #00ff88;
+  --mc-green-dim: #00cc6a;
+  --mc-green-glow: rgba(0, 255, 136, 0.15);
+  --mc-orange: #ff6b00;
+  --mc-orange-dim: #cc5500;
+  --mc-orange-glow: rgba(255, 107, 0, 0.15);
+  
+  /* Градиенты */
+  --mc-gradient-green: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  --mc-gradient-orange: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  --mc-gradient-dark: linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
+  
+  /* Границы */
+  --mc-border: #2a2a2a;
+  --mc-border-light: #333333;
+  
+  /* Тени */
+  --mc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --mc-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --mc-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --mc-shadow-green: 0 4px 20px rgba(0, 255, 136, 0.25);
+  --mc-shadow-orange: 0 4px 20px rgba(255, 107, 0, 0.25);
+  
+  /* Радиусы */
+  --mc-radius-sm: 8px;
+  --mc-radius-md: 12px;
+  --mc-radius-lg: 16px;
+  --mc-radius-xl: 24px;
+  
+  /* Telegram переменные для совместимости */
+  --tg-bg-color: var(--mc-bg-primary);
+  --tg-text-color: var(--mc-text-primary);
+  --tg-hint-color: var(--mc-text-secondary);
+  --tg-link-color: var(--mc-green);
+  --tg-button-color: var(--mc-green);
+  --tg-button-text-color: #000000;
+  --tg-secondary-bg-color: var(--mc-bg-secondary);
+  --tg-section-bg-color: var(--mc-bg-card);
+  --tg-border-color: var(--mc-border);
+}
+
+/* Базовые стили */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--mc-bg-primary);
+  color: var(--mc-text-primary);
+  line-height: 1.5;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  min-height: 100vh;
+  background: var(--mc-bg-primary);
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--mc-border-light);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--mc-text-tertiary);
+}
+
+/* Кнопки */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--mc-radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--mc-gradient-green);
+  color: #000000;
+  box-shadow: var(--mc-shadow-green);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 255, 136, 0.35);
+}
+
+.btn-secondary {
+  background: var(--mc-bg-elevated);
+  color: var(--mc-text-primary);
+  border: 1px solid var(--mc-border-light);
+}
+
+.btn-secondary:hover {
+  background: var(--mc-border-light);
+}
+
+.btn-orange {
+  background: var(--mc-gradient-orange);
+  color: #ffffff;
+  box-shadow: var(--mc-shadow-orange);
+}
+
+.btn-orange:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(255, 107, 0, 0.35);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--mc-text-secondary);
+  border: 1px solid var(--mc-border);
+}
+
+.btn-ghost:hover {
+  color: var(--mc-text-primary);
+  border-color: var(--mc-border-light);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Инпуты */
+input, select, textarea {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--mc-bg-secondary);
+  border: 1px solid var(--mc-border);
+  border-radius: var(--mc-radius-md);
+  color: var(--mc-text-primary);
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--mc-green);
+  box-shadow: 0 0 0 3px var(--mc-green-glow);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--mc-text-tertiary);
+}
+
+/* Карточки */
+.card {
+  background: var(--mc-bg-card);
+  border: 1px solid var(--mc-border);
+  border-radius: var(--mc-radius-lg);
+  padding: 20px;
+}
+
+.card-elevated {
+  background: var(--mc-bg-elevated);
+  box-shadow: var(--mc-shadow-md);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideIn {
+  from { 
+    transform: translateX(100%); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateX(0); 
+    opacity: 1; 
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px var(--mc-green-glow); }
+  50% { box-shadow: 0 0 40px var(--mc-green-glow); }
+}
+
+/* Утилиты */
+.text-green { color: var(--mc-green); }
+.text-orange { color: var(--mc-orange); }
+.text-muted { color: var(--mc-text-secondary); }
+.bg-green-glow { background: var(--mc-green-glow); }
+.bg-orange-glow { background: var(--mc-orange-glow); }
