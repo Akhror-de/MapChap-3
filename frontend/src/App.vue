@@ -104,9 +104,16 @@
           </div>
         </div>
         
-        <!-- Кнопка локации -->
-        <button class="location-fab" @click="getUserLocation" title="Моя локация">
-          <span class="fab-icon">📍</span>
+        <!-- Кнопка локации с анимацией -->
+        <button 
+          class="location-fab" 
+          :class="{ 'locating': isLocating, 'located': hasLocation }"
+          @click="getUserLocation" 
+          title="Моя локация"
+        >
+          <span class="fab-pulse"></span>
+          <span class="fab-pulse delay"></span>
+          <span class="fab-icon" :class="{ 'spinning': isLocating }">📍</span>
         </button>
       </main>
     </div>
