@@ -246,10 +246,10 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(255, 107, 0, 0.1);
+  border: 1px solid rgba(255, 107, 0, 0.3);
   border-radius: 20px;
-  color: #00ff88;
+  color: #ff6b00;
   font-size: 12px;
 }
 
