@@ -129,7 +129,7 @@ export default {
 .about-hero {
   text-align: center;
   padding: 40px 20px;
-  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
   border-radius: 24px;
   margin-bottom: 20px;
 }
@@ -139,10 +139,10 @@ export default {
   margin: 0 0 8px;
   font-size: 36px;
   font-weight: 800;
-  color: #000;
+  color: #fff;
   letter-spacing: -1px;
 }
-.hero-tagline { margin: 0 0 16px; color: rgba(0,0,0,0.7); font-size: 15px; }
+.hero-tagline { margin: 0 0 16px; color: rgba(255,255,255,0.9); font-size: 15px; }
 .hero-version { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .version-tag {
   padding: 4px 12px;
