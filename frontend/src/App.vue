@@ -222,8 +222,8 @@ export default {
   --mc-text-primary: #ffffff;
   --mc-text-secondary: #888888;
   --mc-border: #2a2a2a;
-  --mc-green: #00ff88;
   --mc-orange: #ff6b00;
+  --mc-orange-light: #ff8533;
 }
 
 .panel-overlay {
