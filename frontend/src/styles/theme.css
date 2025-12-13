@@ -1,4 +1,4 @@
-/* MapChap - Минималистичный черный стиль с зелеными и оранжевыми акцентами */
+/* MapChap - Минималистичный черный стиль с оранжевыми акцентами (RGB) */
 
 :root {
   /* Основные цвета - черная тема */
@@ -14,29 +14,35 @@
   --mc-text-tertiary: #666666;
   --mc-text-muted: #444444;
   
-  /* Акцентные цвета - зеленый и оранжевый */
-  --mc-green: #00ff88;
-  --mc-green-dim: #00cc6a;
-  --mc-green-glow: rgba(0, 255, 136, 0.15);
+  /* Акцентные цвета - оранжевый RGB */
   --mc-orange: #ff6b00;
   --mc-orange-dim: #cc5500;
+  --mc-orange-light: #ff8533;
   --mc-orange-glow: rgba(255, 107, 0, 0.15);
+  --mc-orange-bright: #ff7f24;
+  
+  /* Вторичный акцент - мягкий золотой */
+  --mc-gold: #ffa500;
+  --mc-gold-dim: #cc8400;
+  --mc-gold-glow: rgba(255, 165, 0, 0.15);
   
   /* Градиенты */
-  --mc-gradient-green: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
-  --mc-gradient-orange: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  --mc-gradient-primary: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  --mc-gradient-secondary: linear-gradient(135deg, #ffa500 0%, #ffb733 100%);
   --mc-gradient-dark: linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
+  --mc-gradient-fire: linear-gradient(135deg, #ff6b00 0%, #ff4500 100%);
   
   /* Границы */
   --mc-border: #2a2a2a;
   --mc-border-light: #333333;
+  --mc-border-orange: rgba(255, 107, 0, 0.3);
   
   /* Тени */
   --mc-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
   --mc-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
   --mc-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-  --mc-shadow-green: 0 4px 20px rgba(0, 255, 136, 0.25);
   --mc-shadow-orange: 0 4px 20px rgba(255, 107, 0, 0.25);
+  --mc-shadow-gold: 0 4px 20px rgba(255, 165, 0, 0.25);
   
   /* Радиусы */
   --mc-radius-sm: 8px;
@@ -48,9 +54,9 @@
   --tg-bg-color: var(--mc-bg-primary);
   --tg-text-color: var(--mc-text-primary);
   --tg-hint-color: var(--mc-text-secondary);
-  --tg-link-color: var(--mc-green);
-  --tg-button-color: var(--mc-green);
-  --tg-button-text-color: #000000;
+  --tg-link-color: var(--mc-orange);
+  --tg-button-color: var(--mc-orange);
+  --tg-button-text-color: #ffffff;
   --tg-secondary-bg-color: var(--mc-bg-secondary);
   --tg-section-bg-color: var(--mc-bg-card);
   --tg-border-color: var(--mc-border);
