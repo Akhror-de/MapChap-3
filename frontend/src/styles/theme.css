@@ -238,13 +238,13 @@ input::placeholder, textarea::placeholder {
 }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 20px var(--mc-green-glow); }
-  50% { box-shadow: 0 0 40px var(--mc-green-glow); }
+  0%, 100% { box-shadow: 0 0 20px var(--mc-orange-glow); }
+  50% { box-shadow: 0 0 40px var(--mc-orange-glow); }
 }
 
 /* Утилиты */
-.text-green { color: var(--mc-green); }
 .text-orange { color: var(--mc-orange); }
+.text-gold { color: var(--mc-gold); }
 .text-muted { color: var(--mc-text-secondary); }
-.bg-green-glow { background: var(--mc-green-glow); }
 .bg-orange-glow { background: var(--mc-orange-glow); }
+.bg-gold-glow { background: var(--mc-gold-glow); }
