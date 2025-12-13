@@ -408,7 +408,7 @@ export default {
   border-radius: 50%;
   transition: 0.3s;
 }
-.toggle input:checked + .toggle-slider { background: #00ff88; }
+.toggle input:checked + .toggle-slider { background: #ff6b00; }
 .toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
 
 .btn-danger { background: linear-gradient(135deg, #ff4444 0%, #cc3333 100%); color: #fff; }
