@@ -454,11 +454,11 @@ export default {
 .benefit-item p { margin: 2px 0 0; color: #666; font-size: 12px; }
 
 .welcome-card {
-  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
   padding: 24px;
   border-radius: 16px;
   margin-bottom: 16px;
-  color: #000;
+  color: #fff;
 }
 .verified-badge { display: inline-block; padding: 4px 10px; background: rgba(0,0,0,0.2); border-radius: 20px; font-size: 12px; margin-bottom: 8px; }
 .welcome-card h3 { margin: 0; font-size: 18px; }
