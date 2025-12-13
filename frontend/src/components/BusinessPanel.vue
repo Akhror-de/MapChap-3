@@ -426,7 +426,7 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
 }
-.social-btn.active { background: #00ff88; border-color: #00ff88; color: #000; }
+.social-btn.active { background: #ff6b00; border-color: #ff6b00; color: #fff; }
 
 .result-card {
   padding: 16px;
@@ -435,10 +435,10 @@ export default {
   background: rgba(255, 68, 68, 0.1);
   border: 1px solid rgba(255, 68, 68, 0.3);
 }
-.result-card.success { background: rgba(0, 255, 136, 0.1); border-color: rgba(0, 255, 136, 0.3); }
+.result-card.success { background: rgba(255, 107, 0, 0.1); border-color: rgba(255, 107, 0, 0.3); }
 .result-success, .result-error { display: flex; align-items: flex-start; gap: 12px; }
 .result-icon { font-size: 24px; }
-.result-success strong { color: #00ff88; }
+.result-success strong { color: #ff6b00; }
 .result-success p, .result-error p { margin: 4px 0 0; color: #888; font-size: 13px; }
 
 .benefits-card {
