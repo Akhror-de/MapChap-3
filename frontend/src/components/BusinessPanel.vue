@@ -76,15 +76,37 @@
         <!-- Форма ИНН -->
         <div v-if="verificationMethod === 'inn'" class="section-card">
           <div class="section-title">{{ t('business_inn_check') }}</div>
-          <p class="section-description">{{ t('business_inn_desc') }}</p>
+          <p class="section-description">Проверка по ИНН/БИН доступна для России, Казахстана и Беларуси</p>
           
+          <!-- Выбор страны -->
           <div class="form-group">
-            <label>{{ t('business_inn_label') }}</label>
+            <label>Страна регистрации</label>
+            <div class="country-btns">
+              <button 
+                class="country-btn"
+                :class="{ active: innForm.country === 'RU' }"
+                @click="innForm.country = 'RU'"
+              >🇷🇺 Россия</button>
+              <button 
+                class="country-btn"
+                :class="{ active: innForm.country === 'KZ' }"
+                @click="innForm.country = 'KZ'"
+              >🇰🇿 Казахстан</button>
+              <button 
+                class="country-btn"
+                :class="{ active: innForm.country === 'BY' }"
+                @click="innForm.country = 'BY'"
+              >🇧🇾 Беларусь</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>{{ innForm.country === 'KZ' ? 'БИН/ИИН компании' : 'ИНН компании' }}</label>
             <input 
               v-model="innForm.inn"
               type="text" 
-              :placeholder="t('business_inn_placeholder')"
-              maxlength="12"
+              :placeholder="getINNPlaceholder"
+              :maxlength="innForm.country === 'KZ' ? 12 : 12"
               @input="validateINN"
             >
             <span v-if="innError" class="field-error">{{ innError }}</span>
@@ -95,7 +117,7 @@
               <span class="result-icon">✅</span>
               <div>
                 <strong>{{ innVerificationResult.verification.name }}</strong>
-                <p>ИНН: {{ innVerificationResult.verification.inn }}</p>
+                <p>{{ innForm.country === 'KZ' ? 'БИН' : 'ИНН' }}: {{ innVerificationResult.verification.inn }}</p>
                 <p v-if="innVerificationResult.verification.address">📍 {{ innVerificationResult.verification.address }}</p>
                 <p v-if="innVerificationResult.verification.status">Статус: {{ innVerificationResult.verification.status }}</p>
               </div>
@@ -109,6 +131,11 @@
           <button class="btn btn-primary btn-block" @click="verifyByINN" :disabled="isVerifying || !isValidINN">
             {{ isVerifying ? t('loading') : t('business_check') }}
           </button>
+          
+          <!-- Подсказка для других стран СНГ -->
+          <div class="cis-hint">
+            <p>🇺🇿🇹🇯🇰🇬 Для Узбекистана, Таджикистана и Кыргызстана используйте <strong>ручную верификацию</strong></p>
+          </div>
         </div>
 
         <!-- Ручная форма -->
