@@ -1747,7 +1747,12 @@ export const translations = {
     boost_ip_account: 'ЖИ эсеби',
     boost_ip_hint: 'Жеке ишкерлер үчүн',
     boost_business_id: 'ИНН',
-    boost_business_id_placeholder: 'Салык төлөөчү номуру'
+    boost_business_id_placeholder: 'Салык төлөөчү номуру',
+    
+    // Offer bottom sheet
+    offer_discount: 'Арзандатуу',
+    offer_promotion: 'Акция',
+    offer_call: 'Чалуу'
   }
 }
 
