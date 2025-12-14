@@ -619,8 +619,16 @@ export default {
         innVerificationResult.value = result
         
         if (result.success) {
-          // Обновляем данные пользователя
+          // Обновляем данные пользователя локально
+          await authStore.registerAsBusiness({
+            companyName: result.verification.name,
+            inn: result.verification.inn,
+            verificationType: 'inn'
+          })
+          
+          // Пытаемся синхронизировать с сервером (не критично если не получится)
           await authStore.fetchUser()
+          
           showNotification('✅ Верификация пройдена!', 'success')
           
           // Переходим к созданию объявления
