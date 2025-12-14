@@ -1261,7 +1261,84 @@ export const translations = {
     notif_published: 'Жарияланды!',
     notif_language_changed: 'Тіл өзгертілді',
     notif_boost_activated: 'Буст белсендірілді!',
-    notif_boost_expired: 'Буст мерзімі өтті'
+    notif_boost_expired: 'Буст мерзімі өтті',
+    
+    // ArticlePanel
+    article_title: 'Мақала',
+    article_min: 'мин',
+    article_like: 'Ұнайды',
+    article_share: 'Бөлісу',
+    article_not_found: 'Мақала табылмады',
+    article_added_likes: 'Ұнағандар тізіміне қосылды',
+    article_removed_likes: 'Ұнағандар тізімінен алынды',
+    article_link_copied: 'Сілтеме көшірілді',
+    article_author: 'Автор',
+    article_from_developers: 'Әзірлеушілерден',
+    article_from_business: 'Бизнестен',
+    article_from_user: 'Пайдаланушыдан',
+    
+    // BlogPanel placeholders
+    blog_article_title_placeholder: 'Тақырыпты енгізіңіз',
+    blog_article_excerpt_placeholder: 'Қысқа сипаттама',
+    blog_article_content_placeholder: 'Мақалаңызды жазыңыз...',
+    blog_article_tags_placeholder: 'тег1, тег2, тег3',
+    blog_article_published: 'Мақала жарияланды!',
+    blog_added_likes: 'Ұнағандар тізіміне қосылды',
+    blog_removed_likes: 'Ұнағандар тізімінен алынды',
+    blog_article: 'Мақала',
+    
+    // BlogPanel categories
+    blog_cat_news: 'Жаңалықтар',
+    blog_cat_tips: 'Кеңестер',
+    blog_cat_guide: 'Нұсқаулықтар',
+    blog_cat_review: 'Шолулар',
+    blog_cat_success: 'Табыс тарихы',
+    blog_cat_other: 'Басқа',
+    
+    // AboutPanel
+    about_phone: 'Телефон',
+    
+    // BusinessPanel steps
+    business_step1: 'Растау',
+    business_step2: 'Ақпарат',
+    business_step3: 'Хабарландыру',
+    business_step_done: 'Дайын',
+    business_verification_passed: 'Растау өтті!',
+    business_create_first_offer: 'Енді бірінші хабарландыруыңызды жасаңыз',
+    business_info_about: 'Бизнес туралы ақпарат',
+    business_name_label: 'Атауы',
+    business_name_placeholder: 'Бизнесіңіздің атауы',
+    business_short_desc: 'Қысқа сипаттама',
+    business_short_desc_placeholder: 'Бизнесіңізді қысқаша сипаттаңыз',
+    business_full_desc_placeholder: 'Қызметтер, артықшылықтар, компания тарихы туралы толық сипаттама...',
+    business_address_hint: 'Картада көрсету үшін нақты мекенжайды енгізіңіз',
+    business_confirm_delete: 'Хабарландыруды жоясыз ба?',
+    business_offer_updated: 'Хабарландыру жаңартылды',
+    business_offer_published: 'Хабарландыру жарияланды!',
+    business_status_changed: 'Күй өзгертілді',
+    business_offer_deleted: 'Хабарландыру жойылды',
+    business_account_activated: 'Бизнес аккаунт белсендірілді!',
+    
+    // Amenities
+    amenity_wifi: 'Wi-Fi',
+    amenity_parking: 'Тұрақ',
+    amenity_card_payment: 'Картамен төлем',
+    amenity_delivery: 'Жеткізу',
+    amenity_takeaway: 'Өзіңмен',
+    amenity_wheelchair: 'Қолжетімді орта',
+    amenity_children: 'Балалар аймағы',
+    amenity_pet_friendly: 'Жануарларымен',
+    amenity_ac: 'Кондиционер',
+    amenity_outdoor: 'Терраса',
+    amenity_reservation: 'Брондау',
+    amenity_24h: '24 сағат',
+    
+    // Boost panel enhanced
+    boost_banks_note: 'Өзбекстан, Қазақстан және басқа ТМД елдерінің банктері қолдауда',
+    boost_ip_account: 'ЖК шоты',
+    boost_ip_hint: 'Жеке кәсіпкерлер үшін',
+    boost_business_id: 'БСН/ЖСН',
+    boost_business_id_placeholder: 'Салық төлеуші нөмірі'
   },
   
   ky: {
