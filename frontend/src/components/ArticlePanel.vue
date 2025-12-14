@@ -4,11 +4,11 @@
       <div class="header-content">
         <button class="back-button" @click="goBack">
           <span class="back-icon">←</span>
-          <span class="back-text">Назад</span>
+          <span class="back-text">{{ t('back') }}</span>
         </button>
         <h2 class="panel-title">
           <span class="title-icon">📝</span>
-          Статья
+          {{ t('article_title') }}
         </h2>
       </div>
     </div>
@@ -22,7 +22,7 @@
               {{ getArticleTypeName(article.author_type) }}
             </span>
             <span class="article-date">{{ formatDate(article.created_at) }}</span>
-            <span class="article-read-time">🕑 {{ article.read_time || 3 }} мин</span>
+            <span class="article-read-time">🕑 {{ article.read_time || 3 }} {{ t('article_min') }}</span>
           </div>
           
           <h1 class="article-title">{{ article.title }}</h1>
@@ -77,18 +77,18 @@
           <div class="action-buttons">
             <button class="action-btn" :class="{ liked: isLiked }" @click="toggleLike">
               <span>{{ isLiked ? '❤️' : '🤍' }}</span>
-              {{ isLiked ? 'Нравится' : 'Нравится' }}
+              {{ t('article_like') }}
             </button>
             <button class="action-btn" @click="shareArticle">
               <span>🔗</span>
-              Поделиться
+              {{ t('article_share') }}
             </button>
           </div>
         </div>
       </div>
 
       <div v-else class="no-article">
-        <p>Статья не найдена</p>
+        <p>{{ t('article_not_found') }}</p>
       </div>
     </div>
   </div>
@@ -97,6 +97,7 @@
 <script>
 import { ref, computed } from 'vue'
 import { useUIStore } from '../stores/uiStore'
+import { useLocale } from '../composables/useLocale'
 
 export default {
   name: 'ArticlePanel',
@@ -109,6 +110,7 @@ export default {
   setup(props) {
     const uiStore = useUIStore()
     const { openPanel, showNotification } = uiStore
+    const { t } = useLocale()
     const isLiked = ref(false)
 
     const goBack = () => {
@@ -117,7 +119,6 @@ export default {
 
     const formattedContent = computed(() => {
       if (!props.article?.content) return ''
-      // Простая разбивка на абзацы
       return props.article.content
         .split('\n\n')
         .map(p => `<p>${p}</p>`)
@@ -126,20 +127,20 @@ export default {
 
     const getArticleTypeName = (type) => {
       const names = { 
-        developer: 'От разработчиков', 
-        business: 'От бизнеса', 
-        user: 'От пользователя' 
+        developer: t('article_from_developers'), 
+        business: t('article_from_business'), 
+        user: t('article_from_user') 
       }
-      return names[type] || 'Статья'
+      return names[type] || t('blog_article')
     }
 
     const getRoleName = (role) => {
       const roles = {
-        business_owner: 'Бизнес',
-        user: 'Пользователь',
-        admin: 'Администратор'
+        business_owner: t('profile_business'),
+        user: t('nav_profile'),
+        admin: 'Admin'
       }
-      return roles[role] || 'Автор'
+      return roles[role] || t('article_author')
     }
 
     const formatDate = (dateString) => {
@@ -153,7 +154,7 @@ export default {
 
     const toggleLike = () => {
       isLiked.value = !isLiked.value
-      showNotification(isLiked.value ? 'Добавлено в понравившиеся' : 'Удалено из понравившихся', 'success')
+      showNotification(isLiked.value ? t('article_added_likes') : t('article_removed_likes'), 'success')
     }
 
     const shareArticle = () => {
@@ -165,11 +166,12 @@ export default {
         })
       } else {
         navigator.clipboard.writeText(window.location.href)
-        showNotification('Ссылка скопирована', 'success')
+        showNotification(t('article_link_copied'), 'success')
       }
     }
 
     return {
+      t,
       isLiked,
       formattedContent,
       goBack,
@@ -208,24 +210,24 @@ export default {
 }
 
 .article-type.developer {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
 }
 
 .article-type.business {
-  background: #fef3c7;
-  color: #b45309;
+  background: rgba(255, 107, 0, 0.15);
+  color: #ff6b00;
 }
 
 .article-type.user {
-  background: #dcfce7;
-  color: #166534;
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
 }
 
 .article-date,
 .article-read-time {
   font-size: 13px;
-  color: var(--tg-hint-color);
+  color: #888;
 }
 
 .article-title {
@@ -233,12 +235,13 @@ export default {
   font-size: 24px;
   font-weight: 700;
   line-height: 1.3;
+  color: #fff;
 }
 
 .article-excerpt {
   margin: 0 0 20px 0;
   font-size: 16px;
-  color: var(--tg-hint-color);
+  color: #888;
   line-height: 1.5;
 }
 
@@ -247,7 +250,7 @@ export default {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: var(--tg-secondary-bg-color);
+  background: #141414;
   border-radius: 12px;
 }
 
@@ -255,7 +258,7 @@ export default {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--tg-button-color);
+  background: #ff6b00;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -279,11 +282,12 @@ export default {
 .author-name {
   font-size: 15px;
   font-weight: 600;
+  color: #fff;
 }
 
 .author-role {
   font-size: 13px;
-  color: var(--tg-hint-color);
+  color: #888;
 }
 
 .article-image {
@@ -301,6 +305,7 @@ export default {
   padding: 0 20px;
   font-size: 16px;
   line-height: 1.7;
+  color: #ccc;
 }
 
 .article-body :deep(p) {
@@ -316,16 +321,16 @@ export default {
 
 .tag {
   padding: 6px 12px;
-  background: var(--tg-secondary-bg-color);
+  background: #141414;
   border-radius: 16px;
   font-size: 13px;
-  color: var(--tg-button-color);
+  color: #ff6b00;
   font-weight: 500;
 }
 
 .article-actions {
   padding: 20px;
-  border-top: 1px solid var(--tg-border-color);
+  border-top: 1px solid #2a2a2a;
   margin-top: 20px;
 }
 
@@ -347,7 +352,7 @@ export default {
 
 .stat-value {
   font-size: 14px;
-  color: var(--tg-hint-color);
+  color: #888;
 }
 
 .action-buttons {
@@ -362,28 +367,31 @@ export default {
   justify-content: center;
   gap: 8px;
   padding: 12px 16px;
-  border: 1px solid var(--tg-border-color);
-  background: var(--tg-bg-color);
+  border: 1px solid #2a2a2a;
+  background: #141414;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
+  color: #888;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .action-btn:hover {
-  background: var(--tg-secondary-bg-color);
+  background: #1a1a1a;
+  border-color: #ff6b00;
+  color: #fff;
 }
 
 .action-btn.liked {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #dc2626;
+  background: rgba(255, 68, 68, 0.1);
+  border-color: rgba(255, 68, 68, 0.3);
+  color: #ff4444;
 }
 
 .no-article {
   text-align: center;
   padding: 40px 20px;
-  color: var(--tg-hint-color);
+  color: #888;
 }
 </style>
