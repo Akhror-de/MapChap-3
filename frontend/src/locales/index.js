@@ -85,6 +85,8 @@ export const translations = {
     business_inn_desc: 'Проверка по ИНН/БИН доступна для России, Казахстана и Беларуси',
     business_inn_label: 'ИНН компании',
     business_inn_placeholder: '10 или 12 цифр',
+    business_inn_kz_placeholder: '12 цифр (БИН)',
+    business_inn_by_placeholder: '9 цифр (УНП)',
     business_check: 'Проверить',
     business_manual_verification: 'Ручная верификация',
     business_company_name: 'Название компании',
