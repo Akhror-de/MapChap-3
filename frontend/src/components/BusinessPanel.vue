@@ -521,7 +521,7 @@ export default {
     const currentStep = ref('verification') // verification, create-offer, dashboard
     const categories = ref([])
 
-    const innForm = reactive({ inn: '' })
+    const innForm = reactive({ inn: '', country: 'RU' })
     const manualForm = reactive({ company_name: '', phone: '', email: '', social_type: 'telegram', social_username: '' })
     const offerForm = reactive({ 
       title: '', 
