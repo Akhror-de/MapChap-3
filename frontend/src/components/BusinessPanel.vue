@@ -842,7 +842,7 @@ export default {
       categories, amenitiesList, currentStep, getINNPlaceholder,
       closePanel, handleBack, initAuth, validateINN, verifyByINN, verifyManually, 
       submitOffer, editOffer, cancelEdit, handleToggleOfferStatus, handleDeleteOffer, 
-      getStatusText, toggleAmenity, t 
+      getStatusText, toggleAmenity, getAmenityName, t 
     }
   }
 }
