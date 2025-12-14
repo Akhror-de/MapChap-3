@@ -1509,6 +1509,8 @@ export const translations = {
     business_inn_desc: 'ИНН текшерүү Россия, Казакстан, Беларусь үчүн жеткиликтүү',
     business_inn_label: 'Компания ИНН',
     business_inn_placeholder: '14 сан (ИНН)',
+    business_inn_kz_placeholder: '12 сан (БИН)',
+    business_inn_by_placeholder: '9 сан (УНП)',
     business_check: 'Текшерүү',
     business_manual_verification: 'Кол менен тастыктоо',
     business_company_name: 'Компания аты',
