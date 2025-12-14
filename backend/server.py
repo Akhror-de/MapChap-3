@@ -111,6 +111,7 @@ class BusinessVerificationManual(BaseModel):
 class OfferCreate(BaseModel):
     title: str
     description: str
+    full_description: Optional[str] = ""  # Полное описание
     category: str
     address: str
     phone: str
@@ -121,6 +122,8 @@ class OfferCreate(BaseModel):
     coordinates: List[float]  # [lat, lng]
     images: List[str] = []
     tags: List[str] = []
+    amenities: List[str] = []  # Удобства: wifi, parking, card_payment, delivery, etc.
+    inn: Optional[str] = None  # ИНН компании если верифицирован
 
 class OfferUpdate(BaseModel):
     title: Optional[str] = None
