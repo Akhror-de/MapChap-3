@@ -78,6 +78,13 @@
           </div>
           <div class="active-stats">
             <span>📤 {{ boost.notifications_sent || 0 }}</span>
+            <button 
+              class="send-notif-btn" 
+              @click="sendNotification(boost)"
+              :disabled="isSendingNotif"
+            >
+              📢
+            </button>
           </div>
         </div>
       </div>
@@ -88,10 +95,28 @@
       <p>{{ t('boost_no_active') }}</p>
     </div>
 
-    <!-- Настройка оплаты (для владельца) -->
+    <!-- Настройка оплаты ИП -->
     <div class="payment-setup" v-if="showPaymentSetup">
       <h4>💳 {{ t('boost_payment_setup') }}</h4>
       <p class="setup-desc">{{ t('boost_payment_desc') }}</p>
+      
+      <!-- Тип счёта -->
+      <div class="account-type-selector">
+        <button 
+          class="type-btn" 
+          :class="{ active: accountType === 'business' }"
+          @click="accountType = 'business'"
+        >
+          🏢 {{ t('boost_bank_account') }}
+        </button>
+        <button 
+          class="type-btn" 
+          :class="{ active: accountType === 'ip' }"
+          @click="accountType = 'ip'"
+        >
+          👤 {{ t('boost_ip_account') }}
+        </button>
+      </div>
       
       <div class="form-group">
         <label>{{ t('boost_bank_account') }}</label>
@@ -100,16 +125,22 @@
       
       <div class="form-group">
         <label>{{ t('boost_bank_name') }}</label>
-        <input v-model="paymentDetails.bank" type="text" placeholder="Kapitalbank, Ipak Yuli...">
+        <input v-model="paymentDetails.bank" type="text" placeholder="Kapitalbank, Ipak Yuli, Hamkorbank...">
       </div>
       
       <div class="form-group">
         <label>{{ t('boost_holder_name') }}</label>
-        <input v-model="paymentDetails.holder" type="text" placeholder="Имя владельца счёта">
+        <input v-model="paymentDetails.holder" type="text" :placeholder="accountType === 'ip' ? 'ИП Иванов Иван Иванович' : 'ООО Компания'">
       </div>
       
-      <button class="btn btn-primary btn-block" @click="savePaymentDetails" :disabled="!canSavePayment">
-        {{ t('boost_save_payment') }}
+      <div class="form-group" v-if="accountType === 'ip'">
+        <label>{{ t('boost_business_id') }}</label>
+        <input v-model="paymentDetails.businessId" type="text" :placeholder="t('boost_business_id_placeholder')">
+        <span class="field-hint">{{ t('boost_ip_hint') }}</span>
+      </div>
+      
+      <button class="btn btn-primary btn-block" @click="savePaymentDetails" :disabled="!canSavePayment || isSaving">
+        {{ isSaving ? t('loading') : t('boost_save_payment') }}
       </button>
       
       <div class="payment-note">
@@ -120,9 +151,11 @@
 </template>
 
 <script>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useLocale } from '../composables/useLocale'
 import { useUIStore } from '../stores/uiStore'
+import { useAuthStore } from '../stores/authStore'
+import { apiService } from '../services/api'
 
 export default {
   name: 'BoostPanel',
@@ -135,6 +168,7 @@ export default {
   setup() {
     const { t } = useLocale()
     const uiStore = useUIStore()
+    const authStore = useAuthStore()
     
     // Тарифные планы (цены будут добавлены позже)
     const boostPlans = ref([
@@ -145,12 +179,16 @@ export default {
     
     // Активные бусты пользователя
     const activeBoosts = ref([])
+    const isSendingNotif = ref(false)
+    const isSaving = ref(false)
+    const accountType = ref('business')
     
     // Детали оплаты
     const paymentDetails = reactive({
       account: '',
       bank: '',
-      holder: ''
+      holder: '',
+      businessId: ''
     })
     
     const canSavePayment = computed(() => {
@@ -164,16 +202,52 @@ export default {
         uiStore.showNotification(t('boost_price_coming'), 'info')
         return
       }
-      // Тут будет логика покупки
+      // Логика покупки буста
       console.log('Selected plan:', plan)
     }
     
-    const savePaymentDetails = () => {
-      if (!canSavePayment.value) return
+    const sendNotification = async (boost) => {
+      if (!authStore.user?.telegram_id || isSendingNotif.value) return
       
-      // Сохраняем в localStorage
-      localStorage.setItem('mapchap_payment', JSON.stringify(paymentDetails))
-      uiStore.showNotification(t('notif_saved'), 'success')
+      isSendingNotif.value = true
+      try {
+        const result = await apiService.sendBoostNotification(boost.id, authStore.user.telegram_id)
+        uiStore.showNotification(`📢 ${result.message}`, 'success')
+        
+        // Обновляем счётчик
+        const idx = activeBoosts.value.findIndex(b => b.id === boost.id)
+        if (idx !== -1) {
+          activeBoosts.value[idx].notifications_sent = (activeBoosts.value[idx].notifications_sent || 0) + result.notifications_sent
+        }
+      } catch (error) {
+        uiStore.showNotification(error.message || t('error'), 'error')
+      } finally {
+        isSendingNotif.value = false
+      }
+    }
+    
+    const savePaymentDetails = async () => {
+      if (!canSavePayment.value || !authStore.user?.telegram_id || isSaving.value) return
+      
+      isSaving.value = true
+      try {
+        await apiService.updatePaymentDetails(authStore.user.telegram_id, {
+          bank_account: paymentDetails.account,
+          bank_name: paymentDetails.bank,
+          holder_name: paymentDetails.holder,
+          business_id: paymentDetails.businessId || null
+        })
+        
+        // Также сохраняем в localStorage
+        localStorage.setItem('mapchap_payment', JSON.stringify(paymentDetails))
+        uiStore.showNotification(t('notif_saved'), 'success')
+      } catch (error) {
+        // Сохраняем локально если API недоступен
+        localStorage.setItem('mapchap_payment', JSON.stringify(paymentDetails))
+        uiStore.showNotification(t('notif_saved'), 'success')
+      } finally {
+        isSaving.value = false
+      }
     }
     
     const formatDate = (dateStr) => {
@@ -182,15 +256,65 @@ export default {
     }
     
     // Загружаем сохранённые данные оплаты
-    const loadPaymentDetails = () => {
+    const loadPaymentDetails = async () => {
+      // Сначала из localStorage
       const saved = localStorage.getItem('mapchap_payment')
       if (saved) {
-        const data = JSON.parse(saved)
-        Object.assign(paymentDetails, data)
+        try {
+          const data = JSON.parse(saved)
+          Object.assign(paymentDetails, data)
+        } catch {}
+      }
+      
+      // Затем с сервера если авторизованы
+      if (authStore.user?.telegram_id) {
+        try {
+          const result = await apiService.getPaymentDetails(authStore.user.telegram_id)
+          if (result.payment_details && Object.keys(result.payment_details).length > 0) {
+            paymentDetails.account = result.payment_details.bank_account || ''
+            paymentDetails.bank = result.payment_details.bank_name || ''
+            paymentDetails.holder = result.payment_details.holder_name || ''
+            paymentDetails.businessId = result.payment_details.business_id || ''
+          }
+        } catch {}
       }
     }
     
-    loadPaymentDetails()
+    // Загружаем активные бусты
+    const loadActiveBoosts = async () => {
+      if (!authStore.user?.telegram_id) return
+      
+      try {
+        const result = await apiService.getUserBoosts(authStore.user.telegram_id)
+        activeBoosts.value = result.boosts || []
+      } catch {
+        activeBoosts.value = []
+      }
+    }
+    
+    // Загружаем тарифы с сервера
+    const loadBoostPlans = async () => {
+      try {
+        const result = await apiService.getBoostPlans()
+        if (result.plans) {
+          boostPlans.value = result.plans.map(plan => ({
+            id: `boost_${plan.days}days`,
+            days: plan.days,
+            icon: plan.days === 1 ? '⚡' : plan.days === 5 ? '🔥' : '👑',
+            price: plan.price,
+            currency: plan.currency,
+            popular: plan.popular,
+            best: plan.best
+          }))
+        }
+      } catch {}
+    }
+    
+    onMounted(() => {
+      loadPaymentDetails()
+      loadActiveBoosts()
+      loadBoostPlans()
+    })
     
     return {
       t,
@@ -198,7 +322,11 @@ export default {
       activeBoosts,
       paymentDetails,
       canSavePayment,
+      isSendingNotif,
+      isSaving,
+      accountType,
       selectPlan,
+      sendNotification,
       savePaymentDetails,
       formatDate
     }
@@ -421,8 +549,31 @@ export default {
 }
 
 .active-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
   color: #888;
+}
+
+.send-notif-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #22c55e;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.send-notif-btn:hover {
+  background: #16a34a;
+}
+
+.send-notif-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .no-boosts {
@@ -464,6 +615,63 @@ export default {
   color: #666;
 }
 
+.account-type-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 10px;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.type-btn.active {
+  background: #ff6b00;
+  border-color: #ff6b00;
+  color: #fff;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #888;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #ff6b00;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #666;
+}
+
 .payment-note {
   margin-top: 12px;
   padding: 10px;
@@ -476,5 +684,29 @@ export default {
   font-size: 11px;
   color: #888;
   text-align: center;
+}
+
+.btn {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  color: #fff;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-block {
+  width: 100%;
 }
 </style>
