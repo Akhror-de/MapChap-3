@@ -657,6 +657,8 @@ export const translations = {
     business_inn_desc: 'STIR/BIN tekshirish Rossiya, Qozogʻiston, Belarus uchun mavjud',
     business_inn_label: 'Kompaniya STIR',
     business_inn_placeholder: '9 raqam (STIR)',
+    business_inn_kz_placeholder: '12 raqam (BIN)',
+    business_inn_by_placeholder: '9 raqam (UNP)',
     business_check: 'Tekshirish',
     business_manual_verification: 'Qoʻlda tasdiqlash',
     business_company_name: 'Kompaniya nomi',
