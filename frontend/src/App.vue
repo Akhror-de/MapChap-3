@@ -142,6 +142,7 @@ import BusinessPanel from './components/BusinessPanel.vue'
 import BlogPanel from './components/BlogPanel.vue'
 import AboutPanel from './components/AboutPanel.vue'
 import ArticlePanel from './components/ArticlePanel.vue'
+import OfferBottomSheet from './components/OfferBottomSheet.vue'
 
 export default {
   name: 'App',
@@ -151,7 +152,8 @@ export default {
     BusinessPanel,
     BlogPanel,
     AboutPanel,
-    ArticlePanel
+    ArticlePanel,
+    OfferBottomSheet
   },
   setup() {
     const offersStore = useOffersStore()
