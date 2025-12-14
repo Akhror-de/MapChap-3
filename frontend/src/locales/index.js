@@ -941,6 +941,8 @@ export const translations = {
     business_inn_desc: 'Санҷиши РМА барои Русия, Қазоқистон, Беларус дастрас аст',
     business_inn_label: 'РМА ширкат',
     business_inn_placeholder: '9 рақам (РМА)',
+    business_inn_kz_placeholder: '12 рақам (БИН)',
+    business_inn_by_placeholder: '9 рақам (УНП)',
     business_check: 'Санҷидан',
     business_manual_verification: 'Тасдиқи дастӣ',
     business_company_name: 'Номи ширкат',
