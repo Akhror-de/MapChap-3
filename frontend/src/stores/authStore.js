@@ -114,6 +114,20 @@ export const useAuthStore = defineStore('auth', () => {
     console.log('✅ User registered as business:', user.value.company_name)
   }
 
+  const fetchUser = async () => {
+    if (!user.value?.telegram_id) return
+    
+    try {
+      const userData = await apiService.getUser(user.value.telegram_id)
+      if (userData) {
+        user.value = userData
+        console.log('✅ User data refreshed')
+      }
+    } catch (error) {
+      console.error('Fetch user error:', error)
+    }
+  }
+
   const updateUser = async (updates) => {
     if (!user.value) return
     
