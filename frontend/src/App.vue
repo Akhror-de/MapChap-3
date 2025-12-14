@@ -70,8 +70,15 @@
       <!-- Карта -->
       <main class="app-main">
         <div class="map-container">
-          <YandexMap />
+          <YandexMap @offer-click="handleOfferClick" />
         </div>
+        
+        <!-- Bottom Sheet для объявлений -->
+        <OfferBottomSheet 
+          :offer="selectedOffer" 
+          :isOpen="isBottomSheetOpen"
+          @close="closeBottomSheet"
+        />
         
         <!-- Плавающие контролы -->
         <div class="floating-controls">
