@@ -131,6 +131,35 @@ export default {
   margin-bottom: 20px;
 }
 
+.hero-logo-text {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.hero-word {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #fff;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+  animation: heroGlow 2s ease-in-out infinite alternate;
+}
+
+.hero-word:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+@keyframes heroGlow {
+  0% {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(34, 197, 94, 0.3);
+  }
+  100% {
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.6), 0 0 60px rgba(34, 197, 94, 0.5);
+  }
+}
+
 .hero-logo { font-size: 56px; margin-bottom: 12px; }
 .hero-title {
   margin: 0 0 8px;
