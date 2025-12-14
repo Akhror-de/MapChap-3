@@ -741,7 +741,6 @@ export default {
         email: '',
         website: '',
         working_hours: '',
-        price_level: 'medium',
         amenities: [],
         lat: 55.751244, 
         lng: 37.618423 
