@@ -31,10 +31,12 @@
             </button>
           </div>
           
-          <!-- Логотип -->
+          <!-- Логотип с RGB анимацией -->
           <div class="logo">
-            <span class="logo-icon">🗺️</span>
-            <span class="logo-text">MapChap</span>
+            <span class="logo-text animated-logo">
+              <span class="logo-word">MAP</span>
+              <span class="logo-word">CHAP</span>
+            </span>
           </div>
           
           <!-- Правая часть - навигация -->
