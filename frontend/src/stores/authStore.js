@@ -155,6 +155,7 @@ export const useAuthStore = defineStore('auth', () => {
     isVerified,
     initTelegramAuth,
     registerAsBusiness,
+    fetchUser,
     updateUser,
     logout
   }
