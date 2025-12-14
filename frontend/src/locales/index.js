@@ -469,7 +469,84 @@ export const translations = {
     notif_published: 'Published!',
     notif_language_changed: 'Language changed',
     notif_boost_activated: 'Boost activated!',
-    notif_boost_expired: 'Boost expired'
+    notif_boost_expired: 'Boost expired',
+    
+    // ArticlePanel
+    article_title: 'Article',
+    article_min: 'min',
+    article_like: 'Like',
+    article_share: 'Share',
+    article_not_found: 'Article not found',
+    article_added_likes: 'Added to favorites',
+    article_removed_likes: 'Removed from favorites',
+    article_link_copied: 'Link copied',
+    article_author: 'Author',
+    article_from_developers: 'From Developers',
+    article_from_business: 'From Business',
+    article_from_user: 'From User',
+    
+    // BlogPanel placeholders
+    blog_article_title_placeholder: 'Enter title',
+    blog_article_excerpt_placeholder: 'Brief description',
+    blog_article_content_placeholder: 'Write your article...',
+    blog_article_tags_placeholder: 'tag1, tag2, tag3',
+    blog_article_published: 'Article published!',
+    blog_added_likes: 'Added to favorites',
+    blog_removed_likes: 'Removed from favorites',
+    blog_article: 'Article',
+    
+    // BlogPanel categories
+    blog_cat_news: 'News',
+    blog_cat_tips: 'Tips',
+    blog_cat_guide: 'Guides',
+    blog_cat_review: 'Reviews',
+    blog_cat_success: 'Success Stories',
+    blog_cat_other: 'Other',
+    
+    // AboutPanel
+    about_phone: 'Phone',
+    
+    // BusinessPanel steps
+    business_step1: 'Verification',
+    business_step2: 'Information',
+    business_step3: 'Listing',
+    business_step_done: 'Done',
+    business_verification_passed: 'Verification passed!',
+    business_create_first_offer: 'Now create your first listing',
+    business_info_about: 'Business information',
+    business_name_label: 'Name',
+    business_name_placeholder: 'Your business name',
+    business_short_desc: 'Short description',
+    business_short_desc_placeholder: 'Briefly describe your business',
+    business_full_desc_placeholder: 'Detailed description of services, benefits, company history...',
+    business_address_hint: 'Provide exact address for map display',
+    business_confirm_delete: 'Delete listing?',
+    business_offer_updated: 'Listing updated',
+    business_offer_published: 'Listing published!',
+    business_status_changed: 'Status changed',
+    business_offer_deleted: 'Listing deleted',
+    business_account_activated: 'Business account activated!',
+    
+    // Amenities
+    amenity_wifi: 'Wi-Fi',
+    amenity_parking: 'Parking',
+    amenity_card_payment: 'Card Payment',
+    amenity_delivery: 'Delivery',
+    amenity_takeaway: 'Takeaway',
+    amenity_wheelchair: 'Wheelchair Access',
+    amenity_children: 'Kids Area',
+    amenity_pet_friendly: 'Pet Friendly',
+    amenity_ac: 'Air Conditioning',
+    amenity_outdoor: 'Terrace',
+    amenity_reservation: 'Reservation',
+    amenity_24h: '24 Hours',
+    
+    // Boost panel enhanced
+    boost_banks_note: 'Banks from Uzbekistan, Kazakhstan and other CIS countries supported',
+    boost_ip_account: 'Business Account',
+    boost_ip_hint: 'For individual entrepreneurs',
+    boost_business_id: 'Tax ID',
+    boost_business_id_placeholder: 'Tax identification number'
   },
   
   uz: {
