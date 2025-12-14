@@ -223,6 +223,16 @@ export default {
       }
     }
 
+    const handleOfferClick = (offer) => {
+      selectedOffer.value = offer
+      isBottomSheetOpen.value = true
+    }
+
+    const closeBottomSheet = () => {
+      isBottomSheetOpen.value = false
+      selectedOffer.value = null
+    }
+
     return {
       searchQuery,
       categories,
