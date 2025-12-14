@@ -227,6 +227,7 @@ export default {
 
       placemark.events.add('click', () => {
         offersStore.setSelectedOffer(offer)
+        emit('offer-click', offer)
       })
 
       return placemark
