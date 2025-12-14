@@ -128,6 +128,7 @@ class OfferCreate(BaseModel):
 class OfferUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
+    full_description: Optional[str] = None
     category: Optional[str] = None
     address: Optional[str] = None
     phone: Optional[str] = None
@@ -138,6 +139,7 @@ class OfferUpdate(BaseModel):
     coordinates: Optional[List[float]] = None
     images: Optional[List[str]] = None
     tags: Optional[List[str]] = None
+    amenities: Optional[List[str]] = None
     status: Optional[str] = None
 
 class ArticleCreate(BaseModel):
