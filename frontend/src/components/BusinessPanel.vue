@@ -76,32 +76,32 @@
         <!-- Форма ИНН -->
         <div v-if="verificationMethod === 'inn'" class="section-card">
           <div class="section-title">{{ t('business_inn_check') }}</div>
-          <p class="section-description">Проверка по ИНН/БИН доступна для России, Казахстана и Беларуси</p>
+          <p class="section-description">{{ t('business_inn_desc') }}</p>
           
           <!-- Выбор страны -->
           <div class="form-group">
-            <label>Страна регистрации</label>
+            <label>{{ t('business_country_label') }}</label>
             <div class="country-btns">
               <button 
                 class="country-btn"
                 :class="{ active: innForm.country === 'RU' }"
                 @click="innForm.country = 'RU'"
-              >🇷🇺 Россия</button>
+              >🇷🇺 {{ t('business_country_russia') }}</button>
               <button 
                 class="country-btn"
                 :class="{ active: innForm.country === 'KZ' }"
                 @click="innForm.country = 'KZ'"
-              >🇰🇿 Казахстан</button>
+              >🇰🇿 {{ t('business_country_kazakhstan') }}</button>
               <button 
                 class="country-btn"
                 :class="{ active: innForm.country === 'BY' }"
                 @click="innForm.country = 'BY'"
-              >🇧🇾 Беларусь</button>
+              >🇧🇾 {{ t('business_country_belarus') }}</button>
             </div>
           </div>
 
           <div class="form-group">
-            <label>{{ innForm.country === 'KZ' ? 'БИН/ИИН компании' : 'ИНН компании' }}</label>
+            <label>{{ innForm.country === 'KZ' ? t('business_bin_company') : t('business_inn_label') }}</label>
             <input 
               v-model="innForm.inn"
               type="text" 
@@ -119,7 +119,7 @@
                 <strong>{{ innVerificationResult.verification.name }}</strong>
                 <p>{{ innForm.country === 'KZ' ? 'БИН' : 'ИНН' }}: {{ innVerificationResult.verification.inn }}</p>
                 <p v-if="innVerificationResult.verification.address">📍 {{ innVerificationResult.verification.address }}</p>
-                <p v-if="innVerificationResult.verification.status">Статус: {{ innVerificationResult.verification.status }}</p>
+                <p v-if="innVerificationResult.verification.status">{{ t('business_status') }}: {{ innVerificationResult.verification.status }}</p>
               </div>
             </div>
             <div v-else class="result-error">
@@ -134,7 +134,7 @@
           
           <!-- Подсказка для других стран СНГ -->
           <div class="cis-hint">
-            <p>🇺🇿🇹🇯🇰🇬 Для Узбекистана, Таджикистана и Кыргызстана используйте <strong>ручную верификацию</strong></p>
+            <p>🇺🇿🇹🇯🇰🇬 {{ t('business_cis_hint') }}</p>
           </div>
         </div>
 
