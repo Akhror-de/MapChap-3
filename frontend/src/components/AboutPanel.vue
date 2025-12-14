@@ -90,7 +90,7 @@
           <a href="tel:+79998214758" class="contact-item">
             <span>📱</span>
             <div>
-              <span class="contact-label">Телефон</span>
+              <span class="contact-label">{{ t('about_phone') }}</span>
               <span class="contact-value">+7 (999) 821-47-58</span>
             </div>
           </a>
