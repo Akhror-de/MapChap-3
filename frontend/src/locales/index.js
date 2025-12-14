@@ -205,7 +205,84 @@ export const translations = {
     notif_published: 'Опубликовано!',
     notif_language_changed: 'Язык изменен',
     notif_boost_activated: 'Буст активирован!',
-    notif_boost_expired: 'Буст истёк'
+    notif_boost_expired: 'Буст истёк',
+    
+    // ArticlePanel
+    article_title: 'Статья',
+    article_min: 'мин',
+    article_like: 'Нравится',
+    article_share: 'Поделиться',
+    article_not_found: 'Статья не найдена',
+    article_added_likes: 'Добавлено в понравившиеся',
+    article_removed_likes: 'Удалено из понравившихся',
+    article_link_copied: 'Ссылка скопирована',
+    article_author: 'Автор',
+    article_from_developers: 'От разработчиков',
+    article_from_business: 'От бизнеса',
+    article_from_user: 'От пользователя',
+    
+    // BlogPanel placeholders
+    blog_article_title_placeholder: 'Введите заголовок',
+    blog_article_excerpt_placeholder: 'Краткое описание статьи',
+    blog_article_content_placeholder: 'Напишите вашу статью...',
+    blog_article_tags_placeholder: 'тег1, тег2, тег3',
+    blog_article_published: 'Статья опубликована!',
+    blog_added_likes: 'Добавлено в понравившиеся',
+    blog_removed_likes: 'Удалено из понравившихся',
+    blog_article: 'Статья',
+    
+    // BlogPanel categories
+    blog_cat_news: 'Новости',
+    blog_cat_tips: 'Советы',
+    blog_cat_guide: 'Гайды',
+    blog_cat_review: 'Обзоры',
+    blog_cat_success: 'Истории успеха',
+    blog_cat_other: 'Другое',
+    
+    // AboutPanel
+    about_phone: 'Телефон',
+    
+    // BusinessPanel steps
+    business_step1: 'Верификация',
+    business_step2: 'Информация',
+    business_step3: 'Объявление',
+    business_step_done: 'Готово',
+    business_verification_passed: 'Верификация пройдена!',
+    business_create_first_offer: 'Теперь создайте ваше первое объявление',
+    business_info_about: 'Информация о бизнесе',
+    business_name_label: 'Название',
+    business_name_placeholder: 'Название вашего бизнеса',
+    business_short_desc: 'Краткое описание',
+    business_short_desc_placeholder: 'Кратко опишите ваш бизнес',
+    business_full_desc_placeholder: 'Подробное описание услуг, преимуществ, истории компании...',
+    business_address_hint: 'Укажите точный адрес для отображения на карте',
+    business_confirm_delete: 'Удалить объявление?',
+    business_offer_updated: 'Объявление обновлено',
+    business_offer_published: 'Объявление опубликовано!',
+    business_status_changed: 'Статус изменен',
+    business_offer_deleted: 'Объявление удалено',
+    business_account_activated: 'Бизнес-аккаунт активирован!',
+    
+    // Amenities
+    amenity_wifi: 'Wi-Fi',
+    amenity_parking: 'Парковка',
+    amenity_card_payment: 'Оплата картой',
+    amenity_delivery: 'Доставка',
+    amenity_takeaway: 'С собой',
+    amenity_wheelchair: 'Доступная среда',
+    amenity_children: 'Детская зона',
+    amenity_pet_friendly: 'С животными',
+    amenity_ac: 'Кондиционер',
+    amenity_outdoor: 'Терраса',
+    amenity_reservation: 'Бронь',
+    amenity_24h: '24 часа',
+    
+    // Boost panel enhanced
+    boost_banks_note: 'Поддерживаются банки Узбекистана, Казахстана и других стран СНГ',
+    boost_ip_account: 'Счёт ИП',
+    boost_ip_hint: 'Для индивидуальных предпринимателей',
+    boost_business_id: 'ИНН/СТИР',
+    boost_business_id_placeholder: 'Номер налогоплательщика'
   },
   
   en: {
