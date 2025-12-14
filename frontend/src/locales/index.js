@@ -880,7 +880,12 @@ export const translations = {
     boost_ip_account: 'YaTT hisobi',
     boost_ip_hint: 'Yakka tartibdagi tadbirkorlar uchun',
     boost_business_id: 'STIR',
-    boost_business_id_placeholder: 'Soliq toʻlovchi raqami'
+    boost_business_id_placeholder: 'Soliq toʻlovchi raqami',
+    
+    // Offer bottom sheet
+    offer_discount: 'Chegirma',
+    offer_promotion: 'Aksiya',
+    offer_call: 'Qoʻngʻiroq'
   },
   
   tg: {
