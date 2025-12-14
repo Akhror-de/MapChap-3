@@ -45,7 +45,8 @@ const CATEGORY_ICONS = {
 
 export default {
   name: 'YandexMap',
-  setup() {
+  emits: ['offer-click'],
+  setup(props, { emit }) {
     const mapContainer = ref(null)
     const offersStore = useOffersStore()
     const { filteredOffers, selectedCategory, userLocation } = storeToRefs(offersStore)
