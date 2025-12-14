@@ -208,25 +208,25 @@
         <div class="steps-indicator">
           <div class="step completed">
             <span class="step-num">✓</span>
-            <span class="step-label">Верификация</span>
+            <span class="step-label">{{ t('business_step1') }}</span>
           </div>
           <div class="step-line active"></div>
           <div class="step active">
             <span class="step-num">2</span>
-            <span class="step-label">Информация</span>
+            <span class="step-label">{{ t('business_step2') }}</span>
           </div>
           <div class="step-line"></div>
           <div class="step">
             <span class="step-num">3</span>
-            <span class="step-label">Готово</span>
+            <span class="step-label">{{ t('business_step_done') }}</span>
           </div>
         </div>
 
         <div class="success-banner">
           <span class="success-icon">🎉</span>
           <div>
-            <strong>Верификация пройдена!</strong>
-            <p>Теперь создайте ваше первое объявление</p>
+            <strong>{{ t('business_verification_passed') }}</strong>
+            <p>{{ t('business_create_first_offer') }}</p>
           </div>
         </div>
 
