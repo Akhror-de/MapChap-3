@@ -1458,7 +1458,12 @@ export const translations = {
     boost_ip_account: 'ЖК шоты',
     boost_ip_hint: 'Жеке кәсіпкерлер үшін',
     boost_business_id: 'БСН/ЖСН',
-    boost_business_id_placeholder: 'Салық төлеуші нөмірі'
+    boost_business_id_placeholder: 'Салық төлеуші нөмірі',
+    
+    // Offer bottom sheet
+    offer_discount: 'Жеңілдік',
+    offer_promotion: 'Акция',
+    offer_call: 'Қоңырау шалу'
   },
   
   ky: {
