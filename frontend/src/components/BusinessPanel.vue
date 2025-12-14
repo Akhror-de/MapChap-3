@@ -571,7 +571,22 @@ export default {
 
     const isValidINN = computed(() => { 
       const inn = innForm.inn.replace(/\D/g, '')
-      return inn.length === 10 || inn.length === 12 
+      if (innForm.country === 'KZ') {
+        // Казахстан: БИН 12 цифр
+        return inn.length === 12
+      } else if (innForm.country === 'BY') {
+        // Беларусь: УНП 9 цифр
+        return inn.length === 9
+      } else {
+        // Россия: ИНН 10 или 12 цифр
+        return inn.length === 10 || inn.length === 12
+      }
+    })
+    
+    const getINNPlaceholder = computed(() => {
+      if (innForm.country === 'KZ') return '12 цифр (БИН)'
+      if (innForm.country === 'BY') return '9 цифр (УНП)'
+      return '10 или 12 цифр'
     })
     
     const isValidManualForm = computed(() => 
