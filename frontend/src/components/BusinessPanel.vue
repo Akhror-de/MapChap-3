@@ -2,7 +2,7 @@
   <div class="side-panel">
     <div class="panel-header">
       <div class="header-content">
-        <button class="back-button" @click="closePanel">
+        <button class="back-button" @click="handleBack">
           <span class="back-icon">←</span>
           <span class="back-text">{{ t('back') }}</span>
         </button>
@@ -15,7 +15,7 @@
 
     <div class="panel-content">
       <!-- Загрузка -->
-      <div v-if="businessStore.isLoading" class="loading-state">
+      <div v-if="isLoading" class="loading-state">
         <div class="loading-spinner"></div>
         <p>{{ t('loading') }}</p>
       </div>
@@ -28,13 +28,31 @@
         <button class="btn btn-primary" @click="initAuth">{{ t('profile_login') }}</button>
       </div>
 
-      <!-- Верификация -->
-      <div v-else-if="!authStore.isBusinessOwner" class="verification-section">
+      <!-- Верификация (Шаг 1) -->
+      <div v-else-if="!authStore.isBusinessOwner && currentStep === 'verification'" class="verification-section">
         <!-- Хедер -->
         <div class="hero-card">
           <div class="hero-icon">🚀</div>
           <h3>{{ t('business_become_partner') }}</h3>
           <p>{{ t('business_partner_desc') }}</p>
+        </div>
+
+        <!-- Индикатор шагов -->
+        <div class="steps-indicator">
+          <div class="step active">
+            <span class="step-num">1</span>
+            <span class="step-label">Верификация</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step">
+            <span class="step-num">2</span>
+            <span class="step-label">Информация</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step">
+            <span class="step-num">3</span>
+            <span class="step-label">Объявление</span>
+          </div>
         </div>
 
         <!-- Табы верификации -->
@@ -78,6 +96,8 @@
               <div>
                 <strong>{{ innVerificationResult.verification.name }}</strong>
                 <p>ИНН: {{ innVerificationResult.verification.inn }}</p>
+                <p v-if="innVerificationResult.verification.address">📍 {{ innVerificationResult.verification.address }}</p>
+                <p v-if="innVerificationResult.verification.status">Статус: {{ innVerificationResult.verification.status }}</p>
               </div>
             </div>
             <div v-else class="result-error">
@@ -96,17 +116,17 @@
           <div class="section-title">{{ t('business_manual_verification') }}</div>
           
           <div class="form-group">
-            <label>{{ t('business_company_name') }}</label>
+            <label>{{ t('business_company_name') }} *</label>
             <input v-model="manualForm.company_name" type="text" placeholder="ООО 'Ваша компания'">
           </div>
 
           <div class="form-group">
-            <label>{{ t('business_phone') }}</label>
+            <label>{{ t('business_phone') }} *</label>
             <input v-model="manualForm.phone" type="tel" placeholder="+7 (999) 123-45-67">
           </div>
 
           <div class="form-group">
-            <label>{{ t('business_email') }}</label>
+            <label>{{ t('business_email') }} *</label>
             <input v-model="manualForm.email" type="email" placeholder="email@company.com">
           </div>
 
@@ -155,8 +175,145 @@
         </div>
       </div>
 
-      <!-- Бизнес контент -->
-      <div v-else class="business-content">
+      <!-- Шаг 2: После верификации - создание первого объявления -->
+      <div v-else-if="authStore.isBusinessOwner && currentStep === 'create-offer'" class="create-offer-section">
+        <!-- Индикатор шагов -->
+        <div class="steps-indicator">
+          <div class="step completed">
+            <span class="step-num">✓</span>
+            <span class="step-label">Верификация</span>
+          </div>
+          <div class="step-line active"></div>
+          <div class="step active">
+            <span class="step-num">2</span>
+            <span class="step-label">Информация</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step">
+            <span class="step-num">3</span>
+            <span class="step-label">Готово</span>
+          </div>
+        </div>
+
+        <div class="success-banner">
+          <span class="success-icon">🎉</span>
+          <div>
+            <strong>Верификация пройдена!</strong>
+            <p>Теперь создайте ваше первое объявление</p>
+          </div>
+        </div>
+
+        <!-- Форма объявления -->
+        <div class="section-card">
+          <div class="section-title">📝 Информация о бизнесе</div>
+          
+          <div class="form-group">
+            <label>Название *</label>
+            <input v-model="offerForm.title" type="text" placeholder="Название вашего бизнеса">
+          </div>
+
+          <div class="form-group">
+            <label>Категория *</label>
+            <div class="category-grid">
+              <button 
+                v-for="cat in categories" 
+                :key="cat.id"
+                class="category-btn"
+                :class="{ active: offerForm.category === cat.id }"
+                @click="offerForm.category = cat.id"
+              >
+                <span class="cat-icon">{{ cat.icon }}</span>
+                <span class="cat-name">{{ cat.name }}</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Краткое описание *</label>
+            <textarea v-model="offerForm.description" rows="3" placeholder="Кратко опишите ваш бизнес"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Полное описание</label>
+            <textarea v-model="offerForm.full_description" rows="5" placeholder="Подробное описание услуг, преимуществ, истории компании..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Адрес *</label>
+            <input v-model="offerForm.address" type="text" placeholder="Город, улица, дом">
+            <span class="field-hint">Укажите точный адрес для отображения на карте</span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Телефон *</label>
+              <input v-model="offerForm.phone" type="tel" placeholder="+7 (999) 123-45-67">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input v-model="offerForm.email" type="email" placeholder="email@company.com">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Сайт</label>
+              <input v-model="offerForm.website" type="url" placeholder="https://example.com">
+            </div>
+            <div class="form-group">
+              <label>Часы работы</label>
+              <input v-model="offerForm.working_hours" type="text" placeholder="Пн-Пт: 9:00-18:00">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Удобства и услуги</label>
+            <div class="amenities-grid">
+              <button 
+                v-for="amenity in amenitiesList" 
+                :key="amenity.id"
+                class="amenity-btn"
+                :class="{ active: offerForm.amenities.includes(amenity.id) }"
+                @click="toggleAmenity(amenity.id)"
+              >
+                <span>{{ amenity.icon }}</span>
+                <span>{{ amenity.name }}</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Уровень цен</label>
+            <div class="price-btns">
+              <button 
+                class="price-btn"
+                :class="{ active: offerForm.price_level === 'low' }"
+                @click="offerForm.price_level = 'low'"
+              >💰 Бюджетно</button>
+              <button 
+                class="price-btn"
+                :class="{ active: offerForm.price_level === 'medium' }"
+                @click="offerForm.price_level = 'medium'"
+              >💰💰 Средне</button>
+              <button 
+                class="price-btn"
+                :class="{ active: offerForm.price_level === 'high' }"
+                @click="offerForm.price_level = 'high'"
+              >💰💰💰 Премиум</button>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-secondary" @click="currentStep = 'dashboard'">Пропустить</button>
+            <button class="btn btn-primary" @click="submitOffer" :disabled="!canSubmitOffer || isSubmitting">
+              {{ isSubmitting ? t('loading') : 'Создать объявление' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Бизнес дашборд -->
+      <div v-else-if="authStore.isBusinessOwner && currentStep === 'dashboard'" class="business-content">
         <div class="tabs">
           <button class="tab-btn" :class="{ active: activeTab === 'overview' }" @click="activeTab = 'overview'">📊 {{ t('business_overview') }}</button>
           <button class="tab-btn" :class="{ active: activeTab === 'offers' }" @click="activeTab = 'offers'">🏢 {{ t('business_my_offers') }}</button>
@@ -168,6 +325,7 @@
           <div class="welcome-card">
             <span v-if="authStore.user?.is_verified" class="verified-badge">✅ {{ t('business_verified_badge') }}</span>
             <h3>{{ t('business_welcome') }}, {{ businessInfo.companyName }}!</h3>
+            <p v-if="authStore.user?.inn">ИНН: {{ authStore.user.inn }}</p>
           </div>
 
           <div class="metrics-grid">
@@ -222,6 +380,7 @@
               <div class="offer-stats">
                 <span>👁️ {{ offer.views || 0 }}</span>
                 <span>❤️ {{ offer.likes || 0 }}</span>
+                <span>📍 {{ offer.address }}</span>
               </div>
               <div class="offer-actions">
                 <button class="btn btn-small btn-secondary" @click="editOffer(offer)">✏️ {{ t('edit') }}</button>
@@ -240,48 +399,82 @@
             <div class="section-title">{{ editingOffer ? t('business_editing') : t('business_new_offer_btn') }}</div>
             
             <div class="form-group">
-              <label>{{ t('business_offer_title') }} *</label>
-              <input v-model="offerForm.title" type="text" :placeholder="t('business_offer_title')">
+              <label>Название *</label>
+              <input v-model="offerForm.title" type="text" placeholder="Название вашего бизнеса">
             </div>
 
             <div class="form-group">
-              <label>{{ t('business_offer_category') }} *</label>
-              <select v-model="offerForm.category">
-                <option value="">{{ t('business_offer_select') }}</option>
-                <option v-for="cat in businessStore.categories" :key="cat.id" :value="cat.id">
-                  {{ cat.icon }} {{ cat.name }}
-                </option>
-              </select>
+              <label>Категория *</label>
+              <div class="category-grid">
+                <button 
+                  v-for="cat in categories" 
+                  :key="cat.id"
+                  class="category-btn"
+                  :class="{ active: offerForm.category === cat.id }"
+                  @click="offerForm.category = cat.id"
+                >
+                  <span class="cat-icon">{{ cat.icon }}</span>
+                  <span class="cat-name">{{ cat.name }}</span>
+                </button>
+              </div>
             </div>
 
             <div class="form-group">
-              <label>{{ t('business_offer_desc') }} *</label>
-              <textarea v-model="offerForm.description" rows="4" :placeholder="t('business_offer_desc')"></textarea>
+              <label>Краткое описание *</label>
+              <textarea v-model="offerForm.description" rows="3" placeholder="Кратко опишите ваш бизнес"></textarea>
             </div>
 
             <div class="form-group">
-              <label>{{ t('business_offer_address') }} *</label>
+              <label>Полное описание</label>
+              <textarea v-model="offerForm.full_description" rows="5" placeholder="Подробное описание услуг, преимуществ..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Адрес *</label>
               <input v-model="offerForm.address" type="text" placeholder="Город, улица, дом">
             </div>
 
-            <div class="form-group">
-              <label>{{ t('business_phone') }} *</label>
-              <input v-model="offerForm.phone" type="tel" placeholder="+7 (999) 123-45-67">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Телефон *</label>
+                <input v-model="offerForm.phone" type="tel" placeholder="+7 (999) 123-45-67">
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input v-model="offerForm.email" type="email" placeholder="email@company.com">
+              </div>
             </div>
-            
-            <div class="form-group">
-              <label>{{ t('business_email') }}</label>
-              <input v-model="offerForm.email" type="email" placeholder="email@company.com">
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Сайт</label>
+                <input v-model="offerForm.website" type="url" placeholder="https://example.com">
+              </div>
+              <div class="form-group">
+                <label>Часы работы</label>
+                <input v-model="offerForm.working_hours" type="text" placeholder="Пн-Пт: 9:00-18:00">
+              </div>
             </div>
 
             <div class="form-group">
-              <label>Часы работы</label>
-              <input v-model="offerForm.working_hours" type="text" placeholder="Пн-Пт: 9:00-18:00">
+              <label>Удобства</label>
+              <div class="amenities-grid">
+                <button 
+                  v-for="amenity in amenitiesList" 
+                  :key="amenity.id"
+                  class="amenity-btn"
+                  :class="{ active: offerForm.amenities.includes(amenity.id) }"
+                  @click="toggleAmenity(amenity.id)"
+                >
+                  <span>{{ amenity.icon }}</span>
+                  <span>{{ amenity.name }}</span>
+                </button>
+              </div>
             </div>
 
             <div class="form-actions">
               <button v-if="editingOffer" class="btn btn-secondary" @click="cancelEdit">{{ t('cancel') }}</button>
-              <button class="btn btn-primary" :class="{ 'btn-block': !editingOffer }" @click="submitOffer" :disabled="!canSubmit || isSubmitting">
+              <button class="btn btn-primary" :class="{ 'btn-block': !editingOffer }" @click="submitOffer" :disabled="!canSubmitOffer || isSubmitting">
                 {{ isSubmitting ? t('loading') : (editingOffer ? t('save') : t('business_publish')) }}
               </button>
             </div>
@@ -311,6 +504,7 @@ export default {
     const { getUserOffers } = storeToRefs(businessStore)
     const { t } = useLocale()
 
+    const isLoading = ref(false)
     const activeTab = ref('overview')
     const editingOffer = ref(null)
     const verificationMethod = ref('inn')
@@ -318,23 +512,47 @@ export default {
     const isSubmitting = ref(false)
     const innVerificationResult = ref(null)
     const innError = ref('')
+    const currentStep = ref('verification') // verification, create-offer, dashboard
+    const categories = ref([])
 
     const innForm = reactive({ inn: '' })
     const manualForm = reactive({ company_name: '', phone: '', email: '', social_type: 'telegram', social_username: '' })
     const offerForm = reactive({ 
       title: '', 
       category: '', 
-      description: '', 
+      description: '',
+      full_description: '',
       address: '', 
       phone: '', 
       email: '',
+      website: '',
       working_hours: '',
+      price_level: 'medium',
+      amenities: [],
       lat: 55.751244, 
       lng: 37.618423 
     })
 
+    // Список удобств
+    const amenitiesList = [
+      { id: 'wifi', name: 'Wi-Fi', icon: '📶' },
+      { id: 'parking', name: 'Парковка', icon: '🅿️' },
+      { id: 'card_payment', name: 'Оплата картой', icon: '💳' },
+      { id: 'delivery', name: 'Доставка', icon: '🚚' },
+      { id: 'takeaway', name: 'С собой', icon: '📦' },
+      { id: 'wheelchair', name: 'Доступная среда', icon: '♿' },
+      { id: 'children', name: 'Детская зона', icon: '👶' },
+      { id: 'pet_friendly', name: 'С животными', icon: '🐕' },
+      { id: 'ac', name: 'Кондиционер', icon: '❄️' },
+      { id: 'outdoor', name: 'Терраса', icon: '🌿' },
+      { id: 'reservation', name: 'Бронь', icon: '📅' },
+      { id: '24h', name: '24 часа', icon: '🕐' }
+    ]
+
     const userOffers = computed(() => getUserOffers.value)
-    const businessInfo = computed(() => ({ companyName: authStore.user?.company_name || authStore.user?.first_name || 'Бизнес' }))
+    const businessInfo = computed(() => ({ 
+      companyName: authStore.user?.company_name || authStore.user?.first_name || 'Бизнес' 
+    }))
     
     const businessStats = computed(() => {
       const offers = userOffers.value
@@ -354,11 +572,10 @@ export default {
     const isValidManualForm = computed(() => 
       manualForm.company_name.length >= 2 && 
       manualForm.phone.length >= 10 && 
-      manualForm.email.includes('@') && 
-      manualForm.social_username.length >= 2
+      manualForm.email.includes('@')
     )
     
-    const canSubmit = computed(() => 
+    const canSubmitOffer = computed(() => 
       offerForm.title && 
       offerForm.category && 
       offerForm.description && 
@@ -368,25 +585,56 @@ export default {
 
     const initAuth = () => authStore.initTelegramAuth()
     
+    const handleBack = () => {
+      if (currentStep.value === 'create-offer') {
+        currentStep.value = 'dashboard'
+      } else {
+        closePanel()
+      }
+    }
+
+    const loadCategories = async () => {
+      try {
+        const result = await apiService.getCategories()
+        categories.value = result.categories || []
+      } catch (e) {
+        console.log('Categories load error:', e)
+        categories.value = businessStore.categories
+      }
+    }
+    
     const validateINN = () => { 
       innForm.inn = innForm.inn.replace(/\D/g, '')
-      innError.value = innForm.inn.length > 0 && !isValidINN.value ? 'ИНН: 10 или 12 цифр' : ''
+      innError.value = innForm.inn.length > 0 && !isValidINN.value ? 'ИНН должен содержать 10 или 12 цифр' : ''
       innVerificationResult.value = null 
     }
     
     const verifyByINN = async () => {
       if (!isValidINN.value) return
       isVerifying.value = true
+      innVerificationResult.value = null
+      
       try {
         const result = await apiService.verifyByINN(authStore.user.telegram_id, innForm.inn)
         innVerificationResult.value = result
+        
         if (result.success) {
-          await authStore.registerAsBusiness({ companyName: result.verification.name, inn: innForm.inn, verificationType: 'inn' })
-          showNotification(t('notif_verified'), 'success')
+          // Обновляем данные пользователя
+          await authStore.fetchUser()
+          showNotification('✅ Верификация пройдена!', 'success')
+          
+          // Переходим к созданию объявления
+          setTimeout(() => {
+            currentStep.value = 'create-offer'
+            // Заполняем адрес из данных DaData
+            if (result.verification?.address) {
+              offerForm.address = result.verification.address
+            }
+          }, 1500)
         }
       } catch (e) {
-        innVerificationResult.value = { success: false, error: e.message }
-        showNotification(e.message, 'error')
+        innVerificationResult.value = { success: false, error: e.message || 'Ошибка проверки ИНН' }
+        showNotification('❌ ' + (e.message || 'Ошибка проверки'), 'error')
       } finally { 
         isVerifying.value = false 
       }
@@ -395,14 +643,28 @@ export default {
     const verifyManually = async () => {
       if (!isValidManualForm.value) return
       isVerifying.value = true
+      
       try {
         await apiService.verifyManually(authStore.user.telegram_id, manualForm)
-        await authStore.registerAsBusiness({ companyName: manualForm.company_name, verificationType: 'manual' })
-        showNotification(t('notif_activated'), 'success')
+        await authStore.fetchUser()
+        showNotification('✅ Бизнес-аккаунт активирован!', 'success')
+        
+        setTimeout(() => {
+          currentStep.value = 'create-offer'
+        }, 1500)
       } catch (e) { 
-        showNotification(e.message, 'error') 
+        showNotification('❌ ' + (e.message || 'Ошибка'), 'error') 
       } finally { 
         isVerifying.value = false 
+      }
+    }
+
+    const toggleAmenity = (id) => {
+      const idx = offerForm.amenities.indexOf(id)
+      if (idx > -1) {
+        offerForm.amenities.splice(idx, 1)
+      } else {
+        offerForm.amenities.push(id)
       }
     }
 
@@ -415,27 +677,29 @@ export default {
     }
     
     const submitOffer = async () => {
-      if (!canSubmit.value || isSubmitting.value) return
+      if (!canSubmitOffer.value || isSubmitting.value) return
       
       isSubmitting.value = true
       try {
         const data = { 
           ...offerForm, 
-          coordinates: [offerForm.lat, offerForm.lng] 
+          coordinates: [offerForm.lat, offerForm.lng],
+          inn: authStore.user?.inn || null
         }
         
         if (editingOffer.value) {
           await businessStore.updateOffer(editingOffer.value.id, data)
-          showNotification(t('notif_saved'), 'success')
+          showNotification('✅ Объявление обновлено', 'success')
         } else {
           await businessStore.createOffer(data)
-          showNotification(t('notif_published'), 'success')
+          showNotification('🎉 Объявление опубликовано!', 'success')
         }
         
         resetForm()
+        currentStep.value = 'dashboard'
         activeTab.value = 'offers'
       } catch (e) { 
-        showNotification(t('error'), 'error') 
+        showNotification('❌ ' + (e.message || 'Ошибка'), 'error') 
       } finally {
         isSubmitting.value = false
       }
@@ -447,10 +711,14 @@ export default {
         title: o.title || '',
         category: o.category || '',
         description: o.description || '',
+        full_description: o.full_description || '',
         address: o.address || '',
         phone: o.phone || '',
         email: o.email || '',
+        website: o.website || '',
         working_hours: o.working_hours || '',
+        price_level: o.price_level || 'medium',
+        amenities: o.amenities || [],
         lat: o.coordinates?.[0] || 55.751244,
         lng: o.coordinates?.[1] || 37.618423
       })
@@ -465,13 +733,13 @@ export default {
     
     const handleToggleOfferStatus = async (id) => { 
       await businessStore.toggleOfferStatus(id)
-      showNotification(t('notif_status_changed'), 'success') 
+      showNotification('✅ Статус изменен', 'success') 
     }
     
     const handleDeleteOffer = async (id) => {
       if (confirm('Удалить объявление?')) {
         await businessStore.deleteOffer(id)
-        showNotification(t('notif_removed'), 'success')
+        showNotification('✅ Объявление удалено', 'success')
       }
     }
     
@@ -480,37 +748,141 @@ export default {
       Object.assign(offerForm, { 
         title: '', 
         category: '', 
-        description: '', 
+        description: '',
+        full_description: '',
         address: '', 
         phone: '', 
         email: '',
+        website: '',
         working_hours: '',
+        price_level: 'medium',
+        amenities: [],
         lat: 55.751244, 
         lng: 37.618423 
       }) 
     }
     
-    // Загружаем объявления при входе
+    // Определяем начальный шаг
     watch(() => authStore.isBusinessOwner, (isBusiness) => {
       if (isBusiness) {
+        currentStep.value = 'dashboard'
         businessStore.loadUserOffers()
+      } else {
+        currentStep.value = 'verification'
       }
     }, { immediate: true })
 
+    onMounted(() => {
+      loadCategories()
+    })
+
     return { 
-      authStore, businessStore, activeTab, editingOffer, verificationMethod, 
+      authStore, businessStore, isLoading, activeTab, editingOffer, verificationMethod, 
       isVerifying, isSubmitting, innVerificationResult, innError, innForm, manualForm, offerForm, 
-      userOffers, businessInfo, businessStats, isValidINN, isValidManualForm, canSubmit, 
-      closePanel, initAuth, validateINN, verifyByINN, verifyManually, submitOffer, 
-      editOffer, cancelEdit, handleToggleOfferStatus, handleDeleteOffer, getStatusText, t 
+      userOffers, businessInfo, businessStats, isValidINN, isValidManualForm, canSubmitOffer, 
+      categories, amenitiesList, currentStep,
+      closePanel, handleBack, initAuth, validateINN, verifyByINN, verifyManually, 
+      submitOffer, editOffer, cancelEdit, handleToggleOfferStatus, handleDeleteOffer, 
+      getStatusText, toggleAmenity, t 
     }
   }
 }
 </script>
 
 <style scoped>
-.verification-section { padding: 0; }
+.verification-section, .create-offer-section { padding: 0; }
 
+/* Steps indicator */
+.steps-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #141414;
+  border-radius: 12px;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.step-num {
+  width: 32px;
+  height: 32px;
+  background: #2a2a2a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+}
+
+.step.active .step-num {
+  background: #ff6b00;
+  color: #fff;
+}
+
+.step.completed .step-num {
+  background: #22c55e;
+  color: #fff;
+}
+
+.step-label {
+  font-size: 11px;
+  color: #666;
+}
+
+.step.active .step-label,
+.step.completed .step-label {
+  color: #fff;
+}
+
+.step-line {
+  width: 40px;
+  height: 2px;
+  background: #2a2a2a;
+  margin: 0 8px;
+}
+
+.step-line.active {
+  background: #ff6b00;
+}
+
+/* Success banner */
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.success-icon {
+  font-size: 32px;
+}
+
+.success-banner strong {
+  color: #22c55e;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.success-banner p {
+  margin: 0;
+  font-size: 13px;
+  color: #888;
+}
+
+/* Hero card */
 .hero-card {
   text-align: center;
   padding: 32px 20px;
@@ -522,6 +894,7 @@ export default {
 .hero-card h3 { margin: 0 0 8px; font-size: 22px; color: #fff; }
 .hero-card p { margin: 0; opacity: 0.9; color: #fff; }
 
+/* Tabs */
 .verification-tabs, .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
 .tab-btn {
   flex: 1;
@@ -542,8 +915,100 @@ export default {
 }
 .tab-btn:hover:not(.active) { background: #1a1a1a; color: #fff; }
 
+/* Form */
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; margin-bottom: 6px; font-size: 13px; color: #888; font-weight: 500; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 15px;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: #ff6b00;
+}
+.form-group textarea { resize: vertical; min-height: 80px; }
 .field-error { display: block; margin-top: 4px; color: #ff4444; font-size: 12px; }
+.field-hint { display: block; margin-top: 4px; color: #666; font-size: 12px; }
 
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Category grid */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.category-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.category-btn:hover { background: #1a1a1a; }
+.category-btn.active { background: #ff6b00; border-color: #ff6b00; }
+.category-btn.active .cat-name { color: #fff; }
+.cat-icon { font-size: 20px; }
+.cat-name { font-size: 10px; color: #888; text-align: center; }
+
+/* Amenities grid */
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.amenity-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.amenity-btn:hover { background: #1a1a1a; color: #fff; }
+.amenity-btn.active { background: #ff6b00; border-color: #ff6b00; color: #fff; }
+
+/* Price buttons */
+.price-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.price-btn {
+  flex: 1;
+  padding: 10px;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.price-btn:hover { background: #1a1a1a; color: #fff; }
+.price-btn.active { background: #ff6b00; border-color: #ff6b00; color: #fff; }
+
+/* Social buttons */
 .social-btns { display: flex; gap: 8px; }
 .social-btn {
   flex: 1;
@@ -558,6 +1023,7 @@ export default {
 }
 .social-btn.active { background: #ff6b00; border-color: #ff6b00; color: #fff; }
 
+/* Result card */
 .result-card {
   padding: 16px;
   border-radius: 12px;
@@ -565,12 +1031,13 @@ export default {
   background: rgba(255, 68, 68, 0.1);
   border: 1px solid rgba(255, 68, 68, 0.3);
 }
-.result-card.success { background: rgba(255, 107, 0, 0.1); border-color: rgba(255, 107, 0, 0.3); }
+.result-card.success { background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.3); }
 .result-success, .result-error { display: flex; align-items: flex-start; gap: 12px; }
 .result-icon { font-size: 24px; }
-.result-success strong { color: #ff6b00; }
-.result-success p, .result-error p { margin: 4px 0 0; color: #888; font-size: 13px; }
+.result-success strong { color: #22c55e; display: block; margin-bottom: 4px; }
+.result-success p, .result-error p { margin: 2px 0; color: #888; font-size: 13px; }
 
+/* Benefits */
 .benefits-card {
   background: #141414;
   border: 1px solid #2a2a2a;
@@ -583,6 +1050,7 @@ export default {
 .benefit-item strong { color: #fff; font-size: 14px; }
 .benefit-item p { margin: 2px 0 0; color: #666; font-size: 12px; }
 
+/* Welcome card */
 .welcome-card {
   background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
   padding: 24px;
@@ -592,7 +1060,9 @@ export default {
 }
 .verified-badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 12px; margin-bottom: 8px; }
 .welcome-card h3 { margin: 0; font-size: 18px; }
+.welcome-card p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
 
+/* Metrics */
 .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
 .metric-card {
   background: #141414;
@@ -606,6 +1076,7 @@ export default {
 .metric-value { font-size: 24px; font-weight: 700; color: #fff; margin: 4px 0; }
 .metric-label { font-size: 12px; color: #666; }
 
+/* Quick actions */
 .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .action-btn {
   display: flex;
@@ -624,6 +1095,7 @@ export default {
 .action-btn:hover { background: #1a1a1a; color: #fff; border-color: #ff6b00; }
 .action-btn span { font-size: 20px; }
 
+/* Offers list */
 .offers-list { display: flex; flex-direction: column; gap: 12px; }
 .offer-card {
   background: #141414;
@@ -634,15 +1106,17 @@ export default {
 .offer-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
 .offer-header h4 { margin: 0; font-size: 15px; color: #fff; }
 .offer-status { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
-.offer-status.active { background: rgba(255, 107, 0, 0.15); color: #ff6b00; }
+.offer-status.active { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
 .offer-status.paused { background: rgba(255, 165, 0, 0.15); color: #ffa500; }
 .offer-desc { margin: 0 0 12px; font-size: 13px; color: #666; }
 .offer-stats { display: flex; gap: 16px; margin-bottom: 12px; font-size: 13px; color: #888; }
 .offer-actions { display: flex; gap: 8px; }
 
+/* Form actions */
 .form-actions { display: flex; gap: 12px; margin-top: 20px; }
 .form-actions .btn { flex: 1; }
 
+/* Section card */
 .section-card {
   background: #141414;
   border: 1px solid #2a2a2a;
@@ -653,8 +1127,13 @@ export default {
 .section-title { font-size: 16px; font-weight: 600; color: #fff; margin: 0 0 8px; }
 .section-description { font-size: 13px; color: #666; margin: 0 0 16px; }
 
+/* Buttons */
 .btn-danger { 
   background: linear-gradient(135deg, #ff4444 0%, #cc3333 100%) !important; 
   color: #fff !important; 
+}
+.btn-orange {
+  background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%) !important;
+  color: #fff !important;
 }
 </style>
