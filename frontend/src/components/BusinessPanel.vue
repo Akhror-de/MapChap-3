@@ -625,7 +625,21 @@ export default {
     
     const validateINN = () => { 
       innForm.inn = innForm.inn.replace(/\D/g, '')
-      innError.value = innForm.inn.length > 0 && !isValidINN.value ? 'ИНН должен содержать 10 или 12 цифр' : ''
+      
+      let errorMsg = ''
+      const inn = innForm.inn
+      
+      if (inn.length > 0 && !isValidINN.value) {
+        if (innForm.country === 'KZ') {
+          errorMsg = 'БИН должен содержать 12 цифр'
+        } else if (innForm.country === 'BY') {
+          errorMsg = 'УНП должен содержать 9 цифр'
+        } else {
+          errorMsg = 'ИНН должен содержать 10 или 12 цифр'
+        }
+      }
+      
+      innError.value = errorMsg
       innVerificationResult.value = null 
     }
     
