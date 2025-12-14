@@ -972,27 +972,6 @@ export default {
 .amenity-btn:hover { background: #1a1a1a; color: #fff; }
 .amenity-btn.active { background: #ff6b00; border-color: #ff6b00; color: #fff; }
 
-/* Price buttons */
-.price-btns {
-  display: flex;
-  gap: 8px;
-}
-
-.price-btn {
-  flex: 1;
-  padding: 10px;
-  background: #0a0a0a;
-  border: 1px solid #2a2a2a;
-  border-radius: 8px;
-  font-size: 12px;
-  color: #888;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.price-btn:hover { background: #1a1a1a; color: #fff; }
-.price-btn.active { background: #ff6b00; border-color: #ff6b00; color: #fff; }
-
 /* Social buttons */
 .social-btns { display: flex; gap: 8px; }
 .social-btn {
