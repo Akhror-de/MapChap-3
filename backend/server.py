@@ -690,6 +690,222 @@ async def get_app_info():
         "year": 2024
     }
 
+# ===================== BOOSTS (MONETIZATION) =====================
+
+class BoostPurchase(BaseModel):
+    boost_type: str  # "1day", "5days", "7days"
+    offer_id: str
+
+class PaymentDetails(BaseModel):
+    bank_account: str
+    bank_name: str
+    holder_name: str
+    business_id: Optional[str] = None  # ИНН/СТИР
+
+# Boost plans configuration
+BOOST_PLANS = {
+    "1day": {"days": 1, "name": "1 День", "price": None, "currency": "UZS"},
+    "5days": {"days": 5, "name": "5 Дней", "price": None, "currency": "UZS"},
+    "7days": {"days": 7, "name": "7 Дней", "price": None, "currency": "UZS"}
+}
+
+@app.get("/api/boosts/plans")
+async def get_boost_plans():
+    """Get available boost plans"""
+    return {
+        "plans": [
+            {
+                "id": key,
+                "days": plan["days"],
+                "name": plan["name"],
+                "price": plan["price"],
+                "currency": plan["currency"],
+                "popular": key == "5days",
+                "best": key == "7days"
+            }
+            for key, plan in BOOST_PLANS.items()
+        ]
+    }
+
+@app.get("/api/boosts/user/{telegram_id}")
+async def get_user_boosts(telegram_id: int):
+    """Get user's active boosts"""
+    cursor = db.boosts.find({
+        "user_id": telegram_id,
+        "status": "active",
+        "expires_at": {"$gt": datetime.utcnow()}
+    })
+    
+    boosts = []
+    async for boost in cursor:
+        boost["_id"] = str(boost["_id"])
+        boosts.append(boost)
+    
+    return {"boosts": boosts}
+
+@app.post("/api/boosts/purchase")
+async def purchase_boost(telegram_id: int = Query(...), data: BoostPurchase = Body(...)):
+    """Purchase a boost for an offer"""
+    # Verify user
+    user = await db.users.find_one({"telegram_id": telegram_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.get("role") != "business_owner":
+        raise HTTPException(status_code=403, detail="Only business owners can purchase boosts")
+    
+    # Verify offer ownership
+    offer = await db.offers.find_one({"id": data.offer_id})
+    if not offer or offer.get("user_id") != telegram_id:
+        raise HTTPException(status_code=403, detail="Offer not found or not owned by user")
+    
+    # Get boost plan
+    plan = BOOST_PLANS.get(data.boost_type)
+    if not plan:
+        raise HTTPException(status_code=400, detail="Invalid boost type")
+    
+    # Note: Prices are not set yet
+    if plan["price"] is None:
+        raise HTTPException(status_code=400, detail="Цены ещё не установлены. Скоро!")
+    
+    # Create boost record
+    from datetime import timedelta
+    boost_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": telegram_id,
+        "offer_id": data.offer_id,
+        "boost_type": data.boost_type,
+        "days": plan["days"],
+        "price": plan["price"],
+        "currency": plan["currency"],
+        "status": "active",
+        "notifications_sent": 0,
+        "created_at": datetime.utcnow(),
+        "expires_at": datetime.utcnow() + timedelta(days=plan["days"])
+    }
+    
+    await db.boosts.insert_one(boost_doc)
+    boost_doc["_id"] = str(boost_doc.get("_id", ""))
+    
+    return {"success": True, "boost": boost_doc}
+
+@app.post("/api/boosts/{boost_id}/send-notification")
+async def send_boost_notification(boost_id: str, telegram_id: int = Query(...)):
+    """Send notification to nearby users for a boosted offer"""
+    # Get boost
+    boost = await db.boosts.find_one({
+        "id": boost_id,
+        "user_id": telegram_id,
+        "status": "active",
+        "expires_at": {"$gt": datetime.utcnow()}
+    })
+    
+    if not boost:
+        raise HTTPException(status_code=404, detail="Active boost not found")
+    
+    # Get offer
+    offer = await db.offers.find_one({"id": boost["offer_id"]})
+    if not offer:
+        raise HTTPException(status_code=404, detail="Offer not found")
+    
+    # Get offer coordinates
+    offer_coords = offer.get("coordinates", {}).get("coordinates", [])
+    if len(offer_coords) < 2:
+        raise HTTPException(status_code=400, detail="Offer coordinates not set")
+    
+    lng, lat = offer_coords[0], offer_coords[1]
+    
+    # Find nearby users with notifications enabled
+    cursor = db.users.find({
+        "notifications_enabled": True,
+        "last_location": {"$exists": True},
+        "telegram_id": {"$ne": telegram_id}  # Don't notify the owner
+    })
+    
+    notifications_sent = 0
+    async for user in cursor:
+        user_loc = user.get("last_location", {})
+        user_lat = user_loc.get("lat")
+        user_lng = user_loc.get("lng")
+        
+        if user_lat and user_lng:
+            distance = calculate_distance(lat, lng, user_lat, user_lng)
+            
+            # Within 2km radius
+            if distance <= 2.0:
+                # Check if user has this category in favorites
+                user_categories = user.get("favorite_categories", [])
+                offer_category = offer.get("category", "")
+                
+                # Send to all nearby users or those interested in category
+                if not user_categories or offer_category in user_categories:
+                    category_icons = {
+                        "food": "🍕", "shopping": "🛍️", "beauty": "💄", "services": "🔧",
+                        "medical": "⚕️", "fitness": "💪", "pharmacy": "💊", "entertainment": "🎭"
+                    }
+                    icon = category_icons.get(offer_category, "📍")
+                    
+                    message = (
+                        f"🔥 <b>Специальное предложение рядом!</b>\n\n"
+                        f"{icon} <b>{offer['title']}</b>\n"
+                        f"📍 {offer['address']}\n"
+                        f"📞 {offer.get('phone', '')}\n\n"
+                        f"Откройте MapChap, чтобы узнать больше! 🗺️"
+                    )
+                    
+                    success = await send_telegram_notification(user["telegram_id"], message)
+                    if success:
+                        notifications_sent += 1
+    
+    # Update boost with notification count
+    await db.boosts.update_one(
+        {"id": boost_id},
+        {"$inc": {"notifications_sent": notifications_sent}}
+    )
+    
+    return {
+        "success": True,
+        "notifications_sent": notifications_sent,
+        "message": f"Отправлено {notifications_sent} уведомлений"
+    }
+
+# ---------- PAYMENT DETAILS FOR IP/BUSINESS ----------
+
+@app.get("/api/users/{telegram_id}/payment-details")
+async def get_payment_details(telegram_id: int):
+    """Get user's payment details for receiving payments"""
+    user = await db.users.find_one({"telegram_id": telegram_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    payment = user.get("payment_details", {})
+    return {"payment_details": payment}
+
+@app.put("/api/users/{telegram_id}/payment-details")
+async def update_payment_details(telegram_id: int, data: PaymentDetails = Body(...)):
+    """Update user's payment details (for IP/Business in Uzbekistan and CIS)"""
+    user = await db.users.find_one({"telegram_id": telegram_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.get("role") != "business_owner":
+        raise HTTPException(status_code=403, detail="Only business owners can set payment details")
+    
+    payment_doc = {
+        "bank_account": data.bank_account,
+        "bank_name": data.bank_name,
+        "holder_name": data.holder_name,
+        "business_id": data.business_id,
+        "updated_at": datetime.utcnow()
+    }
+    
+    await db.users.update_one(
+        {"telegram_id": telegram_id},
+        {"$set": {"payment_details": payment_doc}}
+    )
+    
+    return {"success": True, "payment_details": payment_doc}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
