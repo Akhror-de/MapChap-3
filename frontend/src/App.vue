@@ -243,11 +243,15 @@ export default {
       userPhotoUrl,
       isLocating,
       hasLocation,
+      selectedOffer,
+      isBottomSheetOpen,
       openPanel,
       closePanel,
       selectCategory,
       onSearch,
-      getUserLocation
+      getUserLocation,
+      handleOfferClick,
+      closeBottomSheet
     }
   }
 }
