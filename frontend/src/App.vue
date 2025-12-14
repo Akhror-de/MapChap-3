@@ -164,6 +164,8 @@ export default {
     const searchQuery = ref('')
     const isLocating = ref(false)
     const hasLocation = ref(false)
+    const selectedOffer = ref(null)
+    const isBottomSheetOpen = ref(false)
     const { activePanel, currentArticle, notification } = storeToRefs(uiStore)
     const { user } = storeToRefs(authStore)
     const { openPanel, closePanel, showNotification } = uiStore
