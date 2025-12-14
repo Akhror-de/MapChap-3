@@ -124,7 +124,8 @@ export const useAuthStore = defineStore('auth', () => {
         console.log('✅ User data refreshed')
       }
     } catch (error) {
-      console.error('Fetch user error:', error)
+      console.log('⚠️ Could not fetch user, keeping local data')
+      // Не выбрасываем ошибку, просто сохраняем локальные данные
     }
   }
 
