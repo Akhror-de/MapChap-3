@@ -405,12 +405,12 @@
             <div class="section-title">{{ editingOffer ? t('business_editing') : t('business_new_offer_btn') }}</div>
             
             <div class="form-group">
-              <label>Название *</label>
-              <input v-model="offerForm.title" type="text" placeholder="Название вашего бизнеса">
+              <label>{{ t('business_name_label') }} *</label>
+              <input v-model="offerForm.title" type="text" :placeholder="t('business_name_placeholder')">
             </div>
 
             <div class="form-group">
-              <label>Категория *</label>
+              <label>{{ t('business_offer_category') }} *</label>
               <div class="category-grid">
                 <button 
                   v-for="cat in categories" 
@@ -426,44 +426,44 @@
             </div>
 
             <div class="form-group">
-              <label>Краткое описание *</label>
-              <textarea v-model="offerForm.description" rows="3" placeholder="Кратко опишите ваш бизнес"></textarea>
+              <label>{{ t('business_short_desc') }} *</label>
+              <textarea v-model="offerForm.description" rows="3" :placeholder="t('business_short_desc_placeholder')"></textarea>
             </div>
 
             <div class="form-group">
-              <label>Полное описание</label>
-              <textarea v-model="offerForm.full_description" rows="5" placeholder="Подробное описание услуг, преимуществ..."></textarea>
+              <label>{{ t('business_full_desc') }}</label>
+              <textarea v-model="offerForm.full_description" rows="5" :placeholder="t('business_full_desc_placeholder')"></textarea>
             </div>
 
             <div class="form-group">
-              <label>Адрес *</label>
-              <input v-model="offerForm.address" type="text" placeholder="Город, улица, дом">
+              <label>{{ t('business_offer_address') }} *</label>
+              <input v-model="offerForm.address" type="text" placeholder="">
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label>Телефон *</label>
+                <label>{{ t('business_phone') }} *</label>
                 <input v-model="offerForm.phone" type="tel" placeholder="+7 (999) 123-45-67">
               </div>
               <div class="form-group">
-                <label>Email</label>
+                <label>{{ t('business_email') }}</label>
                 <input v-model="offerForm.email" type="email" placeholder="email@company.com">
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label>Сайт</label>
+                <label>{{ t('business_website') }}</label>
                 <input v-model="offerForm.website" type="url" placeholder="https://example.com">
               </div>
               <div class="form-group">
-                <label>Часы работы</label>
-                <input v-model="offerForm.working_hours" type="text" placeholder="Пн-Пт: 9:00-18:00">
+                <label>{{ t('business_hours') }}</label>
+                <input v-model="offerForm.working_hours" type="text" placeholder="">
               </div>
             </div>
 
             <div class="form-group">
-              <label>Удобства</label>
+              <label>{{ t('business_amenities') }}</label>
               <div class="amenities-grid">
                 <button 
                   v-for="amenity in amenitiesList" 
@@ -473,7 +473,7 @@
                   @click="toggleAmenity(amenity.id)"
                 >
                   <span>{{ amenity.icon }}</span>
-                  <span>{{ amenity.name }}</span>
+                  <span>{{ getAmenityName(amenity.id) }}</span>
                 </button>
               </div>
             </div>
