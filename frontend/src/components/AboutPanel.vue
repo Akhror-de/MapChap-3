@@ -16,8 +16,10 @@
     <div class="panel-content">
       <!-- Герой -->
       <div class="about-hero">
-        <div class="hero-logo">🗺️</div>
-        <h1 class="hero-title">{{ t('app_name') }}</h1>
+        <div class="hero-logo-text">
+          <span class="hero-word">MAP</span>
+          <span class="hero-word">CHAP</span>
+        </div>
         <p class="hero-tagline">{{ t('app_tagline') }}</p>
         <div class="hero-version">
           <span class="version-tag">v3.0.0</span>
