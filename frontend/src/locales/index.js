@@ -997,7 +997,84 @@ export const translations = {
     notif_published: 'Нашр шуд!',
     notif_language_changed: 'Забон иваз шуд',
     notif_boost_activated: 'Буст фаъол шуд!',
-    notif_boost_expired: 'Мӯҳлати буст тамом шуд'
+    notif_boost_expired: 'Мӯҳлати буст тамом шуд',
+    
+    // ArticlePanel
+    article_title: 'Мақола',
+    article_min: 'дақ',
+    article_like: 'Писанд',
+    article_share: 'Мубодила',
+    article_not_found: 'Мақола ёфт нашуд',
+    article_added_likes: 'Ба рӯйхати писандидаҳо илова шуд',
+    article_removed_likes: 'Аз рӯйхати писандидаҳо хориҷ шуд',
+    article_link_copied: 'Истиноди нусхабардорӣ шуд',
+    article_author: 'Муаллиф',
+    article_from_developers: 'Аз таҳиягарон',
+    article_from_business: 'Аз бизнес',
+    article_from_user: 'Аз корбар',
+    
+    // BlogPanel placeholders
+    blog_article_title_placeholder: 'Сарлавҳаро ворид кунед',
+    blog_article_excerpt_placeholder: 'Тавсифи кӯтоҳ',
+    blog_article_content_placeholder: 'Мақолаи худро нависед...',
+    blog_article_tags_placeholder: 'тег1, тег2, тег3',
+    blog_article_published: 'Мақола нашр шуд!',
+    blog_added_likes: 'Ба рӯйхати писандидаҳо илова шуд',
+    blog_removed_likes: 'Аз рӯйхати писандидаҳо хориҷ шуд',
+    blog_article: 'Мақола',
+    
+    // BlogPanel categories
+    blog_cat_news: 'Хабарҳо',
+    blog_cat_tips: 'Маслиҳатҳо',
+    blog_cat_guide: 'Дастурҳо',
+    blog_cat_review: 'Шарҳҳо',
+    blog_cat_success: 'Таърихи муваффақият',
+    blog_cat_other: 'Дигар',
+    
+    // AboutPanel
+    about_phone: 'Телефон',
+    
+    // BusinessPanel steps
+    business_step1: 'Тасдиқ',
+    business_step2: 'Маълумот',
+    business_step3: 'Эълон',
+    business_step_done: 'Тайёр',
+    business_verification_passed: 'Тасдиқ гузашт!',
+    business_create_first_offer: 'Ҳоло эълони аввалини худро созед',
+    business_info_about: 'Маълумот дар бораи бизнес',
+    business_name_label: 'Ном',
+    business_name_placeholder: 'Номи бизнеси шумо',
+    business_short_desc: 'Тавсифи кӯтоҳ',
+    business_short_desc_placeholder: 'Бизнеси худро кӯтоҳ тавсиф кунед',
+    business_full_desc_placeholder: 'Тавсифи муфассали хадамот, афзалиятҳо, таърихи ширкат...',
+    business_address_hint: 'Суроғаи дақиқро барои нишон додан дар харита ворид кунед',
+    business_confirm_delete: 'Эълонро нест кунем?',
+    business_offer_updated: 'Эълон навсозӣ шуд',
+    business_offer_published: 'Эълон нашр шуд!',
+    business_status_changed: 'Ҳолат иваз шуд',
+    business_offer_deleted: 'Эълон нест карда шуд',
+    business_account_activated: 'Ҳисоби бизнес фаъол шуд!',
+    
+    // Amenities
+    amenity_wifi: 'Wi-Fi',
+    amenity_parking: 'Таваққуфгоҳ',
+    amenity_card_payment: 'Пардохт бо корт',
+    amenity_delivery: 'Расонидан',
+    amenity_takeaway: 'Бо худ',
+    amenity_wheelchair: 'Муҳити дастрас',
+    amenity_children: 'Минтақаи кӯдакон',
+    amenity_pet_friendly: 'Бо ҳайвонот',
+    amenity_ac: 'Кондитсионер',
+    amenity_outdoor: 'Террасаи',
+    amenity_reservation: 'Фармоиш',
+    amenity_24h: '24 соат',
+    
+    // Boost panel enhanced
+    boost_banks_note: 'Бонкҳои Ӯзбекистон, Қазоқистон ва дигар давлатҳои ИДМ дастгирӣ мешаванд',
+    boost_ip_account: 'Ҳисоби СТЯ',
+    boost_ip_hint: 'Барои соҳибкорони инфиродӣ',
+    boost_business_id: 'РМА',
+    boost_business_id_placeholder: 'Рақами андозсупоранда'
   },
   
   kk: {
