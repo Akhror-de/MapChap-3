@@ -144,12 +144,12 @@
           
           <div class="form-group">
             <label>{{ t('business_company_name') }} *</label>
-            <input v-model="manualForm.company_name" type="text" placeholder="ООО 'Ваша компания'">
+            <input v-model="manualForm.company_name" type="text" :placeholder="t('business_company_placeholder')">
           </div>
 
           <div class="form-group">
             <label>{{ t('business_phone') }} *</label>
-            <input v-model="manualForm.phone" type="tel" placeholder="+7 (999) 123-45-67">
+            <input v-model="manualForm.phone" type="tel" placeholder="+998 90 123-45-67">
           </div>
 
           <div class="form-group">
