@@ -1225,6 +1225,8 @@ export const translations = {
     business_inn_desc: 'БСН тексеру Ресей, Қазақстан, Беларусь үшін қолжетімді',
     business_inn_label: 'Компания БСН',
     business_inn_placeholder: '12 сан (БСН)',
+    business_inn_kz_placeholder: '12 сан (БИН)',
+    business_inn_by_placeholder: '9 сан (УНП)',
     business_check: 'Тексеру',
     business_manual_verification: 'Қолмен растау',
     business_company_name: 'Компания атауы',
