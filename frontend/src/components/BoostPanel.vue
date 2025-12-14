@@ -113,7 +113,7 @@
       </button>
       
       <div class="payment-note">
-        <p>🇺🇿 Поддерживаются банки Узбекистана, Казахстана и других стран СНГ</p>
+        <p>🇺🇿 {{ t('boost_banks_note') }}</p>
       </div>
     </div>
   </div>
