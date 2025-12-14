@@ -710,6 +710,24 @@ export default {
       }
     }
 
+    const getAmenityName = (id) => {
+      const names = {
+        wifi: t('amenity_wifi'),
+        parking: t('amenity_parking'),
+        card_payment: t('amenity_card_payment'),
+        delivery: t('amenity_delivery'),
+        takeaway: t('amenity_takeaway'),
+        wheelchair: t('amenity_wheelchair'),
+        children: t('amenity_children'),
+        pet_friendly: t('amenity_pet_friendly'),
+        ac: t('amenity_ac'),
+        outdoor: t('amenity_outdoor'),
+        reservation: t('amenity_reservation'),
+        '24h': t('amenity_24h')
+      }
+      return names[id] || id
+    }
+
     const getStatusText = (s) => {
       const statuses = { 
         active: t('business_offer_active'), 
