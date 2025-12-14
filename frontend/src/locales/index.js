@@ -302,7 +302,12 @@ export const translations = {
     boost_ip_account: 'Счёт ИП',
     boost_ip_hint: 'Для индивидуальных предпринимателей',
     boost_business_id: 'ИНН/СТИР',
-    boost_business_id_placeholder: 'Номер налогоплательщика'
+    boost_business_id_placeholder: 'Номер налогоплательщика',
+    
+    // Offer bottom sheet
+    offer_discount: 'Скидка',
+    offer_promotion: 'Акция',
+    offer_call: 'Позвонить'
   },
   
   en: {
