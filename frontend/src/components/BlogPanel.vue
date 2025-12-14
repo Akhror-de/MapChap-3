@@ -133,12 +133,12 @@
             <div class="form-group">
               <label>{{ t('blog_article_category') }}</label>
               <select v-model="articleForm.category">
-                <option value="news">📢 Новости</option>
-                <option value="tips">💡 Советы</option>
-                <option value="guide">📖 Гайды</option>
-                <option value="review">⭐ Обзоры</option>
-                <option value="success">🚀 Истории успеха</option>
-                <option value="other">🔮 Другое</option>
+                <option value="news">📢 {{ t('blog_cat_news') }}</option>
+                <option value="tips">💡 {{ t('blog_cat_tips') }}</option>
+                <option value="guide">📖 {{ t('blog_cat_guide') }}</option>
+                <option value="review">⭐ {{ t('blog_cat_review') }}</option>
+                <option value="success">🚀 {{ t('blog_cat_success') }}</option>
+                <option value="other">🔮 {{ t('blog_cat_other') }}</option>
               </select>
             </div>
 
