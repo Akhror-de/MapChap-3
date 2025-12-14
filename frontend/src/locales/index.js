@@ -1525,7 +1525,84 @@ export const translations = {
     notif_published: 'Жарыяланды!',
     notif_language_changed: 'Тил өзгөртүлдү',
     notif_boost_activated: 'Буст жандырылды!',
-    notif_boost_expired: 'Буст мөөнөтү бүттү'
+    notif_boost_expired: 'Буст мөөнөтү бүттү',
+    
+    // ArticlePanel
+    article_title: 'Макала',
+    article_min: 'мүн',
+    article_like: 'Жакты',
+    article_share: 'Бөлүшүү',
+    article_not_found: 'Макала табылган жок',
+    article_added_likes: 'Жактылар тизмесине кошулду',
+    article_removed_likes: 'Жактылар тизмесинен алынды',
+    article_link_copied: 'Шилтеме көчүрүлдү',
+    article_author: 'Автор',
+    article_from_developers: 'Иштеп чыгуучулардан',
+    article_from_business: 'Бизнестен',
+    article_from_user: 'Колдонуучудан',
+    
+    // BlogPanel placeholders
+    blog_article_title_placeholder: 'Темата киргизиңиз',
+    blog_article_excerpt_placeholder: 'Кыскача сүрөттөмө',
+    blog_article_content_placeholder: 'Макалаңызды жазыңыз...',
+    blog_article_tags_placeholder: 'тег1, тег2, тег3',
+    blog_article_published: 'Макала жарыяланды!',
+    blog_added_likes: 'Жактылар тизмесине кошулду',
+    blog_removed_likes: 'Жактылар тизмесинен алынды',
+    blog_article: 'Макала',
+    
+    // BlogPanel categories
+    blog_cat_news: 'Жаңылыктар',
+    blog_cat_tips: 'Кеңештер',
+    blog_cat_guide: 'Колдонмолор',
+    blog_cat_review: 'Сын-пикирлер',
+    blog_cat_success: 'Ийгилик тарыхы',
+    blog_cat_other: 'Башка',
+    
+    // AboutPanel
+    about_phone: 'Телефон',
+    
+    // BusinessPanel steps
+    business_step1: 'Текшерүү',
+    business_step2: 'Маалымат',
+    business_step3: 'Жарнама',
+    business_step_done: 'Даяр',
+    business_verification_passed: 'Текшерүү өттү!',
+    business_create_first_offer: 'Эми биринчи жарнамаңызды түзүңүз',
+    business_info_about: 'Бизнес жөнүндө маалымат',
+    business_name_label: 'Аталышы',
+    business_name_placeholder: 'Бизнесиңиздин аталышы',
+    business_short_desc: 'Кыскача сүрөттөмө',
+    business_short_desc_placeholder: 'Бизнесиңизди кыскача сүрөттөп бериңиз',
+    business_full_desc_placeholder: 'Кызматтар, артыкчылыктар, компания тарыхы жөнүндө толук сүрөттөмө...',
+    business_address_hint: 'Картада көрсөтүү үчүн так даректи киргизиңиз',
+    business_confirm_delete: 'Жарнаманы өчүрөсүзбү?',
+    business_offer_updated: 'Жарнама жаңыланды',
+    business_offer_published: 'Жарнама жарыяланды!',
+    business_status_changed: 'Абал өзгөрдү',
+    business_offer_deleted: 'Жарнама өчүрүлдү',
+    business_account_activated: 'Бизнес аккаунт жандырылды!',
+    
+    // Amenities
+    amenity_wifi: 'Wi-Fi',
+    amenity_parking: 'Токтоочу жай',
+    amenity_card_payment: 'Карта менен төлөм',
+    amenity_delivery: 'Жеткирүү',
+    amenity_takeaway: 'Өзүң менен',
+    amenity_wheelchair: 'Жеткиликтүү чөйрө',
+    amenity_children: 'Балдар аймагы',
+    amenity_pet_friendly: 'Жаныбарлар менен',
+    amenity_ac: 'Кондиционер',
+    amenity_outdoor: 'Терраса',
+    amenity_reservation: 'Брондоо',
+    amenity_24h: '24 саат',
+    
+    // Boost panel enhanced
+    boost_banks_note: 'Өзбекстан, Казакстан жана башка КМШ өлкөлөрүнүн банктары колдоого алынат',
+    boost_ip_account: 'ЖИ эсеби',
+    boost_ip_hint: 'Жеке ишкерлер үчүн',
+    boost_business_id: 'ИНН',
+    boost_business_id_placeholder: 'Салык төлөөчү номуру'
   }
 }
 
