@@ -66,13 +66,6 @@
               <p>{{ t('about_founder') }}</p>
             </div>
           </div>
-          <div class="team-member">
-            <div class="member-avatar">👩‍💼</div>
-            <div>
-              <strong>Яна Владимировна Ивченко</strong>
-              <p>{{ t('about_finance') }}</p>
-            </div>
-          </div>
         </div>
       </div>
 
