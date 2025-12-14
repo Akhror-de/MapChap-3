@@ -334,17 +334,68 @@ export default {
   gap: 8px;
 }
 
-.logo-icon {
-  font-size: 24px;
-}
-
 .logo-text {
   font-size: 20px;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--mc-orange) 0%, var(--mc-orange-light) 100%);
+}
+
+.animated-logo {
+  display: flex;
+  gap: 8px;
+}
+
+.logo-word {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: linear-gradient(
+    90deg, 
+    #ff6b00 0%, 
+    #22c55e 25%, 
+    #ff6b00 50%, 
+    #22c55e 75%, 
+    #ff6b00 100%
+  );
+  background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: logoGlow 3s ease-in-out infinite;
+  text-shadow: 0 0 30px rgba(255, 107, 0, 0.5);
+  position: relative;
+}
+
+.logo-word::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  filter: blur(8px);
+  opacity: 0.6;
+  animation: logoGlowPulse 2s ease-in-out infinite;
+}
+
+@keyframes logoGlow {
+  0%, 100% {
+    background-position: 0% 50%;
+    filter: drop-shadow(0 0 10px rgba(255, 107, 0, 0.6));
+  }
+  50% {
+    background-position: 100% 50%;
+    filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.6));
+  }
+}
+
+@keyframes logoGlowPulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
 }
 
 .header-btn {
