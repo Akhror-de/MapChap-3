@@ -1030,6 +1030,56 @@ export default {
 
 /* Social buttons */
 .social-btns { display: flex; gap: 8px; }
+
+/* Country buttons */
+.country-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.country-btn {
+  flex: 1;
+  padding: 10px 8px;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.country-btn:hover { 
+  background: #1a1a1a; 
+  color: #fff; 
+}
+
+.country-btn.active { 
+  background: #ff6b00; 
+  border-color: #ff6b00; 
+  color: #fff; 
+}
+
+/* CIS hint */
+.cis-hint {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 107, 0, 0.1);
+  border: 1px solid rgba(255, 107, 0, 0.2);
+  border-radius: 10px;
+}
+
+.cis-hint p {
+  margin: 0;
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+}
+
+.cis-hint strong {
+  color: #ff6b00;
+}
 .social-btn {
   flex: 1;
   padding: 10px;
