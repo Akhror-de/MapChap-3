@@ -652,11 +652,13 @@ async def get_categories():
         "categories": [
             {"id": "food", "name": "Еда и рестораны", "icon": "🍕", "color": "#FF6B6B", "mapIcon": "restaurant"},
             {"id": "shopping", "name": "Магазины", "icon": "🛍️", "color": "#4ECDC4", "mapIcon": "shopping"},
+            {"id": "grocery", "name": "Продукты", "icon": "🛒", "color": "#22C55E", "mapIcon": "grocery"},
             {"id": "beauty", "name": "Салоны красоты", "icon": "💄", "color": "#FFD166", "mapIcon": "beauty"},
             {"id": "services", "name": "Услуги", "icon": "🔧", "color": "#06D6A0", "mapIcon": "service"},
             {"id": "medical", "name": "Медицина", "icon": "⚕️", "color": "#118AB2", "mapIcon": "medical"},
             {"id": "furniture", "name": "Мебель и декор", "icon": "🛋️", "color": "#073B4C", "mapIcon": "furniture"},
             {"id": "pharmacy", "name": "Аптеки", "icon": "💊", "color": "#EF476F", "mapIcon": "pharmacy"},
+            {"id": "fitness", "name": "Фитнес клубы", "icon": "💪", "color": "#F97316", "mapIcon": "fitness"},
             {"id": "entertainment", "name": "Развлечения", "icon": "🎭", "color": "#7209B7", "mapIcon": "entertainment"},
             {"id": "education", "name": "Образование", "icon": "📚", "color": "#F72585", "mapIcon": "education"},
             {"id": "auto", "name": "Автосервисы", "icon": "🚗", "color": "#4361EE", "mapIcon": "auto"},
