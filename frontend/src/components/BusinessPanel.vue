@@ -282,27 +282,6 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label>Уровень цен</label>
-            <div class="price-btns">
-              <button 
-                class="price-btn"
-                :class="{ active: offerForm.price_level === 'low' }"
-                @click="offerForm.price_level = 'low'"
-              >💰 Бюджетно</button>
-              <button 
-                class="price-btn"
-                :class="{ active: offerForm.price_level === 'medium' }"
-                @click="offerForm.price_level = 'medium'"
-              >💰💰 Средне</button>
-              <button 
-                class="price-btn"
-                :class="{ active: offerForm.price_level === 'high' }"
-                @click="offerForm.price_level = 'high'"
-              >💰💰💰 Премиум</button>
-            </div>
-          </div>
-
           <div class="form-actions">
             <button class="btn btn-secondary" @click="currentStep = 'dashboard'">Пропустить</button>
             <button class="btn btn-primary" @click="submitOffer" :disabled="!canSubmitOffer || isSubmitting">
