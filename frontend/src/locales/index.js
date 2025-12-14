@@ -373,6 +373,8 @@ export const translations = {
     business_inn_desc: 'TIN/BIN verification available for Russia, Kazakhstan, Belarus',
     business_inn_label: 'Company TIN',
     business_inn_placeholder: '10 or 12 digits',
+    business_inn_kz_placeholder: '12 digits (BIN)',
+    business_inn_by_placeholder: '9 digits (UNP)',
     business_check: 'Verify',
     business_manual_verification: 'Manual Verification',
     business_company_name: 'Company Name',
