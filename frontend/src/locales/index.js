@@ -733,7 +733,84 @@ export const translations = {
     notif_published: 'Nashr qilindi!',
     notif_language_changed: 'Til oʻzgartirildi',
     notif_boost_activated: 'Bust faollashtirildi!',
-    notif_boost_expired: 'Bust muddati tugadi'
+    notif_boost_expired: 'Bust muddati tugadi',
+    
+    // ArticlePanel
+    article_title: 'Maqola',
+    article_min: 'daq',
+    article_like: 'Yoqdi',
+    article_share: 'Ulashish',
+    article_not_found: 'Maqola topilmadi',
+    article_added_likes: 'Yoqtirganlar roʻyxatiga qoʻshildi',
+    article_removed_likes: 'Yoqtirganlar roʻyxatidan olib tashlandi',
+    article_link_copied: 'Havola nusxalandi',
+    article_author: 'Muallif',
+    article_from_developers: 'Dasturchilardan',
+    article_from_business: 'Biznesdan',
+    article_from_user: 'Foydalanuvchidan',
+    
+    // BlogPanel placeholders
+    blog_article_title_placeholder: 'Sarlavhani kiriting',
+    blog_article_excerpt_placeholder: 'Qisqa tavsif',
+    blog_article_content_placeholder: 'Maqolangizni yozing...',
+    blog_article_tags_placeholder: 'teg1, teg2, teg3',
+    blog_article_published: 'Maqola nashr qilindi!',
+    blog_added_likes: 'Yoqtirganlar roʻyxatiga qoʻshildi',
+    blog_removed_likes: 'Yoqtirganlar roʻyxatidan olib tashlandi',
+    blog_article: 'Maqola',
+    
+    // BlogPanel categories
+    blog_cat_news: 'Yangiliklar',
+    blog_cat_tips: 'Maslahatlar',
+    blog_cat_guide: 'Qoʻllanmalar',
+    blog_cat_review: 'Sharhlar',
+    blog_cat_success: 'Muvaffaqiyat tarixi',
+    blog_cat_other: 'Boshqa',
+    
+    // AboutPanel
+    about_phone: 'Telefon',
+    
+    // BusinessPanel steps
+    business_step1: 'Tasdiqlash',
+    business_step2: 'Maʼlumot',
+    business_step3: 'Eʼlon',
+    business_step_done: 'Tayyor',
+    business_verification_passed: 'Tasdiqlash oʻtdi!',
+    business_create_first_offer: 'Endi birinchi eʼloningizni yarating',
+    business_info_about: 'Biznes haqida maʼlumot',
+    business_name_label: 'Nomi',
+    business_name_placeholder: 'Biznesingiz nomi',
+    business_short_desc: 'Qisqa tavsif',
+    business_short_desc_placeholder: 'Biznesingizni qisqacha tasvirlab bering',
+    business_full_desc_placeholder: 'Xizmatlar, afzalliklar, kompaniya tarixi haqida batafsil tavsif...',
+    business_address_hint: 'Xaritada koʻrsatish uchun aniq manzilni kiriting',
+    business_confirm_delete: 'Eʼlonni oʻchirishni xohlaysizmi?',
+    business_offer_updated: 'Eʼlon yangilandi',
+    business_offer_published: 'Eʼlon nashr qilindi!',
+    business_status_changed: 'Holat oʻzgartirildi',
+    business_offer_deleted: 'Eʼlon oʻchirildi',
+    business_account_activated: 'Biznes akkount faollashtirildi!',
+    
+    // Amenities
+    amenity_wifi: 'Wi-Fi',
+    amenity_parking: 'Avtoturargoh',
+    amenity_card_payment: 'Karta orqali toʻlov',
+    amenity_delivery: 'Yetkazib berish',
+    amenity_takeaway: 'Olib ketish',
+    amenity_wheelchair: 'Nogironlar uchun',
+    amenity_children: 'Bolalar maydoni',
+    amenity_pet_friendly: 'Hayvonlar bilan',
+    amenity_ac: 'Konditsioner',
+    amenity_outdoor: 'Terrasa',
+    amenity_reservation: 'Buyurtma',
+    amenity_24h: '24 soat',
+    
+    // Boost panel enhanced
+    boost_banks_note: 'Oʻzbekiston, Qozogʻiston va boshqa MDH davlatlari banklari qoʻllab-quvvatlanadi',
+    boost_ip_account: 'YaTT hisobi',
+    boost_ip_hint: 'Yakka tartibdagi tadbirkorlar uchun',
+    boost_business_id: 'STIR',
+    boost_business_id_placeholder: 'Soliq toʻlovchi raqami'
   },
   
   tg: {
