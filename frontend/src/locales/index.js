@@ -1169,7 +1169,12 @@ export const translations = {
     boost_ip_account: 'Ҳисоби СТЯ',
     boost_ip_hint: 'Барои соҳибкорони инфиродӣ',
     boost_business_id: 'РМА',
-    boost_business_id_placeholder: 'Рақами андозсупоранда'
+    boost_business_id_placeholder: 'Рақами андозсупоранда',
+    
+    // Offer bottom sheet
+    offer_discount: 'Тахфиф',
+    offer_promotion: 'Акция',
+    offer_call: 'Занг задан'
   },
   
   kk: {
