@@ -591,7 +591,12 @@ export const translations = {
     boost_ip_account: 'Business Account',
     boost_ip_hint: 'For individual entrepreneurs',
     boost_business_id: 'Tax ID',
-    boost_business_id_placeholder: 'Tax identification number'
+    boost_business_id_placeholder: 'Tax identification number',
+    
+    // Offer bottom sheet
+    offer_discount: 'Discount',
+    offer_promotion: 'Promotion',
+    offer_call: 'Call'
   },
   
   uz: {
