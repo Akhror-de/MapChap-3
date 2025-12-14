@@ -184,6 +184,40 @@ class ApiService {
     return this.request('/api/categories')
   }
 
+
+  // ============ BOOSTS ============
+  async getBoostPlans() {
+    return this.request('/api/boosts/plans')
+  }
+
+  async getUserBoosts(telegramId) {
+    return this.request(`/api/boosts/user/${telegramId}`)
+  }
+
+  async purchaseBoost(telegramId, boostType, offerId) {
+    return this.request(`/api/boosts/purchase?telegram_id=${telegramId}`, {
+      method: 'POST',
+      body: { boost_type: boostType, offer_id: offerId },
+    })
+  }
+
+  async sendBoostNotification(boostId, telegramId) {
+    return this.request(`/api/boosts/${boostId}/send-notification?telegram_id=${telegramId}`, {
+      method: 'POST',
+    })
+  }
+
+  // ============ PAYMENT DETAILS ============
+  async getPaymentDetails(telegramId) {
+    return this.request(`/api/users/${telegramId}/payment-details`)
+  }
+
+  async updatePaymentDetails(telegramId, details) {
+    return this.request(`/api/users/${telegramId}/payment-details`, {
+      method: 'PUT',
+      body: details,
+    })
+  }
   // ============ APP INFO ============
   async getAppInfo() {
     return this.request('/api/app-info')
