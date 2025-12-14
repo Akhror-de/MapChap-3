@@ -584,9 +584,9 @@ export default {
     })
     
     const getINNPlaceholder = computed(() => {
-      if (innForm.country === 'KZ') return '12 цифр (БИН)'
-      if (innForm.country === 'BY') return '9 цифр (УНП)'
-      return '10 или 12 цифр'
+      if (innForm.country === 'KZ') return t('business_inn_kz_placeholder')
+      if (innForm.country === 'BY') return t('business_inn_by_placeholder')
+      return t('business_inn_placeholder')
     })
     
     const isValidManualForm = computed(() => 
