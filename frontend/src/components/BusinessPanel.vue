@@ -41,17 +41,17 @@
         <div class="steps-indicator">
           <div class="step active">
             <span class="step-num">1</span>
-            <span class="step-label">Верификация</span>
+            <span class="step-label">{{ t('business_step1') }}</span>
           </div>
           <div class="step-line"></div>
           <div class="step">
             <span class="step-num">2</span>
-            <span class="step-label">Информация</span>
+            <span class="step-label">{{ t('business_step2') }}</span>
           </div>
           <div class="step-line"></div>
           <div class="step">
             <span class="step-num">3</span>
-            <span class="step-label">Объявление</span>
+            <span class="step-label">{{ t('business_step3') }}</span>
           </div>
         </div>
 
