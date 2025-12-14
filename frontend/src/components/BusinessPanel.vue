@@ -821,7 +821,7 @@ export default {
       authStore, businessStore, isLoading, activeTab, editingOffer, verificationMethod, 
       isVerifying, isSubmitting, innVerificationResult, innError, innForm, manualForm, offerForm, 
       userOffers, businessInfo, businessStats, isValidINN, isValidManualForm, canSubmitOffer, 
-      categories, amenitiesList, currentStep,
+      categories, amenitiesList, currentStep, getINNPlaceholder,
       closePanel, handleBack, initAuth, validateINN, verifyByINN, verifyManually, 
       submitOffer, editOffer, cancelEdit, handleToggleOfferStatus, handleDeleteOffer, 
       getStatusText, toggleAmenity, t 
