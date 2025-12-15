@@ -5,17 +5,22 @@
     <!-- Кастомные контролы зума -->
     <div class="custom-controls">
       <button class="control-btn zoom-in" @click="zoomIn" title="Приблизить">
-        <span>+</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
       </button>
       <button class="control-btn zoom-out" @click="zoomOut" title="Отдалить">
-        <span>−</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
       </button>
     </div>
     
     <!-- Индикатор GPS трекинга -->
     <div v-if="isTracking" class="tracking-indicator">
       <span class="tracking-dot"></span>
-      <span class="tracking-text">GPS активен</span>
+      <span class="tracking-text">GPS</span>
     </div>
   </div>
 </template>
@@ -25,22 +30,22 @@ import { onMounted, ref, onUnmounted, watch } from 'vue'
 import { useOffersStore } from '../stores/offersStore.js'
 import { storeToRefs } from 'pinia'
 
-// Кастомные иконки для категорий
+// Иконки категорий
 const CATEGORY_ICONS = {
-  food: { emoji: '🍕', color: '#FF6B6B', preset: 'islands#redFoodIcon' },
-  shopping: { emoji: '🛍️', color: '#4ECDC4', preset: 'islands#darkGreenShoppingCartIcon' },
-  grocery: { emoji: '🛒', color: '#22C55E', preset: 'islands#greenIcon' },
-  beauty: { emoji: '💄', color: '#FFD166', preset: 'islands#pinkBeautyIcon' },
-  services: { emoji: '🔧', color: '#06D6A0', preset: 'islands#orangeRepairShopIcon' },
-  medical: { emoji: '⚕️', color: '#118AB2', preset: 'islands#blueMedicalIcon' },
-  furniture: { emoji: '🛋️', color: '#073B4C', preset: 'islands#brownHomeIcon' },
-  pharmacy: { emoji: '💊', color: '#EF476F', preset: 'islands#redDrugstoreIcon' },
-  fitness: { emoji: '💪', color: '#F97316', preset: 'islands#orangeSportIcon' },
-  entertainment: { emoji: '🎭', color: '#7209B7', preset: 'islands#violetTheaterIcon' },
-  education: { emoji: '📚', color: '#F72585', preset: 'islands#blueScienceIcon' },
-  auto: { emoji: '🚗', color: '#4361EE', preset: 'islands#blueAutoIcon' },
-  hotel: { emoji: '🏨', color: '#4CC9F0', preset: 'islands#blueHotelIcon' },
-  default: { emoji: '📍', color: '#ff6b00', preset: 'islands#orangeCircleDotIcon' }
+  food: { color: '#888', preset: 'islands#grayFoodIcon' },
+  shopping: { color: '#888', preset: 'islands#grayShoppingCartIcon' },
+  grocery: { color: '#888', preset: 'islands#grayIcon' },
+  beauty: { color: '#888', preset: 'islands#grayBeautyIcon' },
+  services: { color: '#888', preset: 'islands#grayRepairShopIcon' },
+  medical: { color: '#888', preset: 'islands#grayMedicalIcon' },
+  furniture: { color: '#888', preset: 'islands#grayHomeIcon' },
+  pharmacy: { color: '#888', preset: 'islands#grayDrugstoreIcon' },
+  fitness: { color: '#888', preset: 'islands#graySportIcon' },
+  entertainment: { color: '#888', preset: 'islands#grayTheaterIcon' },
+  education: { color: '#888', preset: 'islands#grayScienceIcon' },
+  auto: { color: '#888', preset: 'islands#grayAutoIcon' },
+  hotel: { color: '#888', preset: 'islands#grayHotelIcon' },
+  default: { color: '#fff', preset: 'islands#grayCircleDotIcon' }
 }
 
 export default {
@@ -56,12 +61,12 @@ export default {
     let clusterer = null
     let userMarker = null
     let watchId = null
+    let isFirstLocation = true // Флаг для первого получения локации
     const isTracking = ref(false)
     const currentHeading = ref(0)
 
     const initMap = () => {
       if (typeof window.ymaps === 'undefined') {
-        console.error('Yandex Maps API not loaded')
         setTimeout(initMap, 100)
         return
       }
@@ -69,79 +74,71 @@ export default {
       ymaps = window.ymaps
 
       ymaps.ready(() => {
-        if (!mapContainer.value) {
-          console.error('Map container not found')
-          return
-        }
+        if (!mapContainer.value) return
 
         try {
-          // Инициализация карты с тёмной темой
+          // Инициализация карты БЕЗ стандартных контролов
           map = new ymaps.Map(mapContainer.value, {
             center: [55.751244, 37.618423],
             zoom: 12,
-            controls: [] // Убираем все стандартные контролы
+            controls: [] // Убираем ВСЕ контролы
           }, {
-            // Настройки для лучшей производительности
             suppressMapOpenBlock: true,
-            yandexMapDisablePoiInteractivity: false
+            yandexMapDisablePoiInteractivity: true,
+            copyrightUa498LProvidersVisible: false,
+            copyrightLogoVisible: false,
+            copyrightProvidersVisible: false
           })
 
-          // Создаем кластеризатор с тёмным стилем
+          // Отключаем все поведения которые мешают
+          map.behaviors.disable('scrollZoom') // Можно включить если нужно
+          map.behaviors.enable('drag')
+          map.behaviors.enable('multiTouch')
+          
+          // Включаем зум жестами
+          map.behaviors.enable('scrollZoom')
+
+          // Кластеризатор с белым стилем
           clusterer = new ymaps.Clusterer({
-            preset: 'islands#invertedOrangeClusterIcons',
+            preset: 'islands#invertedGrayClusterIcons',
             clusterDisableClickZoom: false,
             clusterHideIconOnBalloonOpen: false,
             geoObjectHideIconOnBalloonOpen: false,
             groupByCoordinates: false,
-            clusterBalloonContentLayout: 'cluster#balloonCarousel',
-            clusterBalloonPanelMaxMapArea: 0,
-            clusterBalloonContentLayoutWidth: 300,
-            clusterBalloonContentLayoutHeight: 200,
-            clusterIconColor: '#ff6b00'
+            clusterIconColor: '#ffffff'
           })
 
           map.geoObjects.add(clusterer)
-
-          // Добавляем маркеры
           updateMarkers()
 
-          // Слушаем изменения границ карты
           map.events.add('boundschange', () => {
             offersStore.setMapBounds(map.getBounds())
           })
 
-          // Начинаем отслеживание позиции
           startLocationTracking()
-
-          console.log('✅ Yandex Map initialized with dark theme')
+          console.log('Map initialized')
 
         } catch (error) {
-          console.error('Error initializing Yandex Map:', error)
+          console.error('Map init error:', error)
         }
       })
     }
 
-    // Кастомные контролы зума
     const zoomIn = () => {
       if (map) {
-        const currentZoom = map.getZoom()
-        map.setZoom(Math.min(currentZoom + 1, 19), { duration: 300 })
+        map.setZoom(Math.min(map.getZoom() + 1, 19), { duration: 200 })
       }
     }
 
     const zoomOut = () => {
       if (map) {
-        const currentZoom = map.getZoom()
-        map.setZoom(Math.max(currentZoom - 1, 3), { duration: 300 })
+        map.setZoom(Math.max(map.getZoom() - 1, 3), { duration: 200 })
       }
     }
 
-    // Отслеживание позиции в реальном времени
+    // Отслеживание позиции БЕЗ автоматического центрирования
     const startLocationTracking = () => {
-      if (!navigator.geolocation) {
-        console.log('Geolocation not supported')
-        return
-      }
+      if (!navigator.geolocation) return
 
       watchId = navigator.geolocation.watchPosition(
         (position) => {
@@ -155,16 +152,22 @@ export default {
           }
           
           currentHeading.value = newLocation.heading
-          updateUserMarker(newLocation)
+          updateUserMarker(newLocation, isFirstLocation)
+          
+          // Только при ПЕРВОМ получении локации центрируем карту
+          if (isFirstLocation && map) {
+            map.setCenter([newLocation.latitude, newLocation.longitude], 14, { duration: 500 })
+            isFirstLocation = false
+          }
         },
         (error) => {
-          console.log('Location tracking error:', error.message)
+          console.log('Location error:', error.message)
           isTracking.value = false
         },
         {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 1000
+          maximumAge: 3000
         }
       )
     }
@@ -191,36 +194,14 @@ export default {
       
       if (!coords) return null
 
-      const balloonContent = `
-        <div class="map-balloon dark-balloon">
-          <div class="balloon-header">
-            <span class="balloon-category-icon">${categoryIcon.emoji}</span>
-            <h3 class="balloon-title">${offer.title}</h3>
-          </div>
-          <p class="balloon-description">${offer.description || ''}</p>
-          <div class="balloon-info">
-            <div class="balloon-address">📍 ${offer.address}</div>
-            <div class="balloon-phone">📞 ${offer.phone}</div>
-            ${offer.rating ? `<div class="balloon-rating">⭐ ${offer.rating}</div>` : ''}
-          </div>
-          <div class="balloon-stats">
-            <span>👁️ ${offer.views || 0}</span>
-            <span>❤️ ${offer.likes || 0}</span>
-          </div>
-        </div>
-      `
-
       const placemark = new ymaps.Placemark(
         coords,
         {
-          balloonContent: balloonContent,
           hintContent: offer.title,
           offerId: offer.id
         },
         {
           preset: categoryIcon.preset,
-          balloonCloseButton: true,
-          hideIconOnBalloonOpen: false,
           iconColor: categoryIcon.color
         }
       )
@@ -241,16 +222,13 @@ export default {
 
       filteredOffers.value.forEach(offer => {
         const placemark = createCustomPlacemark(offer)
-        if (placemark) {
-          placemarks.push(placemark)
-        }
+        if (placemark) placemarks.push(placemark)
       })
 
       clusterer.add(placemarks)
-      console.log(`📍 Added ${placemarks.length} markers to map`)
     }
 
-    // Создаем кастомный анимированный маркер пользователя с направлением
+    // Чёрно-белый маркер пользователя
     const createUserMarkerLayout = (heading = 0) => {
       if (!ymaps) return null
       
@@ -258,7 +236,6 @@ export default {
         <div class="user-marker-container">
           <div class="user-marker-accuracy"></div>
           <div class="user-marker-pulse"></div>
-          <div class="user-marker-pulse-delay"></div>
           <div class="user-marker-core">
             <div class="user-marker-dot"></div>
           </div>
@@ -267,143 +244,77 @@ export default {
       `)
     }
 
-    const updateUserMarker = (location) => {
+    const updateUserMarker = (location, shouldAnimate = false) => {
       if (!map || !ymaps || !location) return
 
       const coords = [location.latitude, location.longitude]
       const heading = location.heading || currentHeading.value || 0
 
       if (userMarker) {
-        // Плавное перемещение маркера
-        const currentCoords = userMarker.geometry.getCoordinates()
-        animateMarkerMove(currentCoords, coords, heading)
+        // Просто обновляем позицию маркера без анимации центрирования
+        userMarker.geometry.setCoordinates(coords)
+        const UserMarkerLayout = createUserMarkerLayout(heading)
+        userMarker.options.set('iconLayout', UserMarkerLayout)
       } else {
-        // Создаем новый маркер
         const UserMarkerLayout = createUserMarkerLayout(heading)
 
         userMarker = new ymaps.Placemark(
           coords,
-          {
-            hintContent: 'Ваше местоположение',
-            balloonContent: `
-              <div class="user-balloon">
-                <div class="user-balloon-header">
-                  <span class="user-balloon-icon">📍</span>
-                  <strong>Вы здесь</strong>
-                </div>
-                <p class="user-balloon-coords">${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}</p>
-                ${location.speed ? `<p class="user-balloon-speed">🚶 ${(location.speed * 3.6).toFixed(1)} км/ч</p>` : ''}
-              </div>
-            `
-          },
+          { hintContent: 'Вы здесь' },
           {
             iconLayout: UserMarkerLayout,
-            iconShape: {
-              type: 'Circle',
-              coordinates: [0, 0],
-              radius: 40
-            }
+            iconShape: { type: 'Circle', coordinates: [0, 0], radius: 40 }
           }
         )
 
         map.geoObjects.add(userMarker)
       }
 
-      // Обновляем store
       offersStore.setUserLocation(location)
-      
-      console.log('📍 User position updated:', coords)
     }
 
-    // Анимация перемещения маркера
-    const animateMarkerMove = (from, to, heading) => {
-      if (!userMarker) return
-
-      const steps = 20
-      const stepLat = (to[0] - from[0]) / steps
-      const stepLng = (to[1] - from[1]) / steps
-      let step = 0
-
-      const animate = () => {
-        if (step < steps) {
-          step++
-          const newLat = from[0] + stepLat * step
-          const newLng = from[1] + stepLng * step
-          userMarker.geometry.setCoordinates([newLat, newLng])
-          
-          // Обновляем направление
-          if (heading && step === steps) {
-            const UserMarkerLayout = createUserMarkerLayout(heading)
-            userMarker.options.set('iconLayout', UserMarkerLayout)
-          }
-          
-          requestAnimationFrame(animate)
-        }
-      }
-
-      requestAnimationFrame(animate)
-    }
-
-    // Установка маркера при ручном запросе локации
+    // Ручное центрирование при нажатии на кнопку локации
     const setUserMarker = (location) => {
-      if (!location) return
+      if (!location || !map) return
+      
+      const lat = location.latitude || location[0]
+      const lng = location.longitude || location[1]
+      
       updateUserMarker({
-        latitude: location.latitude || location[0],
-        longitude: location.longitude || location[1],
+        latitude: lat,
+        longitude: lng,
         accuracy: location.accuracy || 100
       })
       
-      // Центрируем карту
-      if (map) {
-        map.setCenter([location.latitude || location[0], location.longitude || location[1]], 15, { duration: 500 })
-      }
+      // Центрируем только при РУЧНОМ запросе (кнопка)
+      map.setCenter([lat, lng], 15, { duration: 400 })
     }
 
-    // Следим за изменениями
-    watch(filteredOffers, () => {
-      updateMarkers()
-    }, { deep: true })
+    watch(filteredOffers, () => updateMarkers(), { deep: true })
 
     watch(userLocation, (newLocation) => {
-      if (newLocation) {
-        setUserMarker(newLocation)
-      }
+      if (newLocation) setUserMarker(newLocation)
     })
 
     onMounted(() => {
-      console.log('🗺️ YandexMap component mounted')
-      
       const apiKey = import.meta.env.VITE_YANDEX_MAPS_API_KEY || '07b74146-5f5a-46bf-a2b1-cf6d052a41bb'
       
       if (!window.ymaps) {
         const script = document.createElement('script')
         script.src = `https://api-maps.yandex.ru/2.1/?apikey=${apiKey}&lang=ru_RU`
-        script.onload = () => {
-          setTimeout(() => {
-            initMap()
-          }, 300)
-        }
+        script.onload = () => setTimeout(initMap, 300)
         document.head.appendChild(script)
       } else {
-        setTimeout(() => {
-          initMap()
-        }, 300)
+        setTimeout(initMap, 300)
       }
     })
 
     onUnmounted(() => {
       stopLocationTracking()
-      if (map) {
-        map.destroy()
-      }
+      if (map) map.destroy()
     })
 
-    return {
-      mapContainer,
-      isTracking,
-      zoomIn,
-      zoomOut
-    }
+    return { mapContainer, isTracking, zoomIn, zoomOut }
   }
 }
 </script>
@@ -418,89 +329,82 @@ export default {
 .yandex-map {
   width: 100%;
   height: 100%;
-  border-radius: 0;
   overflow: hidden;
-  /* Инвертируем цвета для тёмной темы */
+  /* Тёмная тема через инверсию */
   filter: invert(90%) hue-rotate(180deg) brightness(0.95) contrast(0.9);
 }
 
-/* Кастомные контролы зума */
+/* Кастомные контролы зума - чёрно-белые */
 .custom-controls {
   position: absolute;
   right: 16px;
   bottom: 100px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   z-index: 100;
 }
 
 .control-btn {
-  width: 44px;
-  height: 44px;
-  background: #1a1a1a;
+  width: 40px;
+  height: 40px;
+  background: #000;
   border: 1px solid #333;
-  border-radius: 12px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.15s ease;
+  color: #888;
 }
 
 .control-btn:hover {
-  background: #ff6b00;
-  border-color: #ff6b00;
-  transform: scale(1.05);
+  background: #111;
+  border-color: #444;
+  color: #fff;
 }
 
 .control-btn:active {
   transform: scale(0.95);
 }
 
-.control-btn span {
-  font-size: 24px;
-  font-weight: 300;
-  color: #fff;
-  line-height: 1;
-}
-
-/* Индикатор GPS трекинга */
+/* Индикатор GPS - чёрно-белый */
 .tracking-indicator {
   position: absolute;
-  top: 16px;
+  top: 180px;
   left: 16px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: rgba(26, 26, 26, 0.9);
+  gap: 6px;
+  padding: 6px 10px;
+  background: #000;
   border: 1px solid #333;
-  border-radius: 20px;
+  border-radius: 6px;
   z-index: 100;
 }
 
 .tracking-dot {
-  width: 8px;
-  height: 8px;
-  background: #22c55e;
+  width: 6px;
+  height: 6px;
+  background: #fff;
   border-radius: 50%;
   animation: trackingPulse 1.5s ease-in-out infinite;
 }
 
 .tracking-text {
-  font-size: 12px;
-  color: #22c55e;
+  font-size: 11px;
+  color: #888;
   font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 @keyframes trackingPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
-/* Кастомный анимированный маркер пользователя */
+/* Чёрно-белый маркер пользователя */
 :deep(.user-marker-container) {
   position: relative;
   width: 80px;
@@ -514,10 +418,10 @@ export default {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100px;
-  height: 100px;
-  background: rgba(255, 107, 0, 0.1);
-  border: 1px solid rgba(255, 107, 0, 0.3);
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
@@ -526,47 +430,35 @@ export default {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 60px;
-  height: 60px;
-  background: rgba(255, 107, 0, 0.3);
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  animation: pulse 2s ease-out infinite;
-}
-
-:deep(.user-marker-pulse-delay) {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 60px;
-  height: 60px;
-  background: rgba(255, 107, 0, 0.2);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  animation: pulse 2s ease-out infinite 0.5s;
+  animation: userPulse 2s ease-out infinite;
 }
 
 :deep(.user-marker-core) {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 24px;
-  height: 24px;
-  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  width: 20px;
+  height: 20px;
+  background: #fff;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 20px rgba(255, 107, 0, 0.6), 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid #fff;
+  border: 2px solid #000;
   z-index: 10;
 }
 
 :deep(.user-marker-dot) {
-  width: 8px;
-  height: 8px;
-  background: #fff;
+  width: 6px;
+  height: 6px;
+  background: #000;
   border-radius: 50%;
 }
 
@@ -576,133 +468,51 @@ export default {
   left: 50%;
   width: 0;
   height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 24px solid #ff6b00;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 20px solid #fff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
   z-index: 5;
   transition: transform 0.3s ease;
 }
 
-@keyframes pulse {
+@keyframes userPulse {
   0% {
     transform: translate(-50%, -50%) scale(0.5);
-    opacity: 1;
+    opacity: 0.8;
   }
   100% {
-    transform: translate(-50%, -50%) scale(2.5);
+    transform: translate(-50%, -50%) scale(2);
     opacity: 0;
   }
 }
 
-/* User balloon стили */
-:deep(.user-balloon) {
-  padding: 12px;
-  text-align: center;
-  background: #1a1a1a;
-  border-radius: 12px;
+/* Полное скрытие элементов Яндекса */
+:deep(.ymaps-2-1-79-copyright),
+:deep(.ymaps-2-1-79-copyright__wrap),
+:deep(.ymaps-2-1-79-map-copyrights-promo),
+:deep(.ymaps-2-1-79-copyright__logo),
+:deep(.ymaps-2-1-79-copyright__link),
+:deep(.ymaps-2-1-79-copyright_ua_logo),
+:deep(.ymaps-2-1-79-copyright__agreement),
+:deep([class*="copyrights"]),
+:deep([class*="copyright"]),
+:deep(.ymaps-2-1-79-controls__toolbar),
+:deep(.ymaps-2-1-79-float-button),
+:deep(.ymaps-2-1-79-searchbox),
+:deep(.ymaps-2-1-79-zoom),
+:deep(.ymaps-2-1-79-ground-pane ~ *:not(.ymaps-2-1-79-events-pane):not(.ymaps-2-1-79-graphics-pane)),
+:deep(.ymaps-2-1-79-map-bg),
+:deep([class*="button_view"]) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
-:deep(.user-balloon-header) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-:deep(.user-balloon-icon) {
-  font-size: 20px;
-}
-
-:deep(.user-balloon-header strong) {
-  color: #ff6b00;
-  font-size: 15px;
-}
-
-:deep(.user-balloon-coords) {
-  margin: 0;
-  font-size: 11px;
-  color: #888;
-  font-family: monospace;
-}
-
-:deep(.user-balloon-speed) {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: #22c55e;
-}
-
-/* Стили для балунов (тёмная тема) */
-:deep(.map-balloon) {
-  padding: 12px;
-  max-width: 280px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  /* Отменяем инверсию для балунов */
-  filter: invert(90%) hue-rotate(180deg);
-}
-
-:deep(.dark-balloon) {
-  background: #1a1a1a;
-  border-radius: 12px;
-  color: #fff;
-}
-
-:deep(.balloon-header) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-:deep(.balloon-category-icon) {
-  font-size: 24px;
-}
-
-:deep(.balloon-title) {
-  margin: 0;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-:deep(.balloon-description) {
-  margin: 0 0 10px 0;
-  color: #888;
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-:deep(.balloon-info) {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 10px;
-  font-size: 13px;
-  color: #aaa;
-}
-
-:deep(.balloon-stats) {
-  display: flex;
-  gap: 12px;
-  padding-top: 8px;
-  border-top: 1px solid #333;
-  font-size: 13px;
-  color: #888;
-}
-
-:deep(.balloon-rating) {
-  color: #f59e0b;
-  font-weight: 500;
-}
-
-/* Скрываем элементы Яндекс карт */
-:deep(.ymaps-2-1-79-copyright) {
-  filter: invert(90%) hue-rotate(180deg) !important;
-}
-
-:deep(.ymaps-2-1-79-map-copyrights-promo) {
+/* Скрытие только текстовых ссылок, но сохранение карты */
+:deep(a[href*="yandex"]),
+:deep(a[href*="maps.yandex"]) {
   display: none !important;
 }
 </style>
