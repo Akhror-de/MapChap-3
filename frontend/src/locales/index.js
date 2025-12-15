@@ -1371,7 +1371,7 @@ export const translations = {
     about_contacts: 'Байланыс',
     about_founder: 'Негізін қалаушы және CEO',
     about_finance: 'Қаржы директоры',
-    about_footer: '❤️ арқылы жасалған',
+    about_footer: 'Сүйіспеншілікпен жасалған',
     
     notif_location_success: 'Орналасу алынды',
     notif_location_error: 'Орналасуды алу мүмкін болмады',
