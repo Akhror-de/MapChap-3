@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="dark-theme">
+  <div id="app" class="vercel-theme">
     <!-- Overlay для панелей -->
     <div 
       v-if="activePanel"
@@ -21,13 +21,15 @@
 
     <!-- Основной контент -->
     <div class="main-content" :class="{ 'blurred': activePanel }">
-      <!-- Минималистичный хедер -->
+      <!-- Минималистичный хедер в стиле Vercel -->
       <header class="app-header">
         <div class="header-content">
           <!-- Левая часть - бизнес кнопка -->
           <div class="header-left">
             <button class="header-btn business-btn" @click="openPanel('business')" title="Бизнес">
-              <span class="btn-icon">⚡</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
             </button>
           </div>
           
@@ -42,14 +44,26 @@
           <!-- Правая часть - навигация -->
           <div class="header-right">
             <button class="header-btn" @click="openPanel('blog')" title="Блог">
-              <span class="btn-icon">📝</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
             </button>
             <button class="header-btn" @click="openPanel('about')" title="Инфо">
-              <span class="btn-icon">ℹ️</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
             </button>
             <button class="header-btn profile-btn" @click="openPanel('profile')" title="Профиль">
               <img v-if="userPhotoUrl" :src="userPhotoUrl" class="profile-avatar" alt="" />
-              <span v-else class="btn-icon">👤</span>
+              <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
             </button>
           </div>
         </div>
@@ -58,11 +72,18 @@
       <!-- Уведомления -->
       <transition name="notification">
         <div v-if="notification" class="notification" :class="notification.type">
-          <span class="notification-icon">
-            <span v-if="notification.type === 'success'">✅</span>
-            <span v-else-if="notification.type === 'error'">❌</span>
-            <span v-else>💡</span>
-          </span>
+          <svg v-if="notification.type === 'success'" class="notif-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <svg v-else-if="notification.type === 'error'" class="notif-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          <svg v-else class="notif-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
           <span class="notification-text">{{ notification.message }}</span>
         </div>
       </transition>
@@ -85,7 +106,10 @@
           <!-- Поиск -->
           <div class="search-wrapper">
             <div class="search-box">
-              <span class="search-icon">🔍</span>
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
               <input
                 v-model="searchQuery"
                 type="text"
@@ -106,14 +130,13 @@
                 :class="{ active: selectedCategory === category.id }"
                 @click="selectCategory(category.id)"
               >
-                <span class="chip-icon">{{ category.icon }}</span>
                 <span class="chip-text">{{ category.name }}</span>
               </button>
             </div>
           </div>
         </div>
         
-        <!-- Кнопка локации с анимацией -->
+        <!-- Кнопка локации -->
         <button 
           class="location-fab" 
           :class="{ 'locating': isLocating, 'located': hasLocation }"
@@ -121,8 +144,10 @@
           title="Моя локация"
         >
           <span class="fab-pulse"></span>
-          <span class="fab-pulse delay"></span>
-          <span class="fab-icon" :class="{ 'spinning': isLocating }">📍</span>
+          <svg class="fab-icon" :class="{ 'spinning': isLocating }" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+          </svg>
         </button>
       </main>
     </div>
@@ -174,20 +199,20 @@ export default {
     const userPhotoUrl = computed(() => user.value?.photo_url || '')
     const selectedCategory = computed(() => offersStore.selectedCategory)
 
-    // Категории с зелеными/оранжевыми акцентами
+    // Категории без эмодзи
     const categories = [
-      { id: 'all', name: 'Все', icon: '🗺️' },
-      { id: 'food', name: 'Еда', icon: '🍕' },
-      { id: 'shopping', name: 'Магазины', icon: '🛍️' },
-      { id: 'beauty', name: 'Красота', icon: '💄' },
-      { id: 'services', name: 'Услуги', icon: '🔧' },
-      { id: 'medical', name: 'Медицина', icon: '⚕️' },
-      { id: 'pharmacy', name: 'Аптеки', icon: '💊' },
-      { id: 'entertainment', name: 'Развлечения', icon: '🎭' }
+      { id: 'all', name: 'Все' },
+      { id: 'food', name: 'Еда' },
+      { id: 'shopping', name: 'Магазины' },
+      { id: 'beauty', name: 'Красота' },
+      { id: 'services', name: 'Услуги' },
+      { id: 'medical', name: 'Медицина' },
+      { id: 'pharmacy', name: 'Аптеки' },
+      { id: 'entertainment', name: 'Развлечения' }
     ]
 
     onMounted(() => {
-      console.log('🚀 MapChap v3 started')
+      console.log('MapChap v3 started')
       authStore.initTelegramAuth()
       offersStore.fetchOffers()
     })
@@ -195,14 +220,14 @@ export default {
     const selectCategory = (categoryId) => {
       setSelectedCategory(categoryId)
       const cat = categories.find(c => c.id === categoryId)
-      showNotification(`${cat?.icon} ${cat?.name}`, 'info')
+      showNotification(cat?.name, 'info')
     }
 
     const onSearch = () => {
       if (searchQuery.value.trim()) {
         setSearchQuery(searchQuery.value)
         searchByAddress(searchQuery.value)
-        showNotification(`🔍 ${searchQuery.value}`, 'info')
+        showNotification(searchQuery.value, 'info')
       }
     }
 
@@ -214,10 +239,10 @@ export default {
         const location = await getCurrentLocation()
         setUserLocation(location)
         hasLocation.value = true
-        showNotification('📍 Местоположение получено', 'success')
+        showNotification('Местоположение получено', 'success')
       } catch (error) {
         hasLocation.value = false
-        showNotification('❌ Не удалось получить локацию', 'error')
+        showNotification('Не удалось получить локацию', 'error')
       } finally {
         isLocating.value = false
       }
@@ -258,17 +283,34 @@ export default {
 </script>
 
 <style>
-/* Глобальные стили приложения */
-.dark-theme {
-  --mc-bg-primary: #0a0a0a;
-  --mc-bg-secondary: #141414;
-  --mc-bg-card: #1a1a1a;
-  --mc-bg-elevated: #222222;
-  --mc-text-primary: #ffffff;
-  --mc-text-secondary: #888888;
-  --mc-border: #2a2a2a;
-  --mc-orange: #ff6b00;
-  --mc-orange-light: #ff8533;
+/* Vercel-style тема */
+.vercel-theme {
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-card: #111111;
+  --bg-elevated: #171717;
+  --bg-hover: #1a1a1a;
+  --text-primary: #fafafa;
+  --text-secondary: #888888;
+  --text-tertiary: #666666;
+  --border-color: #333333;
+  --border-light: #222222;
+  --accent: #ffffff;
+  --success: #50e3c2;
+  --error: #ee5050;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .panel-overlay {
@@ -277,8 +319,8 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
   z-index: 1000;
   animation: fadeIn 0.2s ease;
 }
@@ -299,15 +341,15 @@ export default {
 }
 
 .main-content.blurred {
-  filter: blur(3px);
+  filter: blur(4px);
   transition: filter 0.3s ease;
 }
 
-/* Хедер */
+/* Хедер в стиле Vercel */
 .app-header {
-  background: rgba(10, 10, 10, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--mc-border);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--border-light);
   padding: 12px 16px;
   position: sticky;
   top: 0;
@@ -325,18 +367,14 @@ export default {
 .header-left,
 .header-right {
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 
+/* Логотип с RGB анимацией */
 .logo {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.logo-text {
-  font-size: 20px;
-  font-weight: 700;
 }
 
 .animated-logo {
@@ -345,8 +383,8 @@ export default {
 }
 
 .logo-word {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
   background: linear-gradient(
@@ -362,75 +400,56 @@ export default {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: logoGlow 3s ease-in-out infinite;
-  text-shadow: 0 0 30px rgba(255, 107, 0, 0.5);
-  position: relative;
-}
-
-.logo-word::after {
-  content: attr(data-text);
-  position: absolute;
-  left: 0;
-  top: 0;
-  filter: blur(8px);
-  opacity: 0.6;
-  animation: logoGlowPulse 2s ease-in-out infinite;
 }
 
 @keyframes logoGlow {
   0%, 100% {
     background-position: 0% 50%;
-    filter: drop-shadow(0 0 10px rgba(255, 107, 0, 0.6));
+    filter: drop-shadow(0 0 8px rgba(255, 107, 0, 0.5));
   }
   50% {
     background-position: 100% 50%;
-    filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.6));
+    filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.5));
   }
 }
 
-@keyframes logoGlowPulse {
-  0%, 100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.02);
-  }
-}
-
+/* Кнопки хедера */
 .header-btn {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border: none;
-  background: var(--mc-bg-secondary);
-  border-radius: 12px;
+  background: transparent;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid var(--mc-border);
+  transition: all 0.15s ease;
+  color: var(--text-secondary);
 }
 
 .header-btn:hover {
-  background: var(--mc-bg-elevated);
-  border-color: var(--mc-orange);
-  transform: translateY(-1px);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
-.btn-icon {
-  font-size: 18px;
+.header-btn svg {
+  transition: transform 0.15s ease;
+}
+
+.header-btn:hover svg {
+  transform: scale(1.1);
 }
 
 .business-btn {
-  background: linear-gradient(135deg, var(--mc-orange) 0%, #ff8533 100%);
-  border: none;
-  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
+  background: var(--text-primary);
+  color: var(--bg-primary);
 }
 
 .business-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4);
+  background: var(--text-secondary);
+  color: var(--bg-primary);
+  transform: translateY(-1px);
 }
 
 .profile-btn {
@@ -442,6 +461,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 8px;
 }
 
 /* Уведомления */
@@ -450,41 +470,47 @@ export default {
   top: 76px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--mc-bg-card);
-  border: 1px solid var(--mc-border);
-  border-radius: 16px;
-  padding: 12px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
   z-index: 10000;
   max-width: 320px;
 }
 
 .notification.success {
-  border-color: var(--mc-orange);
-  box-shadow: 0 8px 32px rgba(255, 107, 0, 0.15);
+  border-color: var(--success);
+}
+
+.notification.success .notif-icon {
+  color: var(--success);
 }
 
 .notification.error {
-  border-color: #ff4444;
-  box-shadow: 0 8px 32px rgba(255, 68, 68, 0.15);
+  border-color: var(--error);
 }
 
-.notification-icon {
-  font-size: 18px;
+.notification.error .notif-icon {
+  color: var(--error);
+}
+
+.notif-icon {
+  flex-shrink: 0;
 }
 
 .notification-text {
   font-size: 14px;
   font-weight: 500;
-  color: var(--mc-text-primary);
+  color: var(--text-primary);
 }
 
 .notification-enter-active,
 .notification-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .notification-enter-from,
@@ -496,7 +522,7 @@ export default {
 /* Карта */
 .app-main {
   position: relative;
-  height: calc(100vh - 66px);
+  height: calc(100vh - 65px);
 }
 
 .map-container {
@@ -523,42 +549,40 @@ export default {
 .search-box {
   display: flex;
   align-items: center;
-  background: rgba(20, 20, 20, 0.95);
+  background: rgba(17, 17, 17, 0.95);
   backdrop-filter: blur(20px);
-  border: 1px solid var(--mc-border);
-  border-radius: 16px;
-  padding: 4px 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  transition: all 0.2s ease;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 4px 14px;
+  transition: all 0.15s ease;
 }
 
 .search-box:focus-within {
-  border-color: var(--mc-orange);
-  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.15);
+  border-color: var(--text-secondary);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
 }
 
 .search-icon {
-  font-size: 16px;
   margin-right: 10px;
-  opacity: 0.6;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
 }
 
 .search-input {
   flex: 1;
-  padding: 12px 0;
+  padding: 10px 0;
   background: transparent;
   border: none;
-  color: var(--mc-text-primary);
-  font-size: 15px;
+  color: var(--text-primary);
+  font-size: 14px;
 }
 
 .search-input:focus {
   outline: none;
-  box-shadow: none;
 }
 
 .search-input::placeholder {
-  color: var(--mc-text-secondary);
+  color: var(--text-tertiary);
 }
 
 /* Категории */
@@ -569,7 +593,7 @@ export default {
 
 .categories-scroll {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   padding: 4px 0;
 }
 
@@ -578,115 +602,88 @@ export default {
 }
 
 .category-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  background: rgba(20, 20, 20, 0.95);
+  padding: 8px 14px;
+  background: rgba(17, 17, 17, 0.95);
   backdrop-filter: blur(20px);
-  border: 1px solid var(--mc-border);
-  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   white-space: nowrap;
-  color: var(--mc-text-secondary);
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
 }
 
 .category-chip:hover {
-  background: var(--mc-bg-elevated);
-  border-color: var(--mc-text-secondary);
-  color: var(--mc-text-primary);
+  background: var(--bg-hover);
+  border-color: var(--text-tertiary);
+  color: var(--text-primary);
 }
 
 .category-chip.active {
-  background: var(--mc-orange);
-  border-color: var(--mc-orange);
-  color: #ffffff;
-  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
-}
-
-.chip-icon {
-  font-size: 14px;
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-primary);
 }
 
 .chip-text {
-  font-weight: 600;
+  font-weight: 500;
 }
 
-/* FAB кнопка локации с анимацией */
+/* FAB кнопка локации */
 .location-fab {
   position: fixed;
   bottom: 24px;
   right: 16px;
-  width: 56px;
-  height: 56px;
-  background: var(--mc-bg-card);
-  border: 1px solid var(--mc-border);
-  border-radius: 16px;
+  width: 48px;
+  height: 48px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: all 0.15s ease;
   z-index: 90;
   overflow: hidden;
+  color: var(--text-secondary);
 }
 
 .location-fab .fab-pulse {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: rgba(255, 107, 0, 0.3);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   opacity: 0;
-  transform: scale(0.5);
-  transition: all 0.3s ease;
-}
-
-.location-fab .fab-pulse.delay {
-  animation-delay: 0.3s;
 }
 
 .location-fab.locating .fab-pulse {
   animation: fabPulse 1.5s ease-out infinite;
 }
 
-.location-fab.locating .fab-pulse.delay {
-  animation: fabPulse 1.5s ease-out infinite 0.5s;
-}
-
 .location-fab.located {
-  background: linear-gradient(135deg, var(--mc-orange) 0%, #ff8533 100%);
-  border-color: var(--mc-orange);
-  box-shadow: 0 4px 20px rgba(255, 107, 0, 0.4);
-}
-
-.location-fab.located .fab-icon {
-  filter: grayscale(1) brightness(10);
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-primary);
 }
 
 .location-fab:hover {
-  background: var(--mc-orange);
-  border-color: var(--mc-orange);
-  transform: scale(1.05);
-  box-shadow: 0 6px 25px rgba(255, 107, 0, 0.3);
+  background: var(--bg-hover);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+  transform: translateY(-2px);
 }
 
-.location-fab:hover .fab-icon {
-  filter: grayscale(1) brightness(10);
-}
-
-.location-fab:active {
-  transform: scale(0.95);
+.location-fab.located:hover {
+  background: var(--text-secondary);
 }
 
 .fab-icon {
-  font-size: 24px;
   z-index: 2;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
 .fab-icon.spinning {
@@ -705,16 +702,8 @@ export default {
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.fab-icon {
-  font-size: 22px;
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Анимации */
@@ -728,14 +717,6 @@ export default {
   .floating-controls {
     left: 12px;
     right: 12px;
-  }
-  
-  .chip-text {
-    display: none;
-  }
-  
-  .category-chip {
-    padding: 10px 14px;
   }
   
   .side-panels {
