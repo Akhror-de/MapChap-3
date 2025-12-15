@@ -504,7 +504,7 @@ export const translations = {
     about_contacts: 'Contacts',
     about_founder: 'Founder & CEO',
     about_finance: 'Finance Director',
-    about_footer: 'Made with ❤️',
+    about_footer: 'Made with love',
     
     notif_location_success: 'Location received',
     notif_location_error: 'Could not get location',
