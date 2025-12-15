@@ -495,22 +495,16 @@ export default {
 :deep(.ymaps-2-1-79-copyright__link),
 :deep(.ymaps-2-1-79-copyright_ua_logo),
 :deep(.ymaps-2-1-79-copyright__agreement),
-:deep([class*="copyrights"]),
-:deep([class*="copyright"]),
 :deep(.ymaps-2-1-79-controls__toolbar),
 :deep(.ymaps-2-1-79-float-button),
 :deep(.ymaps-2-1-79-searchbox),
-:deep(.ymaps-2-1-79-zoom),
-:deep(.ymaps-2-1-79-ground-pane ~ *:not(.ymaps-2-1-79-events-pane):not(.ymaps-2-1-79-graphics-pane)),
-:deep(.ymaps-2-1-79-map-bg),
-:deep([class*="button_view"]) {
+:deep(.ymaps-2-1-79-zoom) {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
-  pointer-events: none !important;
 }
 
-/* Скрытие только текстовых ссылок, но сохранение карты */
+/* Скрытие ссылок на Яндекс */
 :deep(a[href*="yandex"]),
 :deep(a[href*="maps.yandex"]) {
   display: none !important;
