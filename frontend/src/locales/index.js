@@ -1660,7 +1660,7 @@ export const translations = {
     about_contacts: 'Байланыш',
     about_founder: 'Негиздөөчү жана CEO',
     about_finance: 'Финансы директору',
-    about_footer: '❤️ менен жасалган',
+    about_footer: 'Сүйүү менен жасалган',
     
     notif_location_success: 'Жайгашуу алынды',
     notif_location_error: 'Жайгашууну алуу мүмкүн болгон жок',
