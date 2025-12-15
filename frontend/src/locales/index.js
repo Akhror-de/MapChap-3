@@ -214,7 +214,7 @@ export const translations = {
     about_contacts: 'Контакты',
     about_founder: 'Основатель и CEO',
     about_finance: 'Финансовый директор',
-    about_footer: 'Сделано с ❤️',
+    about_footer: 'Сделано с любовью',
     
     // Уведомления
     notif_location_success: 'Местоположение получено',
