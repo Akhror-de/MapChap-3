@@ -793,7 +793,7 @@ export const translations = {
     about_contacts: 'Kontaktlar',
     about_founder: 'Asoschisi va CEO',
     about_finance: 'Moliya direktori',
-    about_footer: '❤️ bilan yaratilgan',
+    about_footer: 'Sevgi bilan yaratilgan',
     
     notif_location_success: 'Joylashuv olindi',
     notif_location_error: 'Joylashuvni olib boʻlmadi',
