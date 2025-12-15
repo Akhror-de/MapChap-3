@@ -1082,7 +1082,7 @@ export const translations = {
     about_contacts: 'Тамос',
     about_founder: 'Асосгузор ва CEO',
     about_finance: 'Директори молиявӣ',
-    about_footer: 'Бо ❤️ сохта шудааст',
+    about_footer: 'Бо муҳаббат сохта шудааст',
     
     notif_location_success: 'Ҷойгиршавӣ гирифта шуд',
     notif_location_error: 'Ҷойгиршавиро гирифтан нашуд',
