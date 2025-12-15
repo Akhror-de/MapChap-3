@@ -20,16 +20,21 @@
             <!-- Шапка с категорией и рейтингом -->
             <div class="sheet-header">
               <div class="header-left">
-                <span class="category-badge" :style="{ background: getCategoryColor }">
-                  {{ getCategoryIcon }} {{ getCategoryName }}
+                <span class="category-badge">
+                  {{ getCategoryName }}
                 </span>
                 <div class="rating" v-if="offer.rating">
-                  <span class="rating-stars">⭐</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
                   <span class="rating-value">{{ offer.rating }}</span>
                 </div>
               </div>
               <button class="close-btn" @click="close">
-                <span>✕</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
               </button>
             </div>
 
@@ -46,29 +51,47 @@
               </transition>
             </div>
 
-            <!-- Адрес с анимированной иконкой -->
+            <!-- Адрес -->
             <div class="info-card address-card" @click="openInMaps">
-              <div class="info-icon pulsing">📍</div>
+              <div class="info-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+              </div>
               <div class="info-content">
                 <span class="info-label">{{ t('business_offer_address') }}</span>
                 <span class="info-value">{{ offer.address }}</span>
               </div>
-              <span class="info-arrow">→</span>
+              <svg class="info-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
             </div>
 
             <!-- Телефон -->
             <a v-if="offer.phone" :href="'tel:' + offer.phone" class="info-card phone-card">
-              <div class="info-icon">📞</div>
+              <div class="info-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+              </div>
               <div class="info-content">
                 <span class="info-label">{{ t('business_phone') }}</span>
                 <span class="info-value">{{ offer.phone }}</span>
               </div>
-              <span class="info-arrow">→</span>
+              <svg class="info-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
             </a>
 
             <!-- Часы работы -->
             <div v-if="offer.working_hours" class="info-card">
-              <div class="info-icon">🕐</div>
+              <div class="info-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
               <div class="info-content">
                 <span class="info-label">{{ t('business_hours') }}</span>
                 <span class="info-value">{{ offer.working_hours }}</span>
@@ -84,7 +107,6 @@
                   :key="amenity"
                   class="amenity-chip"
                 >
-                  <span>{{ getAmenityIcon(amenity) }}</span>
                   <span>{{ getAmenityName(amenity) }}</span>
                 </div>
               </div>
@@ -93,7 +115,13 @@
             <!-- Акции / Скидки -->
             <div v-if="offer.promotion || offer.discount" class="promo-section">
               <div class="promo-card">
-                <div class="promo-icon">🎁</div>
+                <div class="promo-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="19" y1="5" x2="5" y2="19"/>
+                    <circle cx="6.5" cy="6.5" r="2.5"/>
+                    <circle cx="17.5" cy="17.5" r="2.5"/>
+                  </svg>
+                </div>
                 <div class="promo-content">
                   <span class="promo-label">{{ offer.discount ? t('offer_discount') : t('offer_promotion') }}</span>
                   <span class="promo-value">{{ offer.promotion || offer.discount }}</span>
@@ -105,29 +133,46 @@
             <!-- Статистика -->
             <div class="stats-row">
               <div class="stat-item">
-                <span class="stat-icon">👁️</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
                 <span class="stat-value">{{ offer.views || 0 }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-icon">❤️</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
                 <span class="stat-value">{{ offer.likes || 0 }}</span>
               </div>
               <div class="stat-item" v-if="offer.boosted">
-                <span class="stat-icon boosted">🚀</span>
-                <span class="stat-value boosted-text">Буст</span>
+                <svg class="boosted-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span class="stat-value boosted-text">Boost</span>
               </div>
             </div>
 
             <!-- Кнопки действий -->
             <div class="action-buttons">
               <button class="action-btn like-btn" :class="{ liked: isLiked }" @click="toggleLike">
-                <span>{{ isLiked ? '❤️' : '🤍' }}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" :fill="isLiked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
               </button>
               <button class="action-btn share-btn" @click="shareOffer">
-                <span>🔗</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="18" cy="5" r="3"/>
+                  <circle cx="6" cy="12" r="3"/>
+                  <circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
               </button>
               <a v-if="offer.phone" :href="'tel:' + offer.phone" class="action-btn call-btn primary">
-                <span>📞</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
                 <span>{{ t('offer_call') }}</span>
               </a>
             </div>
@@ -146,14 +191,8 @@ import { useUIStore } from '../stores/uiStore'
 export default {
   name: 'OfferBottomSheet',
   props: {
-    offer: {
-      type: Object,
-      default: () => ({})
-    },
-    isOpen: {
-      type: Boolean,
-      default: false
-    }
+    offer: { type: Object, default: () => ({}) },
+    isOpen: { type: Boolean, default: false }
   },
   emits: ['close'],
   setup(props, { emit }) {
@@ -164,35 +203,23 @@ export default {
     const isLiked = ref(false)
     const contentRef = ref(null)
     
-    // Свайп для закрытия
     let touchStartY = 0
     let touchCurrentY = 0
     
-    const handleTouchStart = (e) => {
-      touchStartY = e.touches[0].clientY
-    }
-    
-    const handleTouchMove = (e) => {
-      touchCurrentY = e.touches[0].clientY
-    }
+    const handleTouchStart = (e) => { touchStartY = e.touches[0].clientY }
+    const handleTouchMove = (e) => { touchCurrentY = e.touches[0].clientY }
     
     const handleTouchEnd = () => {
       const diff = touchCurrentY - touchStartY
       if (diff > 100) {
-        if (isExpanded.value) {
-          isExpanded.value = false
-        } else {
-          close()
-        }
+        isExpanded.value ? isExpanded.value = false : close()
       } else if (diff < -100) {
         isExpanded.value = true
       }
     }
     
     const handleOverlayClick = (e) => {
-      if (e.target.classList.contains('bottom-sheet-overlay')) {
-        close()
-      }
+      if (e.target.classList.contains('bottom-sheet-overlay')) close()
     }
     
     const close = () => {
@@ -200,25 +227,16 @@ export default {
       emit('close')
     }
     
-    const toggleExpand = () => {
-      isExpanded.value = !isExpanded.value
-    }
+    const toggleExpand = () => { isExpanded.value = !isExpanded.value }
     
     const toggleLike = () => {
       isLiked.value = !isLiked.value
-      uiStore.showNotification(
-        isLiked.value ? t('article_added_likes') : t('article_removed_likes'),
-        'success'
-      )
+      uiStore.showNotification(isLiked.value ? t('article_added_likes') : t('article_removed_likes'), 'success')
     }
     
     const shareOffer = () => {
       if (navigator.share) {
-        navigator.share({
-          title: props.offer.title,
-          text: props.offer.description,
-          url: window.location.href
-        })
+        navigator.share({ title: props.offer.title, text: props.offer.description, url: window.location.href })
       } else {
         navigator.clipboard.writeText(window.location.href)
         uiStore.showNotification(t('article_link_copied'), 'success')
@@ -231,69 +249,26 @@ export default {
     }
     
     const CATEGORY_DATA = {
-      food: { icon: '🍕', color: '#FF6B6B', name: 'Еда' },
-      shopping: { icon: '🛍️', color: '#4ECDC4', name: 'Магазины' },
-      beauty: { icon: '💄', color: '#FFD166', name: 'Красота' },
-      services: { icon: '🔧', color: '#06D6A0', name: 'Услуги' },
-      medical: { icon: '⚕️', color: '#118AB2', name: 'Медицина' },
-      pharmacy: { icon: '💊', color: '#EF476F', name: 'Аптеки' },
-      fitness: { icon: '💪', color: '#F97316', name: 'Фитнес' },
-      entertainment: { icon: '🎭', color: '#7209B7', name: 'Развлечения' }
+      food: 'Еда', shopping: 'Магазины', beauty: 'Красота', services: 'Услуги',
+      medical: 'Медицина', pharmacy: 'Аптеки', fitness: 'Фитнес', entertainment: 'Развлечения'
     }
     
-    const getCategoryIcon = computed(() => {
-      return CATEGORY_DATA[props.offer.category]?.icon || '📍'
-    })
-    
-    const getCategoryColor = computed(() => {
-      return CATEGORY_DATA[props.offer.category]?.color || '#ff6b00'
-    })
-    
-    const getCategoryName = computed(() => {
-      return CATEGORY_DATA[props.offer.category]?.name || 'Место'
-    })
+    const getCategoryName = computed(() => CATEGORY_DATA[props.offer.category] || 'Место')
     
     const AMENITIES = {
-      wifi: { icon: '📶', name: 'Wi-Fi' },
-      parking: { icon: '🅿️', name: 'Парковка' },
-      card_payment: { icon: '💳', name: 'Карта' },
-      delivery: { icon: '🚗', name: 'Доставка' },
-      takeaway: { icon: '🥡', name: 'С собой' },
-      wheelchair: { icon: '♿', name: 'Доступность' },
-      children: { icon: '👶', name: 'Дети' },
-      pet_friendly: { icon: '🐕', name: 'Животные' },
-      ac: { icon: '❄️', name: 'Кондиционер' },
-      outdoor: { icon: '🌳', name: 'Терраса' },
-      reservation: { icon: '📅', name: 'Бронь' },
-      '24h': { icon: '🌙', name: '24 часа' }
+      wifi: 'Wi-Fi', parking: 'Парковка', card_payment: 'Карта', delivery: 'Доставка',
+      takeaway: 'С собой', wheelchair: 'Доступность', children: 'Дети', pet_friendly: 'Животные',
+      ac: 'Кондиционер', outdoor: 'Терраса', reservation: 'Бронь', '24h': '24 часа'
     }
     
-    const getAmenityIcon = (id) => AMENITIES[id]?.icon || '✓'
-    const getAmenityName = (id) => AMENITIES[id]?.name || id
+    const getAmenityName = (id) => AMENITIES[id] || id
     
-    watch(() => props.isOpen, (val) => {
-      if (!val) isExpanded.value = false
-    })
+    watch(() => props.isOpen, (val) => { if (!val) isExpanded.value = false })
     
     return {
-      t,
-      isExpanded,
-      isLiked,
-      contentRef,
-      close,
-      toggleExpand,
-      toggleLike,
-      shareOffer,
-      openInMaps,
-      handleTouchStart,
-      handleTouchMove,
-      handleTouchEnd,
-      handleOverlayClick,
-      getCategoryIcon,
-      getCategoryColor,
-      getCategoryName,
-      getAmenityIcon,
-      getAmenityName
+      t, isExpanded, isLiked, contentRef, close, toggleExpand, toggleLike, shareOffer,
+      openInMaps, handleTouchStart, handleTouchMove, handleTouchEnd, handleOverlayClick,
+      getCategoryName, getAmenityName
     }
   }
 }
@@ -306,7 +281,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   z-index: 2000;
   display: flex;
@@ -317,12 +292,13 @@ export default {
 .bottom-sheet {
   width: 100%;
   max-width: 500px;
-  max-height: 60vh;
-  background: #0a0a0a;
-  border-radius: 24px 24px 0 0;
+  max-height: 55vh;
+  background: #000;
+  border: 1px solid #222;
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
   overflow: hidden;
   transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
 }
 
 .bottom-sheet.full-height {
@@ -337,16 +313,16 @@ export default {
 }
 
 .handle-bar {
-  width: 40px;
+  width: 36px;
   height: 4px;
-  background: #444;
+  background: #333;
   border-radius: 2px;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 }
 
 .sheet-handle:hover .handle-bar {
-  background: #ff6b00;
-  width: 60px;
+  background: #555;
+  width: 50px;
 }
 
 .sheet-content {
@@ -365,58 +341,53 @@ export default {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .category-badge {
   padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #888;
 }
 
 .rating {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 10px;
-  background: rgba(245, 158, 11, 0.15);
-  border-radius: 12px;
+  color: #888;
 }
 
-.rating-stars {
-  font-size: 14px;
+.rating svg {
+  color: #f5a623;
 }
 
 .rating-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #f59e0b;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .close-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: #1a1a1a;
-  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #333;
+  background: transparent;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
-  color: #888;
-  font-size: 16px;
+  transition: all 0.15s ease;
+  color: #555;
 }
 
 .close-btn:hover {
-  background: #ff4444;
+  background: #111;
+  border-color: #444;
   color: #fff;
-  transform: rotate(90deg);
 }
 
 .sheet-main {
@@ -425,8 +396,8 @@ export default {
 
 .offer-title {
   margin: 0 0 8px;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
   color: #fff;
   line-height: 1.3;
 }
@@ -434,14 +405,14 @@ export default {
 .offer-description {
   margin: 0;
   font-size: 14px;
-  color: #888;
+  color: #666;
   line-height: 1.5;
 }
 
 .offer-full-description {
   margin: 12px 0 0;
   font-size: 14px;
-  color: #aaa;
+  color: #888;
   line-height: 1.6;
   padding-top: 12px;
   border-top: 1px solid #222;
@@ -450,42 +421,39 @@ export default {
 .info-card {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  background: #141414;
+  gap: 12px;
+  padding: 14px;
+  background: #0a0a0a;
   border: 1px solid #222;
-  border-radius: 14px;
-  margin-bottom: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
   text-decoration: none;
   color: inherit;
 }
 
 .info-card:hover {
-  background: #1a1a1a;
-  border-color: #ff6b00;
+  background: #111;
+  border-color: #333;
+}
+
+.info-card:hover .info-arrow {
   transform: translateX(4px);
+  color: #fff;
 }
 
 .info-icon {
-  font-size: 24px;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0a0a0a;
-  border-radius: 12px;
-}
-
-.info-icon.pulsing {
-  animation: iconPulse 2s ease-in-out infinite;
-}
-
-@keyframes iconPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  color: #555;
+  flex-shrink: 0;
 }
 
 .info-content {
@@ -494,28 +462,22 @@ export default {
 
 .info-label {
   display: block;
-  font-size: 11px;
-  color: #666;
+  font-size: 10px;
+  color: #555;
   text-transform: uppercase;
-  margin-bottom: 2px;
+  letter-spacing: 0.5px;
 }
 
 .info-value {
   display: block;
   font-size: 14px;
   color: #fff;
-  font-weight: 500;
+  margin-top: 2px;
 }
 
 .info-arrow {
-  font-size: 18px;
-  color: #444;
-  transition: all 0.2s;
-}
-
-.info-card:hover .info-arrow {
-  color: #ff6b00;
-  transform: translateX(4px);
+  color: #333;
+  transition: all 0.15s ease;
 }
 
 .amenities-section {
@@ -523,33 +485,31 @@ export default {
 }
 
 .amenities-section h4 {
-  margin: 0 0 12px;
-  font-size: 13px;
-  color: #666;
+  margin: 0 0 10px;
+  font-size: 11px;
+  color: #555;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .amenities-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .amenity-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  border-radius: 20px;
+  padding: 6px 12px;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 6px;
   font-size: 12px;
-  color: #aaa;
-  transition: all 0.2s;
+  color: #888;
+  transition: all 0.15s ease;
 }
 
 .amenity-chip:hover {
-  border-color: #ff6b00;
+  border-color: #333;
   color: #fff;
 }
 
@@ -560,39 +520,15 @@ export default {
 .promo-card {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   padding: 16px;
-  background: linear-gradient(135deg, rgba(255, 107, 0, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%);
-  border: 1px solid rgba(255, 107, 0, 0.3);
-  border-radius: 16px;
-  position: relative;
-  overflow: hidden;
-}
-
-.promo-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-  animation: shimmer 3s linear infinite;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%) rotate(45deg); }
-  100% { transform: translateX(100%) rotate(45deg); }
+  background: linear-gradient(135deg, rgba(80, 227, 194, 0.08) 0%, rgba(80, 227, 194, 0.02) 100%);
+  border: 1px solid rgba(80, 227, 194, 0.2);
+  border-radius: 8px;
 }
 
 .promo-icon {
-  font-size: 28px;
-  animation: bounce 2s ease-in-out infinite;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  color: #50e3c2;
 }
 
 .promo-content {
@@ -601,27 +537,27 @@ export default {
 
 .promo-label {
   display: block;
-  font-size: 11px;
-  color: #22c55e;
+  font-size: 10px;
+  color: #50e3c2;
   text-transform: uppercase;
-  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .promo-value {
   display: block;
-  font-size: 16px;
+  font-size: 14px;
   color: #fff;
-  font-weight: 600;
+  font-weight: 500;
   margin-top: 2px;
 }
 
 .promo-badge {
   padding: 6px 12px;
-  background: #ff6b00;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
+  background: #50e3c2;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #000;
 }
 
 .stats-row {
@@ -637,34 +573,25 @@ export default {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.stat-icon {
-  font-size: 18px;
-}
-
-.stat-icon.boosted {
-  animation: rocketPulse 1s ease-in-out infinite;
-}
-
-@keyframes rocketPulse {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  color: #555;
 }
 
 .stat-value {
-  font-size: 14px;
-  color: #888;
+  font-size: 13px;
+}
+
+.boosted-icon {
+  color: #f5a623;
 }
 
 .boosted-text {
-  color: #ff6b00;
-  font-weight: 600;
+  color: #f5a623;
+  font-weight: 500;
 }
 
 .action-buttons {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .action-btn {
@@ -672,83 +599,55 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 16px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  border-radius: 14px;
+  padding: 12px 16px;
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
   color: #888;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
   text-decoration: none;
 }
 
 .action-btn:hover {
-  background: #222;
-  border-color: #444;
+  background: #111;
+  border-color: #333;
   color: #fff;
 }
 
 .action-btn.primary {
   flex: 1;
-  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  background: #fff;
   border: none;
-  color: #fff;
+  color: #000;
 }
 
 .action-btn.primary:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.3);
+  background: #e0e0e0;
 }
 
 .action-btn.liked {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
-}
-
-.like-btn span, .share-btn span {
-  font-size: 20px;
+  background: rgba(238, 80, 80, 0.1);
+  border-color: rgba(238, 80, 80, 0.3);
+  color: #ee5050;
 }
 
 /* Transitions */
-.sheet-enter-active {
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sheet-leave-active {
-  animation: slideDown 0.25s cubic-bezier(0.4, 0, 1, 1);
-}
+.sheet-enter-active { animation: slideUp 0.25s ease; }
+.sheet-leave-active { animation: slideDown 0.2s ease; }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(100%);
-  }
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(100%); }
 }
 
-.fade-enter-active, .fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
+.fade-enter-active, .fade-leave-active { transition: all 0.2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>
