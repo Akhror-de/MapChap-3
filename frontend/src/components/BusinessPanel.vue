@@ -222,14 +222,18 @@
         <!-- Преимущества -->
         <div class="benefits-card">
           <div class="benefit-item">
-            <span class="benefit-icon">📊</span>
+            <span class="benefit-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </span>
             <div>
               <strong>{{ t('business_analytics') }}</strong>
               <p>{{ t('business_analytics_desc') }}</p>
             </div>
           </div>
           <div class="benefit-item">
-            <span class="benefit-icon">🔔</span>
+            <span class="benefit-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </span>
             <div>
               <strong>{{ t('business_push_notifications') }}</strong>
               <p>{{ t('business_push_desc') }}</p>
