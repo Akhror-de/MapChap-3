@@ -1147,9 +1147,9 @@ export default {
   transition: all 0.2s;
 }
 .tab-btn.active {
-  background: #ff6b00;
-  border-color: #ff6b00;
-  color: #fff;
+  background: #fff;
+  border-color: #fff;
+  color: #000;
 }
 .tab-btn:hover:not(.active) { background: #1a1a1a; color: #fff; }
 
