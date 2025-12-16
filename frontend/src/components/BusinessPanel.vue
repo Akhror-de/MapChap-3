@@ -371,29 +371,37 @@
         <!-- Обзор -->
         <div v-if="activeTab === 'overview'">
           <div class="welcome-card">
-            <span v-if="authStore.user?.is_verified" class="verified-badge">✅ {{ t('business_verified_badge') }}</span>
+            <span v-if="authStore.user?.is_verified" class="verified-badge">{{ t('business_verified_badge') }}</span>
             <h3>{{ t('business_welcome') }}, {{ businessInfo.companyName }}!</h3>
             <p v-if="authStore.user?.inn">ИНН: {{ authStore.user.inn }}</p>
           </div>
 
           <div class="metrics-grid">
             <div class="metric-card">
-              <span class="metric-icon">👁️</span>
+              <span class="metric-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </span>
               <div class="metric-value">{{ businessStats.totalViews }}</div>
               <div class="metric-label">{{ t('business_views') }}</div>
             </div>
-            <div class="metric-card orange">
-              <span class="metric-icon">❤️</span>
+            <div class="metric-card">
+              <span class="metric-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </span>
               <div class="metric-value">{{ businessStats.totalLikes }}</div>
               <div class="metric-label">{{ t('business_likes') }}</div>
             </div>
             <div class="metric-card">
-              <span class="metric-icon">🏢</span>
+              <span class="metric-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </span>
               <div class="metric-value">{{ businessStats.activeOffers }}</div>
               <div class="metric-label">{{ t('business_offers') }}</div>
             </div>
-            <div class="metric-card orange">
-              <span class="metric-icon">⭐</span>
+            <div class="metric-card">
+              <span class="metric-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </span>
               <div class="metric-value">{{ businessStats.averageRating || '-' }}</div>
               <div class="metric-label">{{ t('business_rating') }}</div>
             </div>
@@ -401,10 +409,12 @@
 
           <div class="quick-actions">
             <button class="action-btn" @click="activeTab = 'create'">
-              <span>➕</span> {{ t('business_new_offer_btn') }}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              {{ t('business_new_offer_btn') }}
             </button>
             <button class="action-btn" @click="activeTab = 'offers'">
-              <span>📋</span> {{ t('business_manage') }}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              {{ t('business_manage') }}
             </button>
           </div>
         </div>
