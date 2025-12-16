@@ -263,7 +263,9 @@
         </div>
 
         <div class="success-banner">
-          <span class="success-icon">🎉</span>
+          <span class="success-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </span>
           <div>
             <strong>{{ t('business_verification_passed') }}</strong>
             <p>{{ t('business_create_first_offer') }}</p>
