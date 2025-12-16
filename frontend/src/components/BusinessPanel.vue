@@ -609,18 +609,18 @@ export default {
 
     // Список удобств
     const amenitiesList = [
-      { id: 'wifi', name: 'Wi-Fi', icon: '📶' },
-      { id: 'parking', name: 'Парковка', icon: '🅿️' },
-      { id: 'card_payment', name: 'Оплата картой', icon: '💳' },
-      { id: 'delivery', name: 'Доставка', icon: '🚚' },
-      { id: 'takeaway', name: 'С собой', icon: '📦' },
-      { id: 'wheelchair', name: 'Доступная среда', icon: '♿' },
-      { id: 'children', name: 'Детская зона', icon: '👶' },
-      { id: 'pet_friendly', name: 'С животными', icon: '🐕' },
-      { id: 'ac', name: 'Кондиционер', icon: '❄️' },
-      { id: 'outdoor', name: 'Терраса', icon: '🌿' },
-      { id: 'reservation', name: 'Бронь', icon: '📅' },
-      { id: '24h', name: '24 часа', icon: '🕐' }
+      { id: 'wifi', name: 'Wi-Fi', icon: '•' },
+      { id: 'parking', name: 'Парковка', icon: '•' },
+      { id: 'card_payment', name: 'Оплата картой', icon: '•' },
+      { id: 'delivery', name: 'Доставка', icon: '•' },
+      { id: 'takeaway', name: 'С собой', icon: '•' },
+      { id: 'wheelchair', name: 'Доступная среда', icon: '•' },
+      { id: 'children', name: 'Детская зона', icon: '•' },
+      { id: 'pet_friendly', name: 'С животными', icon: '•' },
+      { id: 'ac', name: 'Кондиционер', icon: '•' },
+      { id: 'outdoor', name: 'Терраса', icon: '•' },
+      { id: 'reservation', name: 'Бронь', icon: '•' },
+      { id: '24h', name: '24 часа', icon: '•' }
     ]
 
     const userOffers = computed(() => getUserOffers.value)
