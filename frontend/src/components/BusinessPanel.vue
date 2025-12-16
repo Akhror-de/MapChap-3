@@ -812,10 +812,40 @@ export default {
     }
     
     const handleDeleteOffer = async (id) => {
-      if (confirm('Удалить объявление?')) {
-        await businessStore.deleteOffer(id)
-        showNotification('✅ Объявление удалено', 'success')
+      if (confirm(t('business_confirm_delete'))) {
+        try {
+          await businessStore.deleteOffer(id)
+          showNotification(t('business_offer_deleted'), 'success')
+        } catch (e) {
+          showNotification(t('error'), 'error')
+        }
       }
+    }
+
+    const offerToDelete = ref(null)
+    const showDeleteModal = ref(false)
+
+    const confirmDeleteOffer = (offer) => {
+      offerToDelete.value = offer
+      showDeleteModal.value = true
+    }
+
+    const executeDeleteOffer = async () => {
+      if (!offerToDelete.value) return
+      try {
+        await businessStore.deleteOffer(offerToDelete.value.id)
+        showNotification(t('business_offer_deleted'), 'success')
+      } catch (e) {
+        showNotification(t('error'), 'error')
+      } finally {
+        showDeleteModal.value = false
+        offerToDelete.value = null
+      }
+    }
+
+    const cancelDelete = () => {
+      showDeleteModal.value = false
+      offerToDelete.value = null
     }
     
     const resetForm = () => { 
