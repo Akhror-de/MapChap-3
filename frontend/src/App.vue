@@ -621,7 +621,9 @@ body {
   color: var(--text-primary);
 }
 
-.category-chip.active {
+.category-chip.active,
+.category-chip.active:hover,
+.category-chip.active:focus {
   background: var(--text-primary) !important;
   border-color: var(--text-primary) !important;
   color: var(--bg-primary) !important;
