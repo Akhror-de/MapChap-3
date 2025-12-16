@@ -536,10 +536,12 @@ body {
   top: 80px;
   left: 16px;
   right: 16px;
-  z-index: 90;
+  z-index: 100;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* Изоляция от filter карты */
+  isolation: isolate;
 }
 
 .search-wrapper {
