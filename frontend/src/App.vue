@@ -623,10 +623,11 @@ body {
 
 .category-chip.active,
 .category-chip.active:hover,
-.category-chip.active:focus {
-  background: var(--text-primary) !important;
-  border-color: var(--text-primary) !important;
-  color: var(--bg-primary) !important;
+.category-chip.active:focus,
+button.category-chip.active {
+  background: #ffffff !important;
+  border-color: #ffffff !important;
+  color: #000000 !important;
 }
 
 .chip-text {
