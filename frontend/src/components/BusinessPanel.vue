@@ -274,7 +274,7 @@
 
         <!-- Форма объявления -->
         <div class="section-card">
-          <div class="section-title">📝 {{ t('business_info_about') }}</div>
+          <div class="section-title">{{ t('business_info_about') }}</div>
           
           <div class="form-group">
             <label>{{ t('business_name_label') }} *</label>
