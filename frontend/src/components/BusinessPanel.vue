@@ -1062,13 +1062,13 @@ export default {
 }
 
 .step.active .step-num {
-  background: #ff6b00;
-  color: #fff;
+  background: #fff;
+  color: #000;
 }
 
 .step.completed .step-num {
-  background: #22c55e;
-  color: #fff;
+  background: #fff;
+  color: #000;
 }
 
 .step-label {
