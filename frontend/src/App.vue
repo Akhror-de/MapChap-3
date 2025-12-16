@@ -605,17 +605,18 @@ body {
   padding: 8px 14px;
   background: rgba(17, 17, 17, 0.95);
   backdrop-filter: blur(20px);
-  border: 1px solid var(--border-color);
+  border: 1px solid #333333;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
-  color: var(--text-secondary);
+  color: #888888 !important;
   font-size: 13px;
   font-weight: 500;
   outline: none;
   -webkit-appearance: none;
   appearance: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .category-chip:hover {
