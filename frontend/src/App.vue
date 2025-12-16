@@ -613,6 +613,9 @@ body {
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .category-chip:hover {
