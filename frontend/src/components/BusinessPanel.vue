@@ -887,7 +887,8 @@ export default {
       categories, amenitiesList, currentStep, getINNPlaceholder,
       closePanel, handleBack, initAuth, validateINN, verifyByINN, verifyManually, 
       submitOffer, editOffer, cancelEdit, handleToggleOfferStatus, handleDeleteOffer, 
-      getStatusText, toggleAmenity, getAmenityName, t 
+      getStatusText, toggleAmenity, getAmenityName, t,
+      showDeleteModal, offerToDelete, confirmDeleteOffer, executeDeleteOffer, cancelDelete
     }
   }
 }
