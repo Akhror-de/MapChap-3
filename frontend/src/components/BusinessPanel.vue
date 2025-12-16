@@ -1338,8 +1338,7 @@ export default {
   padding: 16px;
   text-align: center;
 }
-.metric-card.orange { border-color: rgba(255, 107, 0, 0.3); }
-.metric-icon { font-size: 20px; }
+.metric-icon { color: #888; display: flex; justify-content: center; }
 .metric-value { font-size: 24px; font-weight: 700; color: #fff; margin: 4px 0; }
 .metric-label { font-size: 12px; color: #666; }
 
