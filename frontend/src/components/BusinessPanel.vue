@@ -1166,8 +1166,8 @@ export default {
 }
 
 .category-btn:hover { background: #1a1a1a; }
-.category-btn.active { background: #ff6b00; border-color: #ff6b00; }
-.category-btn.active .cat-name { color: #fff; }
+.category-btn.active { background: #fff; border-color: #fff; }
+.category-btn.active .cat-name { color: #000; }
 .cat-icon { font-size: 20px; }
 .cat-name { font-size: 10px; color: #888; text-align: center; }
 
