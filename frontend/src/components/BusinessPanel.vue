@@ -1167,7 +1167,7 @@ export default {
 }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
   outline: none;
-  border-color: #ff6b00;
+  border-color: #fff;
 }
 .form-group textarea { resize: vertical; min-height: 80px; }
 .field-error { display: block; margin-top: 4px; color: #ff4444; font-size: 12px; }
