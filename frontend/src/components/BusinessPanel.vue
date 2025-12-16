@@ -1089,7 +1089,7 @@ export default {
 }
 
 .step-line.active {
-  background: #ff6b00;
+  background: #fff;
 }
 
 /* Success banner */
