@@ -1364,13 +1364,83 @@ export default {
 .section-title { font-size: 16px; font-weight: 600; color: #fff; margin: 0 0 8px; }
 .section-description { font-size: 13px; color: #666; margin: 0 0 16px; }
 
-/* Buttons */
-.btn-danger { 
-  background: linear-gradient(135deg, #ff4444 0%, #cc3333 100%) !important; 
-  color: #fff !important; 
+/* Buttons - Vercel style */
+.btn {
+  padding: 10px 16px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #0a0a0a;
+  color: #888;
 }
-.btn-orange {
-  background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%) !important;
-  color: #fff !important;
+
+.btn:hover {
+  background: #111;
+  border-color: #444;
+  color: #fff;
+}
+
+.btn-primary {
+  background: #fff;
+  border-color: #fff;
+  color: #000;
+}
+
+.btn-primary:hover {
+  background: #e0e0e0;
+  border-color: #e0e0e0;
+}
+
+.btn-secondary {
+  background: transparent;
+  border-color: #333;
+  color: #888;
+}
+
+.btn-secondary:hover {
+  background: #111;
+  border-color: #444;
+  color: #fff;
+}
+
+.btn-danger { 
+  background: transparent;
+  border-color: #ee5050;
+  color: #ee5050;
+}
+
+.btn-danger:hover {
+  background: rgba(238, 80, 80, 0.1);
+}
+
+.btn-pause {
+  background: transparent;
+  border-color: #f5a623;
+  color: #f5a623;
+}
+
+.btn-pause:hover {
+  background: rgba(245, 166, 35, 0.1);
+}
+
+.btn-small {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
