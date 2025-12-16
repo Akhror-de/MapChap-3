@@ -281,6 +281,9 @@ export const translations = {
     business_offer_published: 'Объявление опубликовано!',
     business_status_changed: 'Статус изменен',
     business_offer_deleted: 'Объявление удалено',
+    business_confirm_delete: 'Удалить объявление?',
+    business_delete_hint: 'Это действие нельзя отменить',
+    delete: 'Удалить',
     business_account_activated: 'Бизнес-аккаунт активирован!',
     
     // Amenities
