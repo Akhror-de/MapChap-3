@@ -1193,7 +1193,7 @@ export default {
 }
 
 .amenity-btn:hover { background: #1a1a1a; color: #fff; }
-.amenity-btn.active { background: #ff6b00; border-color: #ff6b00; color: #fff; }
+.amenity-btn.active { background: #fff; border-color: #fff; color: #000; }
 
 /* Social buttons */
 .social-btns { display: flex; gap: 8px; }
