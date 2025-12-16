@@ -1,5 +1,29 @@
 <template>
-  <div class="side-panel">
+  <div class="side-panel vercel-panel">
+    <!-- Модальное окно удаления -->
+    <Teleport to="body">
+      <transition name="modal">
+        <div v-if="showDeleteModal" class="delete-modal-overlay" @click="cancelDelete">
+          <div class="delete-modal" @click.stop>
+            <div class="modal-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+            </div>
+            <h3>{{ t('business_confirm_delete') }}</h3>
+            <p>{{ offerToDelete?.title }}</p>
+            <p class="modal-hint">{{ t('business_delete_hint') }}</p>
+            <div class="modal-actions">
+              <button class="btn btn-secondary" @click="cancelDelete">{{ t('cancel') }}</button>
+              <button class="btn btn-danger" @click="executeDeleteOffer">{{ t('delete') }}</button>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
+
     <div class="panel-header">
       <div class="header-content">
         <button class="back-button" @click="handleBack">
