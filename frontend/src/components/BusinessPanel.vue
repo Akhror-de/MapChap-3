@@ -200,12 +200,12 @@
                 class="social-btn"
                 :class="{ active: manualForm.social_type === 'telegram' }"
                 @click="manualForm.social_type = 'telegram'"
-              >💬 TG</button>
+              >TG</button>
               <button 
                 class="social-btn"
                 :class="{ active: manualForm.social_type === 'instagram' }"
                 @click="manualForm.social_type = 'instagram'"
-              >📷 IG</button>
+              >IG</button>
             </div>
           </div>
 
