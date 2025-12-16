@@ -1124,13 +1124,13 @@ export default {
 .hero-card {
   text-align: center;
   padding: 32px 20px;
-  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  background: #fff;
   border-radius: 20px;
   margin-bottom: 20px;
 }
-.hero-icon { font-size: 48px; margin-bottom: 12px; }
-.hero-card h3 { margin: 0 0 8px; font-size: 22px; color: #fff; }
-.hero-card p { margin: 0; opacity: 0.9; color: #fff; }
+.hero-icon { margin-bottom: 12px; color: #000; }
+.hero-card h3 { margin: 0 0 8px; font-size: 22px; color: #000; }
+.hero-card p { margin: 0; opacity: 0.7; color: #000; }
 
 /* Tabs */
 .verification-tabs, .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
