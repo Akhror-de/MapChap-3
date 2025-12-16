@@ -248,3 +248,33 @@ input::placeholder, textarea::placeholder {
 .text-muted { color: var(--mc-text-secondary); }
 .bg-orange-glow { background: var(--mc-orange-glow); }
 .bg-gold-glow { background: var(--mc-gold-glow); }
+
+/* Reset button styles */
+button {
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none !important;
+}
+
+button:focus {
+  outline: none !important;
+}
+
+/* Category chip overrides */
+.category-chip {
+  color: #888888 !important;
+  background: rgba(17, 17, 17, 0.95) !important;
+  border: 1px solid #333333 !important;
+}
+
+.category-chip:hover {
+  color: #ffffff !important;
+  background: #1a1a1a !important;
+}
+
+.category-chip.active {
+  color: #000000 !important;
+  background: #ffffff !important;
+  border-color: #ffffff !important;
+}
