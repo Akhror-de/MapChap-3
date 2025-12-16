@@ -1223,17 +1223,17 @@ export default {
 }
 
 .country-btn.active { 
-  background: #ff6b00; 
-  border-color: #ff6b00; 
-  color: #fff; 
+  background: #fff; 
+  border-color: #fff; 
+  color: #000; 
 }
 
 /* CIS hint */
 .cis-hint {
   margin-top: 16px;
   padding: 12px;
-  background: rgba(255, 107, 0, 0.1);
-  border: 1px solid rgba(255, 107, 0, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #333;
   border-radius: 10px;
 }
 
@@ -1245,7 +1245,7 @@ export default {
 }
 
 .cis-hint strong {
-  color: #ff6b00;
+  color: #fff;
 }
 .social-btn {
   flex: 1;
@@ -1258,7 +1258,7 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
 }
-.social-btn.active { background: #ff6b00; border-color: #ff6b00; color: #fff; }
+.social-btn.active { background: #fff; border-color: #fff; color: #000; }
 
 /* Result card */
 .result-card {
