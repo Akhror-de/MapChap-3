@@ -919,6 +919,85 @@ export default {
 </script>
 
 <style scoped>
+/* Vercel style panel */
+.vercel-panel {
+  background: #000;
+  border-left: 1px solid #222;
+}
+
+/* Delete Modal */
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.delete-modal {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+}
+
+.modal-icon {
+  color: #ee5050;
+  margin-bottom: 16px;
+}
+
+.delete-modal h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #fff;
+}
+
+.delete-modal p {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: #888;
+}
+
+.modal-hint {
+  font-size: 12px !important;
+  color: #555 !important;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-actions .btn {
+  flex: 1;
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.2s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .delete-modal,
+.modal-leave-to .delete-modal {
+  transform: scale(0.95);
+}
+
 .verification-section, .create-offer-section { padding: 0; }
 
 /* Steps indicator */
