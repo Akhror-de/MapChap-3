@@ -118,17 +118,17 @@
                 class="country-btn"
                 :class="{ active: innForm.country === 'RU' }"
                 @click="innForm.country = 'RU'"
-              >🇷🇺 {{ t('business_country_russia') }}</button>
+              >RU · {{ t('business_country_russia') }}</button>
               <button 
                 class="country-btn"
                 :class="{ active: innForm.country === 'KZ' }"
                 @click="innForm.country = 'KZ'"
-              >🇰🇿 {{ t('business_country_kazakhstan') }}</button>
+              >KZ · {{ t('business_country_kazakhstan') }}</button>
               <button 
                 class="country-btn"
                 :class="{ active: innForm.country === 'BY' }"
                 @click="innForm.country = 'BY'"
-              >🇧🇾 {{ t('business_country_belarus') }}</button>
+              >BY · {{ t('business_country_belarus') }}</button>
             </div>
           </div>
 
