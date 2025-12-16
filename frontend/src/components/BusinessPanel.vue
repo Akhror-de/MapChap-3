@@ -1319,15 +1319,15 @@ export default {
 
 /* Welcome card */
 .welcome-card {
-  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  background: #fff;
   padding: 24px;
   border-radius: 16px;
   margin-bottom: 16px;
-  color: #fff;
+  color: #000;
 }
-.verified-badge { display: inline-block; padding: 4px 10px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 12px; margin-bottom: 8px; }
-.welcome-card h3 { margin: 0; font-size: 18px; }
-.welcome-card p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+.verified-badge { display: inline-block; padding: 4px 10px; background: rgba(0,0,0,0.1); border-radius: 20px; font-size: 12px; margin-bottom: 8px; color: #000; }
+.welcome-card h3 { margin: 0; font-size: 18px; color: #000; }
+.welcome-card p { margin: 4px 0 0; font-size: 13px; opacity: 0.7; color: #000; }
 
 /* Metrics */
 .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
