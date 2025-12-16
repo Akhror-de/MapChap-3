@@ -622,9 +622,9 @@ body {
 }
 
 .category-chip.active {
-  background: var(--text-primary);
-  border-color: var(--text-primary);
-  color: var(--bg-primary);
+  background: var(--text-primary) !important;
+  border-color: var(--text-primary) !important;
+  color: var(--bg-primary) !important;
 }
 
 .chip-text {
