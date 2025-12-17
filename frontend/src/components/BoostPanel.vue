@@ -861,7 +861,7 @@ export default {
 .payment-note {
   margin-top: 12px;
   padding: 10px;
-  background: rgba(255, 107, 0, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
 }
 
@@ -870,6 +870,39 @@ export default {
   font-size: 11px;
   color: #888;
   text-align: center;
+}
+
+/* Stars info block */
+.stars-info {
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.stars-info h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #fff;
+}
+
+.stars-info p {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #888;
+}
+
+.stars-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stars-info li {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
 }
 
 .btn {
@@ -883,8 +916,12 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
-  color: #fff;
+  background: #fff;
+  color: #000;
+}
+
+.btn-primary:hover {
+  background: #e0e0e0;
 }
 
 .btn-primary:disabled {
