@@ -704,11 +704,21 @@ class PaymentDetails(BaseModel):
     holder_name: str
     business_id: Optional[str] = None  # ИНН/СТИР
 
-# Boost plans configuration
+# Boost plans configuration with Telegram Stars pricing
+# 1 Star ≈ $0.02 USD
 BOOST_PLANS = {
-    "1day": {"days": 1, "name": "1 День", "price": None, "currency": "UZS"},
-    "5days": {"days": 5, "name": "5 Дней", "price": None, "currency": "UZS"},
-    "7days": {"days": 7, "name": "7 Дней", "price": None, "currency": "UZS"}
+    "1day": {"days": 1, "name": "1 День", "price": 50, "currency": "XTR", "description": "Буст на 1 день + Push-уведомления"},
+    "5days": {"days": 5, "name": "5 Дней", "price": 200, "currency": "XTR", "description": "Буст на 5 дней + Push + Популярное"},
+    "7days": {"days": 7, "name": "7 Дней", "price": 300, "currency": "XTR", "description": "Буст на 7 дней + Push + VIP статус"}
+}
+
+# Provider tokens for different countries (Telegram Payments)
+# XTR = Telegram Stars (универсальный)
+PAYMENT_PROVIDER_TOKENS = {
+    "stars": "",  # Telegram Stars не требует токена
+    "ru": os.environ.get("PAYMENT_PROVIDER_TOKEN_RU", ""),  # ЮKassa
+    "uz": os.environ.get("PAYMENT_PROVIDER_TOKEN_UZ", ""),  # Payme/Click
+    "kz": os.environ.get("PAYMENT_PROVIDER_TOKEN_KZ", ""),  # Kaspi
 }
 
 @app.get("/api/boosts/plans")
