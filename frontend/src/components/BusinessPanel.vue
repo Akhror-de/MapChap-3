@@ -732,7 +732,7 @@ export default {
           // Пытаемся синхронизировать с сервером (не критично если не получится)
           await authStore.fetchUser()
           
-          showNotification('✅ Верификация пройдена!', 'success')
+          showNotification('Верификация пройдена!', 'success')
           
           // Переходим к созданию объявления
           setTimeout(() => {
