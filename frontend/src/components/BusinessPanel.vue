@@ -745,7 +745,7 @@ export default {
         }
       } catch (e) {
         innVerificationResult.value = { success: false, error: e.message || 'Ошибка проверки ИНН' }
-        showNotification('❌ ' + (e.message || 'Ошибка проверки'), 'error')
+        showNotification(e.message || 'Ошибка проверки', 'error')
       } finally { 
         isVerifying.value = false 
       }
