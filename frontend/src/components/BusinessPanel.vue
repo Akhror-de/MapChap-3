@@ -834,7 +834,7 @@ export default {
           showNotification('Объявление обновлено', 'success')
         } else {
           await businessStore.createOffer(data)
-          showNotification('🎉 Объявление опубликовано!', 'success')
+          showNotification('Объявление опубликовано!', 'success')
         }
         
         resetForm()
