@@ -292,9 +292,8 @@ export default {
 
     watch(filteredOffers, () => updateMarkers(), { deep: true })
 
-    watch(userLocation, (newLocation) => {
-      if (newLocation) setUserMarker(newLocation)
-    })
+    // Убрали автоматическое центрирование при обновлении локации
+    // Центрирование только по кнопке через setUserMarker
 
     onMounted(() => {
       const apiKey = import.meta.env.VITE_YANDEX_MAPS_API_KEY || '07b74146-5f5a-46bf-a2b1-cf6d052a41bb'
