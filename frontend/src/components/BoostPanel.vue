@@ -170,18 +170,20 @@ export default {
     const uiStore = useUIStore()
     const authStore = useAuthStore()
     
-    // Тарифные планы (цены будут добавлены позже)
+    // Тарифные планы с Telegram Stars
     const boostPlans = ref([
-      { id: 'boost_1day', days: 1, icon: '⚡', price: null, currency: 'UZS', popular: false, best: false },
-      { id: 'boost_5days', days: 5, icon: '🔥', price: null, currency: 'UZS', popular: true, best: false },
-      { id: 'boost_7days', days: 7, icon: '👑', price: null, currency: 'UZS', popular: false, best: true }
+      { id: '1day', days: 1, icon: '•', price: 50, currency: 'XTR', popular: false, best: false },
+      { id: '5days', days: 5, icon: '•', price: 200, currency: 'XTR', popular: true, best: false },
+      { id: '7days', days: 7, icon: '•', price: 300, currency: 'XTR', popular: false, best: true }
     ])
     
     // Активные бусты пользователя
     const activeBoosts = ref([])
     const isSendingNotif = ref(false)
     const isSaving = ref(false)
+    const isPurchasing = ref(false)
     const accountType = ref('business')
+    const selectedOfferId = ref(null)
     
     // Детали оплаты
     const paymentDetails = reactive({
@@ -196,14 +198,81 @@ export default {
              paymentDetails.bank.length >= 3 && 
              paymentDetails.holder.length >= 3
     })
+
+    // Получаем Telegram WebApp
+    const getTelegramWebApp = () => {
+      return window.Telegram?.WebApp
+    }
     
-    const selectPlan = (plan) => {
+    const selectPlan = async (plan) => {
       if (!plan.price) {
         uiStore.showNotification(t('boost_price_coming'), 'info')
         return
       }
-      // Логика покупки буста
-      console.log('Selected plan:', plan)
+      
+      if (!authStore.user?.telegram_id) {
+        uiStore.showNotification('Необходима авторизация', 'error')
+        return
+      }
+
+      // Проверяем есть ли объявления у пользователя
+      if (!selectedOfferId.value) {
+        uiStore.showNotification('Сначала выберите объявление для буста', 'info')
+        return
+      }
+
+      isPurchasing.value = true
+      
+      try {
+        // Создаём invoice на сервере
+        const result = await apiService.createInvoice(
+          authStore.user.telegram_id,
+          plan.id,
+          selectedOfferId.value
+        )
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Ошибка создания счёта')
+        }
+
+        const tg = getTelegramWebApp()
+        
+        if (tg && result.invoice.invoice_link) {
+          // Открываем Telegram Payment
+          tg.openInvoice(result.invoice.invoice_link, async (status) => {
+            if (status === 'paid') {
+              // Подтверждаем платёж на сервере
+              try {
+                await apiService.confirmPayment({
+                  telegram_payment_charge_id: 'tg_' + Date.now(),
+                  provider_payment_charge_id: 'stars_' + Date.now(),
+                  boost_type: plan.id,
+                  offer_id: selectedOfferId.value,
+                  telegram_id: authStore.user.telegram_id,
+                  total_amount: plan.price,
+                  currency: plan.currency
+                })
+                
+                uiStore.showNotification('Буст успешно активирован!', 'success')
+                loadActiveBoosts()
+              } catch (e) {
+                uiStore.showNotification('Ошибка активации буста', 'error')
+              }
+            } else if (status === 'cancelled') {
+              uiStore.showNotification('Оплата отменена', 'info')
+            } else if (status === 'failed') {
+              uiStore.showNotification('Ошибка оплаты', 'error')
+            }
+          })
+        } else {
+          // Fallback без Telegram WebApp (для тестирования)
+          uiStore.showNotification(`Telegram Stars: ${plan.price} XTR за ${plan.days} дней`, 'info')
+        }
+      } catch (error) {
+        uiStore.showNotification(error.message || 'Ошибка', 'error')
+      } finally {
+        isPurchasing.value = false
+      }
     }
     
     const sendNotification = async (boost) => {
