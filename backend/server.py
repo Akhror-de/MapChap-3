@@ -41,6 +41,8 @@ async def init_db():
     await db.boosts.create_index("user_id")
     await db.boosts.create_index("offer_id")
     await db.boosts.create_index("expires_at")
+    await db.payments.create_index("telegram_id")
+    await db.payments.create_index("status")
     print("✅ MongoDB connected")
 
 async def close_db():
