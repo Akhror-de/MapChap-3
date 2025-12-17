@@ -425,10 +425,36 @@ async def get_offer(offer_id: str):
     return offer
 
 async def geocode_address(address: str) -> tuple:
-    """Геокодирование адреса через Yandex Geocoder API"""
+    """Геокодирование адреса через Nominatim (OpenStreetMap)"""
     if not address:
         return None, None
     
+    try:
+        async with httpx.AsyncClient() as client:
+            # Используем Nominatim (бесплатный)
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={
+                    "q": address,
+                    "format": "json",
+                    "limit": 1
+                },
+                headers={
+                    "User-Agent": "MapChap/1.0"
+                },
+                timeout=10
+            )
+            data = response.json()
+            
+            if data and len(data) > 0:
+                lat = float(data[0]["lat"])
+                lng = float(data[0]["lon"])
+                print(f"Geocoded '{address}' -> [{lat}, {lng}]")
+                return lat, lng
+    except Exception as e:
+        print(f"Nominatim geocoding error: {e}")
+    
+    # Fallback: пробуем Yandex Geocoder
     try:
         api_key = YANDEX_MAPS_API_KEY or "07b74146-5f5a-46bf-a2b1-cf6d052a41bb"
         async with httpx.AsyncClient() as client:
@@ -444,15 +470,15 @@ async def geocode_address(address: str) -> tuple:
             )
             data = response.json()
             
-            # Извлекаем координаты из ответа
             feature = data.get("response", {}).get("GeoObjectCollection", {}).get("featureMember", [])
             if feature:
                 pos = feature[0].get("GeoObject", {}).get("Point", {}).get("pos", "")
                 if pos:
                     lng, lat = map(float, pos.split())
+                    print(f"Yandex geocoded '{address}' -> [{lat}, {lng}]")
                     return lat, lng
     except Exception as e:
-        print(f"Geocoding error: {e}")
+        print(f"Yandex geocoding error: {e}")
     
     return None, None
 
