@@ -278,6 +278,7 @@ export default {
       hasLocation,
       selectedOffer,
       isBottomSheetOpen,
+      yandexMapRef,
       openPanel,
       closePanel,
       selectCategory,
