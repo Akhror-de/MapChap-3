@@ -367,9 +367,9 @@ export default {
         const result = await apiService.getBoostPlans()
         if (result.plans) {
           boostPlans.value = result.plans.map(plan => ({
-            id: `boost_${plan.days}days`,
+            id: plan.id,
             days: plan.days,
-            icon: plan.days === 1 ? '⚡' : plan.days === 5 ? '🔥' : '👑',
+            icon: '•',
             price: plan.price,
             currency: plan.currency,
             popular: plan.popular,
@@ -378,11 +378,26 @@ export default {
         }
       } catch {}
     }
+
+    // Загружаем объявления пользователя для выбора
+    const userOffers = ref([])
+    const loadUserOffers = async () => {
+      if (!authStore.user?.telegram_id) return
+      try {
+        const result = await apiService.getUserOffers(authStore.user.telegram_id)
+        userOffers.value = result.offers || []
+        // Автоматически выбираем первое объявление
+        if (userOffers.value.length > 0 && !selectedOfferId.value) {
+          selectedOfferId.value = userOffers.value[0].id
+        }
+      } catch {}
+    }
     
     onMounted(() => {
       loadPaymentDetails()
       loadActiveBoosts()
       loadBoostPlans()
+      loadUserOffers()
     })
     
     return {
@@ -393,7 +408,10 @@ export default {
       canSavePayment,
       isSendingNotif,
       isSaving,
+      isPurchasing,
       accountType,
+      userOffers,
+      selectedOfferId,
       selectPlan,
       sendNotification,
       savePaymentDetails,
