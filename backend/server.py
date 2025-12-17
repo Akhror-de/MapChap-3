@@ -424,6 +424,38 @@ async def get_offer(offer_id: str):
     offer["_id"] = str(offer["_id"])
     return offer
 
+async def geocode_address(address: str) -> tuple:
+    """Геокодирование адреса через Yandex Geocoder API"""
+    if not address:
+        return None, None
+    
+    try:
+        api_key = YANDEX_MAPS_API_KEY or "07b74146-5f5a-46bf-a2b1-cf6d052a41bb"
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://geocode-maps.yandex.ru/1.x/",
+                params={
+                    "apikey": api_key,
+                    "geocode": address,
+                    "format": "json",
+                    "results": 1
+                },
+                timeout=10
+            )
+            data = response.json()
+            
+            # Извлекаем координаты из ответа
+            feature = data.get("response", {}).get("GeoObjectCollection", {}).get("featureMember", [])
+            if feature:
+                pos = feature[0].get("GeoObject", {}).get("Point", {}).get("pos", "")
+                if pos:
+                    lng, lat = map(float, pos.split())
+                    return lat, lng
+    except Exception as e:
+        print(f"Geocoding error: {e}")
+    
+    return None, None
+
 @app.post("/api/offers")
 async def create_offer(telegram_id: int = Query(...), offer: OfferCreate = Body(...)):
     user = await db.users.find_one({"telegram_id": telegram_id})
@@ -433,13 +465,23 @@ async def create_offer(telegram_id: int = Query(...), offer: OfferCreate = Body(
     if user.get("role") != "business_owner":
         raise HTTPException(status_code=403, detail="Only business owners can create offers")
     
+    # Геокодируем адрес если координаты не заданы или дефолтные
+    lat, lng = offer.coordinates[0], offer.coordinates[1]
+    
+    # Если координаты дефолтные (Москва), пробуем геокодировать адрес
+    if (abs(lat - 55.751244) < 0.001 and abs(lng - 37.618423) < 0.001) or (lat == 0 and lng == 0):
+        geo_lat, geo_lng = await geocode_address(offer.address)
+        if geo_lat and geo_lng:
+            lat, lng = geo_lat, geo_lng
+            print(f"Geocoded '{offer.address}' to [{lat}, {lng}]")
+    
     offer_doc = {
         "id": str(uuid.uuid4()),
         "user_id": telegram_id,
         **offer.dict(),
         "coordinates": {
             "type": "Point",
-            "coordinates": [offer.coordinates[1], offer.coordinates[0]]  # MongoDB expects [lng, lat]
+            "coordinates": [lng, lat]  # MongoDB expects [lng, lat]
         },
         "status": "active",
         "views": 0,
