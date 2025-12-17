@@ -332,8 +332,8 @@ export default {
     }
 
     const getArticleTypeIcon = (type) => {
-      const icons = { developer: '👨‍💻', business: '💼', user: '👤' }
-      return icons[type] || '📝'
+      const icons = { developer: 'D', business: 'B', user: 'U' }
+      return icons[type] || 'A'
     }
 
     const getArticleTypeName = (type) => {
