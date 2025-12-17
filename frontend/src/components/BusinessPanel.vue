@@ -756,15 +756,28 @@ export default {
       isVerifying.value = true
       
       try {
-        await apiService.verifyManually(authStore.user.telegram_id, manualForm)
-        await authStore.fetchUser()
-        showNotification('✅ Бизнес-аккаунт активирован!', 'success')
+        const result = await apiService.verifyManually(authStore.user.telegram_id, manualForm)
         
-        setTimeout(() => {
-          currentStep.value = 'create-offer'
-        }, 1500)
+        if (result.success) {
+          // Обновляем данные пользователя локально
+          await authStore.registerAsBusiness({
+            companyName: manualForm.company_name,
+            inn: null,
+            verificationType: 'manual'
+          })
+          
+          // Пытаемся синхронизировать с сервером
+          await authStore.fetchUser()
+          
+          showNotification('Бизнес-аккаунт активирован!', 'success')
+          
+          // Переходим к созданию объявления
+          setTimeout(() => {
+            currentStep.value = 'create-offer'
+          }, 1500)
+        }
       } catch (e) { 
-        showNotification('❌ ' + (e.message || 'Ошибка'), 'error') 
+        showNotification(e.message || 'Ошибка', 'error') 
       } finally { 
         isVerifying.value = false 
       }
