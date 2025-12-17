@@ -289,6 +289,16 @@ export default {
       map.setCenter([lat, lng], 15, { duration: 400 })
     }
 
+    // Центрирование на текущей позиции пользователя (для внешней кнопки)
+    const centerOnUser = () => {
+      const location = userLocation.value
+      if (location && map) {
+        const lat = location.latitude || location[0]
+        const lng = location.longitude || location[1]
+        map.setCenter([lat, lng], 15, { duration: 400 })
+      }
+    }
+
     watch(filteredOffers, () => updateMarkers(), { deep: true })
 
     // Убрали автоматическое центрирование при обновлении локации
