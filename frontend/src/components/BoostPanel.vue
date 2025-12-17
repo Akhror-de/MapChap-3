@@ -613,8 +613,8 @@ export default {
 }
 
 .boost-card.best {
-  border-color: #ffd700;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a1a 100%);
+  border-color: #fff;
+  background: #1a1a1a;
 }
 
 .card-badge {
@@ -622,15 +622,15 @@ export default {
   top: -8px;
   right: 10px;
   padding: 2px 8px;
-  background: #ff6b00;
+  background: #fff;
   border-radius: 10px;
   font-size: 9px;
   font-weight: 600;
-  color: #fff;
+  color: #000;
 }
 
 .card-badge.best {
-  background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%);
+  background: #fff;
   color: #000;
 }
 
