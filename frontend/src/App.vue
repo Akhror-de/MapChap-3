@@ -231,6 +231,8 @@ export default {
       }
     }
 
+    const yandexMapRef = ref(null)
+
     const getUserLocation = async () => {
       if (isLocating.value) return
       
@@ -239,6 +241,12 @@ export default {
         const location = await getCurrentLocation()
         setUserLocation(location)
         hasLocation.value = true
+        
+        // Центрируем карту на позиции пользователя
+        if (yandexMapRef.value?.centerOnUser) {
+          yandexMapRef.value.centerOnUser()
+        }
+        
         showNotification('Местоположение получено', 'success')
       } catch (error) {
         hasLocation.value = false
