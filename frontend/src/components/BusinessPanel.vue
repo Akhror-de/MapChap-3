@@ -566,6 +566,7 @@
 import { useUIStore } from '../stores/uiStore'
 import { useAuthStore } from '../stores/authStore'
 import { useBusinessStore } from '../stores/businessStore'
+import { useOffersStore } from '../stores/offersStore'
 import { apiService } from '../services/api'
 import { storeToRefs } from 'pinia'
 import { ref, computed, reactive, onMounted, watch } from 'vue'
