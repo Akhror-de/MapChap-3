@@ -88,20 +88,26 @@
       <div class="active-list">
         <div v-for="boost in activeBoosts" :key="boost.id" class="active-card">
           <div class="active-info">
-            <span class="active-icon">🚀</span>
+            <span class="active-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </span>
             <div>
               <strong>{{ boost.days }} {{ t('days') }}</strong>
               <p>{{ t('boost_expires') }}: {{ formatDate(boost.expires_at) }}</p>
             </div>
           </div>
           <div class="active-stats">
-            <span>📤 {{ boost.notifications_sent || 0 }}</span>
+            <span>{{ boost.notifications_sent || 0 }} отпр.</span>
             <button 
               class="send-notif-btn" 
               @click="sendNotification(boost)"
               :disabled="isSendingNotif"
             >
-              📢
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+              </svg>
             </button>
           </div>
         </div>
@@ -109,7 +115,9 @@
     </div>
     
     <div v-else class="no-boosts">
-      <span>💤</span>
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
+      </svg>
       <p>{{ t('boost_no_active') }}</p>
     </div>
 
