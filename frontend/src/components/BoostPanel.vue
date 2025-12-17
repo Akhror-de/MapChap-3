@@ -639,16 +639,17 @@ export default {
   margin-bottom: 12px;
 }
 
-.card-icon {
+.card-days {
   font-size: 28px;
+  font-weight: 700;
+  color: #fff;
   display: block;
-  margin-bottom: 4px;
 }
 
 .card-header h4 {
   margin: 0;
-  font-size: 16px;
-  color: #fff;
+  font-size: 12px;
+  color: #888;
 }
 
 .card-price {
@@ -657,9 +658,15 @@ export default {
 }
 
 .price {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
-  color: #ff6b00;
+  color: #fff;
+}
+
+.currency {
+  font-size: 12px;
+  color: #888;
+  display: block;
 }
 
 .price-coming {
