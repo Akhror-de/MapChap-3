@@ -207,6 +207,29 @@ class ApiService {
     })
   }
 
+  // ============ TELEGRAM PAYMENTS ============
+  async createInvoice(telegramId, boostType, offerId) {
+    return this.request('/api/payments/create-invoice', {
+      method: 'POST',
+      body: {
+        telegram_id: telegramId,
+        boost_type: boostType,
+        offer_id: offerId
+      }
+    })
+  }
+
+  async confirmPayment(paymentData) {
+    return this.request('/api/payments/confirm', {
+      method: 'POST',
+      body: paymentData
+    })
+  }
+
+  async getPaymentHistory(telegramId) {
+    return this.request(`/api/payments/history/${telegramId}`)
+  }
+
   // ============ PAYMENT DETAILS ============
   async getPaymentDetails(telegramId) {
     return this.request(`/api/users/${telegramId}/payment-details`)
