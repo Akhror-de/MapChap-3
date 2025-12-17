@@ -322,7 +322,7 @@ export default {
       if (map) map.destroy()
     })
 
-    return { mapContainer, isTracking, zoomIn, zoomOut }
+    return { mapContainer, isTracking, zoomIn, zoomOut, centerOnUser }
   }
 }
 </script>
