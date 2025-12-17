@@ -841,6 +841,9 @@ export default {
           showNotification('Объявление опубликовано!', 'success')
         }
         
+        // Обновляем глобальный список офферов для карты
+        await offersStore.fetchOffers()
+        
         resetForm()
         currentStep.value = 'dashboard'
         activeTab.value = 'offers'
