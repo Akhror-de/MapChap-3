@@ -59,24 +59,25 @@
         <div v-if="plan.best" class="card-badge best">{{ t('boost_best') }}</div>
         
         <div class="card-header">
-          <span class="card-icon">{{ plan.icon }}</span>
-          <h4>{{ plan.days }} {{ plan.days === 1 ? t('day') : t('days') }}</h4>
+          <span class="card-days">{{ plan.days }}</span>
+          <h4>{{ plan.days === 1 ? t('day') : t('days') }}</h4>
         </div>
         
         <div class="card-price">
-          <span v-if="plan.price" class="price">{{ plan.price }} {{ plan.currency }}</span>
+          <span v-if="plan.price" class="price">{{ plan.price }}</span>
+          <span v-if="plan.price" class="currency">Stars</span>
           <span v-else class="price-coming">{{ t('boost_price_coming') }}</span>
         </div>
         
         <ul class="card-features">
-          <li>✅ Push {{ t('profile_notifications') }}</li>
-          <li>✅ {{ t('business_analytics') }}</li>
-          <li v-if="plan.days >= 5">✅ {{ t('boost_popular') }} 🔥</li>
-          <li v-if="plan.days >= 7">✅ VIP 👑</li>
+          <li>+ Push-уведомления</li>
+          <li>+ Аналитика</li>
+          <li v-if="plan.days >= 5">+ Популярное</li>
+          <li v-if="plan.days >= 7">+ VIP статус</li>
         </ul>
         
-        <button class="btn btn-primary btn-block" :disabled="!plan.price">
-          {{ t('boost_buy') }}
+        <button class="btn btn-primary btn-block" :disabled="!plan.price || isPurchasing || !selectedOfferId">
+          {{ isPurchasing ? '...' : t('boost_buy') }}
         </button>
       </div>
     </div>
