@@ -643,7 +643,7 @@ button.category-chip.active {
 /* FAB кнопка локации */
 .location-fab {
   position: fixed;
-  bottom: 24px;
+  bottom: 180px;
   right: 16px;
   width: 48px;
   height: 48px;
