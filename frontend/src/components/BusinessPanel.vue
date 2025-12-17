@@ -243,7 +243,7 @@
       </div>
 
       <!-- Шаг 2: После верификации - создание первого объявления -->
-      <div v-else-if="authStore.isBusinessOwner && currentStep === 'create-offer'" class="create-offer-section">
+      <div v-else-if="currentStep === 'create-offer'" class="create-offer-section">
         <!-- Индикатор шагов -->
         <div class="steps-indicator">
           <div class="step completed">
