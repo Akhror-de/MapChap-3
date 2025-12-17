@@ -605,11 +605,11 @@ export default {
 }
 
 .boost-card:hover {
-  border-color: #ff6b00;
+  border-color: #fff;
 }
 
 .boost-card.popular {
-  border-color: #ff6b00;
+  border-color: #fff;
 }
 
 .boost-card.best {
