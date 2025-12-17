@@ -848,7 +848,7 @@ export default {
 
 .form-group input:focus {
   outline: none;
-  border-color: #ff6b00;
+  border-color: #fff;
 }
 
 .field-hint {
