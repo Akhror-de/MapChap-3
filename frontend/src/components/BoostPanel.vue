@@ -560,10 +560,18 @@ export default {
   text-align: center;
 }
 
-.step-icon {
-  font-size: 20px;
-  display: block;
-  margin-bottom: 4px;
+.step-num {
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 auto 4px;
 }
 
 .step strong {
