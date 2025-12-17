@@ -831,7 +831,7 @@ export default {
         
         if (editingOffer.value) {
           await businessStore.updateOffer(editingOffer.value.id, data)
-          showNotification('✅ Объявление обновлено', 'success')
+          showNotification('Объявление обновлено', 'success')
         } else {
           await businessStore.createOffer(data)
           showNotification('🎉 Объявление опубликовано!', 'success')
