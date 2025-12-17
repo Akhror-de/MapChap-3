@@ -480,13 +480,59 @@ export default {
 
 .boost-hero h3 {
   margin: 0 0 4px;
-  color: #fff;
+  color: #000;
   font-size: 20px;
 }
 
 .boost-hero p {
   margin: 0;
-  color: rgba(255,255,255,0.9);
+  color: rgba(0,0,0,0.7);
+  font-size: 13px;
+}
+
+/* Выбор объявления */
+.offer-selector {
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.offer-selector label {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.offer-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.offer-select:focus {
+  outline: none;
+  border-color: #fff;
+}
+
+.no-offers-hint {
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.no-offers-hint p {
+  margin: 0;
+  color: #666;
   font-size: 13px;
 }
 
