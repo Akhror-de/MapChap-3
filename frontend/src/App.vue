@@ -91,7 +91,7 @@
       <!-- Карта -->
       <main class="app-main">
         <div class="map-container">
-          <YandexMap @offer-click="handleOfferClick" />
+          <YandexMap ref="yandexMapRef" @offer-click="handleOfferClick" />
         </div>
         
         <!-- Bottom Sheet для объявлений -->
