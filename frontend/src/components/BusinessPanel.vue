@@ -841,7 +841,7 @@ export default {
         currentStep.value = 'dashboard'
         activeTab.value = 'offers'
       } catch (e) { 
-        showNotification('❌ ' + (e.message || 'Ошибка'), 'error') 
+        showNotification(e.message || 'Ошибка', 'error') 
       } finally {
         isSubmitting.value = false
       }
