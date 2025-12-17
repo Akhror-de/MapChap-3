@@ -361,7 +361,7 @@
       </div>
 
       <!-- Бизнес дашборд -->
-      <div v-else-if="authStore.isBusinessOwner && currentStep === 'dashboard'" class="business-content">
+      <div v-else-if="currentStep === 'dashboard'" class="business-content">
         <div class="tabs">
           <button class="tab-btn" :class="{ active: activeTab === 'overview' }" @click="activeTab = 'overview'">{{ t('business_overview') }}</button>
           <button class="tab-btn" :class="{ active: activeTab === 'offers' }" @click="activeTab = 'offers'">{{ t('business_my_offers') }}</button>
