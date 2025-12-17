@@ -247,7 +247,9 @@
         <!-- Индикатор шагов -->
         <div class="steps-indicator">
           <div class="step completed">
-            <span class="step-num">✓</span>
+            <span class="step-num">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
             <span class="step-label">{{ t('business_step1') }}</span>
           </div>
           <div class="step-line active"></div>
