@@ -578,6 +578,7 @@ export default {
     const uiStore = useUIStore()
     const authStore = useAuthStore()
     const businessStore = useBusinessStore()
+    const offersStore = useOffersStore()
     const { closePanel, showNotification } = uiStore
     const { getUserOffers } = storeToRefs(businessStore)
     const { t } = useLocale()
