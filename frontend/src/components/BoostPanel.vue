@@ -466,15 +466,16 @@ export default {
 .boost-hero {
   text-align: center;
   padding: 24px 16px;
-  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  background: #fff;
   border-radius: 16px;
   margin-bottom: 16px;
 }
 
 .boost-icon {
-  font-size: 40px;
-  display: block;
+  display: flex;
+  justify-content: center;
   margin-bottom: 8px;
+  color: #000;
 }
 
 .boost-hero h3 {
