@@ -508,7 +508,15 @@ async def update_offer(offer_id: str, telegram_id: int = Query(...), updates: Of
     update_data = {k: v for k, v in updates.dict().items() if v is not None}
     update_data["updated_at"] = datetime.utcnow()
     
-    if "coordinates" in update_data:
+    # Если обновляется адрес, геокодируем его
+    if "address" in update_data:
+        geo_lat, geo_lng = await geocode_address(update_data["address"])
+        if geo_lat and geo_lng:
+            update_data["coordinates"] = {
+                "type": "Point",
+                "coordinates": [geo_lng, geo_lat]
+            }
+    elif "coordinates" in update_data:
         coords = update_data["coordinates"]
         update_data["coordinates"] = {
             "type": "Point",
