@@ -121,9 +121,20 @@
       <p>{{ t('boost_no_active') }}</p>
     </div>
 
-    <!-- Настройка оплаты ИП -->
+    <!-- Информация о Telegram Stars -->
+    <div class="stars-info">
+      <h4>Оплата через Telegram Stars</h4>
+      <p>Telegram Stars — универсальная валюта в Telegram. 1 Star ≈ $0.02</p>
+      <ul>
+        <li>• Мгновенное зачисление</li>
+        <li>• Безопасная оплата через Telegram</li>
+        <li>• Работает во всех странах</li>
+      </ul>
+    </div>
+
+    <!-- Настройка оплаты ИП (для получения денег) -->
     <div class="payment-setup" v-if="showPaymentSetup">
-      <h4>💳 {{ t('boost_payment_setup') }}</h4>
+      <h4>{{ t('boost_payment_setup') }}</h4>
       <p class="setup-desc">{{ t('boost_payment_desc') }}</p>
       
       <!-- Тип счёта -->
@@ -133,14 +144,14 @@
           :class="{ active: accountType === 'business' }"
           @click="accountType = 'business'"
         >
-          🏢 {{ t('boost_bank_account') }}
+          {{ t('boost_bank_account') }}
         </button>
         <button 
           class="type-btn" 
           :class="{ active: accountType === 'ip' }"
           @click="accountType = 'ip'"
         >
-          👤 {{ t('boost_ip_account') }}
+          {{ t('boost_ip_account') }}
         </button>
       </div>
       
@@ -170,7 +181,7 @@
       </button>
       
       <div class="payment-note">
-        <p>🇺🇿 {{ t('boost_banks_note') }}</p>
+        <p>{{ t('boost_banks_note') }}</p>
       </div>
     </div>
   </div>
