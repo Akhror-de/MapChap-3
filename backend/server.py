@@ -918,6 +918,159 @@ async def update_payment_details(telegram_id: int, data: PaymentDetails = Body(.
     
     return {"success": True, "payment_details": payment_doc}
 
+
+# ===================== TELEGRAM PAYMENTS =====================
+
+class CreateInvoiceRequest(BaseModel):
+    boost_type: str
+    offer_id: str
+    telegram_id: int
+
+class PaymentCallback(BaseModel):
+    telegram_payment_charge_id: str
+    provider_payment_charge_id: str
+    boost_type: str
+    offer_id: str
+    telegram_id: int
+    total_amount: int
+    currency: str
+
+@app.post("/api/payments/create-invoice")
+async def create_telegram_invoice(data: CreateInvoiceRequest):
+    """
+    Создание invoice для Telegram Payments.
+    Возвращает данные для openInvoice в Telegram WebApp.
+    """
+    # Проверяем пользователя
+    user = await db.users.find_one({"telegram_id": data.telegram_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.get("role") != "business_owner":
+        raise HTTPException(status_code=403, detail="Только бизнес-аккаунты могут покупать бусты")
+    
+    # Проверяем владение объявлением
+    offer = await db.offers.find_one({"id": data.offer_id})
+    if not offer or offer.get("user_id") != data.telegram_id:
+        raise HTTPException(status_code=403, detail="Объявление не найдено или не принадлежит вам")
+    
+    # Получаем план
+    plan = BOOST_PLANS.get(data.boost_type)
+    if not plan:
+        raise HTTPException(status_code=400, detail="Неверный тип буста")
+    
+    # Создаём pending payment в БД
+    payment_id = str(uuid.uuid4())
+    payment_doc = {
+        "id": payment_id,
+        "telegram_id": data.telegram_id,
+        "offer_id": data.offer_id,
+        "boost_type": data.boost_type,
+        "amount": plan["price"],
+        "currency": plan["currency"],
+        "status": "pending",
+        "created_at": datetime.utcnow()
+    }
+    await db.payments.insert_one(payment_doc)
+    
+    # Данные для Telegram Stars invoice
+    invoice_data = {
+        "title": f"Буст {plan['name']}",
+        "description": plan["description"],
+        "payload": f"{payment_id}:{data.boost_type}:{data.offer_id}",
+        "currency": "XTR",  # Telegram Stars
+        "prices": [{"label": plan["name"], "amount": plan["price"]}],
+        "payment_id": payment_id
+    }
+    
+    # Если есть бот токен, создаём invoice через Telegram API
+    if TELEGRAM_BOT_TOKEN:
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/createInvoiceLink",
+                    json={
+                        "title": invoice_data["title"],
+                        "description": invoice_data["description"],
+                        "payload": invoice_data["payload"],
+                        "currency": "XTR",
+                        "prices": invoice_data["prices"]
+                    }
+                )
+                result = response.json()
+                if result.get("ok"):
+                    invoice_data["invoice_link"] = result["result"]
+        except Exception as e:
+            print(f"Telegram API error: {e}")
+    
+    return {"success": True, "invoice": invoice_data}
+
+@app.post("/api/payments/confirm")
+async def confirm_payment(data: PaymentCallback):
+    """
+    Подтверждение успешного платежа от Telegram.
+    Вызывается после успешной оплаты в WebApp.
+    """
+    # Находим pending платёж
+    # payload формат: payment_id:boost_type:offer_id
+    
+    # Проверяем пользователя
+    user = await db.users.find_one({"telegram_id": data.telegram_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Получаем план
+    plan = BOOST_PLANS.get(data.boost_type)
+    if not plan:
+        raise HTTPException(status_code=400, detail="Invalid boost type")
+    
+    # Проверяем сумму
+    if data.total_amount != plan["price"]:
+        raise HTTPException(status_code=400, detail="Invalid payment amount")
+    
+    # Создаём буст
+    from datetime import timedelta
+    boost_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": data.telegram_id,
+        "offer_id": data.offer_id,
+        "boost_type": data.boost_type,
+        "days": plan["days"],
+        "price": plan["price"],
+        "currency": plan["currency"],
+        "status": "active",
+        "notifications_sent": 0,
+        "telegram_payment_id": data.telegram_payment_charge_id,
+        "provider_payment_id": data.provider_payment_charge_id,
+        "created_at": datetime.utcnow(),
+        "expires_at": datetime.utcnow() + timedelta(days=plan["days"])
+    }
+    
+    await db.boosts.insert_one(boost_doc)
+    
+    # Обновляем статус платежа
+    await db.payments.update_one(
+        {"telegram_id": data.telegram_id, "offer_id": data.offer_id, "boost_type": data.boost_type, "status": "pending"},
+        {"$set": {"status": "completed", "completed_at": datetime.utcnow()}}
+    )
+    
+    boost_doc["_id"] = str(boost_doc.get("_id", ""))
+    
+    return {"success": True, "boost": boost_doc, "message": "Буст успешно активирован!"}
+
+@app.get("/api/payments/history/{telegram_id}")
+async def get_payment_history(telegram_id: int):
+    """Получить историю платежей пользователя"""
+    cursor = db.payments.find({"telegram_id": telegram_id}).sort("created_at", -1).limit(50)
+    
+    payments = []
+    async for payment in cursor:
+        payment["_id"] = str(payment["_id"])
+        payments.append(payment)
+    
+    return {"payments": payments}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
