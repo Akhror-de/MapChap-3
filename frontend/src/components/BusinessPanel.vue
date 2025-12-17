@@ -875,7 +875,7 @@ export default {
     
     const handleToggleOfferStatus = async (id) => { 
       await businessStore.toggleOfferStatus(id)
-      showNotification('✅ Статус изменен', 'success') 
+      showNotification('Статус изменен', 'success') 
     }
     
     const handleDeleteOffer = async (id) => {
