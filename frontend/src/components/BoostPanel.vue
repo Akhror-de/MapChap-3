@@ -2,9 +2,26 @@
   <div class="boost-section">
     <!-- Заголовок -->
     <div class="boost-hero">
-      <span class="boost-icon">🚀</span>
+      <div class="boost-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
       <h3>{{ t('boost_title') }}</h3>
       <p>{{ t('boost_desc') }}</p>
+    </div>
+
+    <!-- Выбор объявления -->
+    <div v-if="userOffers.length > 0" class="offer-selector">
+      <label>Выберите объявление для буста:</label>
+      <select v-model="selectedOfferId" class="offer-select">
+        <option v-for="offer in userOffers" :key="offer.id" :value="offer.id">
+          {{ offer.title }}
+        </option>
+      </select>
+    </div>
+    <div v-else class="no-offers-hint">
+      <p>Сначала создайте объявление в разделе "Бизнес"</p>
     </div>
 
     <!-- Как это работает -->
@@ -12,17 +29,17 @@
       <h4>{{ t('boost_how_works') }}</h4>
       <div class="steps">
         <div class="step">
-          <span class="step-icon">1️⃣</span>
+          <span class="step-num">1</span>
           <strong>{{ t('boost_step1') }}</strong>
           <p>{{ t('boost_step1_desc') }}</p>
         </div>
         <div class="step">
-          <span class="step-icon">2️⃣</span>
+          <span class="step-num">2</span>
           <strong>{{ t('boost_step2') }}</strong>
           <p>{{ t('boost_step2_desc') }}</p>
         </div>
         <div class="step">
-          <span class="step-icon">3️⃣</span>
+          <span class="step-num">3</span>
           <strong>{{ t('boost_step3') }}</strong>
           <p>{{ t('boost_step3_desc') }}</p>
         </div>
