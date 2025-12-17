@@ -934,10 +934,30 @@ export default {
     }
     
     // Определяем начальный шаг
-    watch(() => authStore.isBusinessOwner, (isBusiness) => {
-      if (isBusiness) {
-        currentStep.value = 'dashboard'
-        businessStore.loadUserOffers()
+    const determineInitialStep = async () => {
+      if (authStore.isBusinessOwner) {
+        // Загружаем объявления пользователя
+        await businessStore.loadUserOffers()
+        
+        // Если нет объявлений - показываем форму создания
+        // Если есть - показываем дашборд
+        if (businessStore.getUserOffers.length === 0) {
+          currentStep.value = 'create-offer'
+        } else {
+          currentStep.value = 'dashboard'
+        }
+      } else {
+        currentStep.value = 'verification'
+      }
+    }
+
+    watch(() => authStore.isBusinessOwner, (isBusiness, oldValue) => {
+      // Если только что стали бизнесом (переход с false на true)
+      if (isBusiness && oldValue === false) {
+        // Показываем создание первого объявления
+        currentStep.value = 'create-offer'
+      } else if (isBusiness) {
+        determineInitialStep()
       } else {
         currentStep.value = 'verification'
       }
@@ -945,6 +965,10 @@ export default {
 
     onMounted(() => {
       loadCategories()
+      // При монтировании проверяем начальный шаг
+      if (authStore.isBusinessOwner) {
+        determineInitialStep()
+      }
     })
 
     return { 
