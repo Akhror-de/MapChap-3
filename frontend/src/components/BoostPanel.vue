@@ -820,9 +820,9 @@ export default {
 }
 
 .type-btn.active {
-  background: #ff6b00;
-  border-color: #ff6b00;
-  color: #fff;
+  background: #fff;
+  border-color: #fff;
+  color: #000;
 }
 
 .form-group {
