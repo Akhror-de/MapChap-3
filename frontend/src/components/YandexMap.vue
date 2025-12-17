@@ -137,6 +137,7 @@ export default {
     }
 
     // Отслеживание позиции БЕЗ автоматического центрирования
+    // Карта НЕ центрируется автоматически - только по кнопке геолокации
     const startLocationTracking = () => {
       if (!navigator.geolocation) return
 
@@ -152,13 +153,11 @@ export default {
           }
           
           currentHeading.value = newLocation.heading
-          updateUserMarker(newLocation, isFirstLocation)
+          // Только обновляем маркер, НЕ центрируем карту
+          updateUserMarker(newLocation, false)
           
-          // Только при ПЕРВОМ получении локации центрируем карту
-          if (isFirstLocation && map) {
-            map.setCenter([newLocation.latitude, newLocation.longitude], 14, { duration: 500 })
-            isFirstLocation = false
-          }
+          // Сохраняем локацию в store для кнопки
+          offersStore.setUserLocation(newLocation)
         },
         (error) => {
           console.log('Location error:', error.message)
