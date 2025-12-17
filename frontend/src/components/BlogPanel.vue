@@ -211,12 +211,11 @@ export default {
       tagsInput: ''
     })
 
-    // Filters
+    // Filters - только business и user (developer только для команды)
     const blogFilters = computed(() => [
-      { id: 'all', label: t('blog_all'), icon: '📚' },
-      { id: 'developer', label: t('blog_developers'), icon: '👨‍💻' },
-      { id: 'business', label: t('blog_business'), icon: '💼' },
-      { id: 'user', label: t('blog_users'), icon: '👤' }
+      { id: 'all', label: t('blog_all'), icon: '•' },
+      { id: 'business', label: t('blog_business'), icon: '•' },
+      { id: 'user', label: t('blog_users'), icon: '•' }
     ])
 
     // Computed
