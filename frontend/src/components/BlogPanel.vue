@@ -40,7 +40,9 @@
       <div v-else class="articles-container">
         <!-- Пустой стейт -->
         <div v-if="filteredArticles.length === 0" class="empty-state">
-          <div class="empty-icon">📝</div>
+          <div class="empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
           <h3>{{ t('blog_no_articles') }}</h3>
           <p>{{ t('blog_be_first') }}</p>
           <button v-if="isAuthenticated" class="btn btn-primary" @click="showCreateForm = true">
