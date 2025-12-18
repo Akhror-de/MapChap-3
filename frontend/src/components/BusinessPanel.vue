@@ -778,8 +778,8 @@ export default {
           
           // Переходим к созданию объявления
           setTimeout(() => {
-            currentStep.value = 'create-offer'
-          }, 1500)
+            goToCreateOffer()
+          }, 1000)
         }
       } catch (e) { 
         showNotification(e.message || 'Ошибка', 'error') 
