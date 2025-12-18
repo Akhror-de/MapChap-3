@@ -1692,4 +1692,199 @@ export default {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Boost button */
+.btn-boost {
+  background: #fff;
+  color: #000;
+  border: none;
+}
+.btn-boost:hover {
+  background: #e0e0e0;
+}
+
+/* Boost badge */
+.boost-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-size: 11px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.boost-badge.active {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+/* Boost modal */
+.boost-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.boost-modal {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 16px;
+  max-width: 420px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #222;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+}
+.close-btn:hover {
+  color: #fff;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.boost-offer-info {
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.boost-offer-info strong {
+  display: block;
+  color: #fff;
+  font-size: 14px;
+}
+.boost-offer-info p {
+  margin: 4px 0 0;
+  color: #666;
+  font-size: 12px;
+}
+
+.boost-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.boost-plan-card {
+  position: relative;
+  background: #141414;
+  border: 2px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.boost-plan-card:hover {
+  border-color: #444;
+}
+.boost-plan-card.selected {
+  border-color: #fff;
+  background: #1a1a1a;
+}
+.boost-plan-card.popular {
+  border-color: #fff;
+}
+
+.plan-badge {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #000;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.plan-days {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.plan-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.plan-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 10px;
+  color: #888;
+}
+.plan-features li {
+  margin-bottom: 2px;
+}
+
+.boost-info-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #141414;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #888;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #222;
+}
+.modal-footer .btn {
+  flex: 1;
+}
 </style>
