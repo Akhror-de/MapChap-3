@@ -568,6 +568,61 @@
         </div>
       </div>
     </div>
+
+    <!-- Модальное окно буста -->
+    <div v-if="showBoostModal" class="boost-modal-overlay" @click.self="closeBoostModal">
+      <div class="boost-modal">
+        <div class="modal-header">
+          <h3>Буст объявления</h3>
+          <button class="close-btn" @click="closeBoostModal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div v-if="boostingOffer" class="boost-offer-info">
+            <strong>{{ boostingOffer.title }}</strong>
+            <p>{{ boostingOffer.address }}</p>
+          </div>
+
+          <div class="boost-plans-grid">
+            <div 
+              v-for="plan in boostPlans" 
+              :key="plan.id"
+              class="boost-plan-card"
+              :class="{ selected: selectedBoostPlan === plan.id, popular: plan.popular }"
+              @click="selectedBoostPlan = plan.id"
+            >
+              <div v-if="plan.popular" class="plan-badge">Популярный</div>
+              <div class="plan-days">{{ plan.days }}</div>
+              <div class="plan-label">{{ plan.days === 1 ? 'день' : 'дней' }}</div>
+              <div class="plan-price">{{ plan.price }} Stars</div>
+              <ul class="plan-features">
+                <li>+ Push-уведомления</li>
+                <li v-if="plan.days >= 5">+ Популярное</li>
+                <li v-if="plan.days >= 7">+ VIP статус</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="boost-info-block">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span>Telegram Stars — универсальная валюта. 1 Star ≈ $0.02</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="closeBoostModal">Отмена</button>
+          <button 
+            class="btn btn-primary" 
+            :disabled="!selectedBoostPlan || isPurchasingBoost"
+            @click="purchaseBoost"
+          >
+            {{ isPurchasingBoost ? 'Обработка...' : 'Оплатить' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
