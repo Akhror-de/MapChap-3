@@ -1148,6 +1148,7 @@ export default {
     onMounted(() => {
       loadCategories()
       determineInitialStep()
+      loadActiveBoosts()
     })
 
     return { 
@@ -1158,7 +1159,10 @@ export default {
       closePanel, handleBack, initAuth, validateINN, verifyByINN, verifyManually, 
       submitOffer, editOffer, cancelEdit, handleToggleOfferStatus, handleDeleteOffer, 
       getStatusText, toggleAmenity, getAmenityName, t,
-      showDeleteModal, offerToDelete, confirmDeleteOffer, executeDeleteOffer, cancelDelete
+      showDeleteModal, offerToDelete, confirmDeleteOffer, executeDeleteOffer, cancelDelete,
+      // Буст
+      showBoostModal, boostingOffer, selectedBoostPlan, isPurchasingBoost, boostPlans, activeBoosts,
+      getOfferBoost, formatBoostExpiry, openBoostModal, closeBoostModal, purchaseBoost
     }
   }
 }
