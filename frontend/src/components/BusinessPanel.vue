@@ -1017,6 +1017,99 @@ export default {
         lng: 37.618423 
       }) 
     }
+
+    // Функции для буста
+    const loadActiveBoosts = async () => {
+      if (!authStore.user?.telegram_id) return
+      try {
+        const result = await apiService.getUserBoosts(authStore.user.telegram_id)
+        activeBoosts.value = result.boosts || []
+      } catch (e) {
+        activeBoosts.value = []
+      }
+    }
+
+    const getOfferBoost = (offerId) => {
+      return activeBoosts.value.find(b => b.offer_id === offerId && b.status === 'active')
+    }
+
+    const formatBoostExpiry = (boost) => {
+      if (!boost?.expires_at) return ''
+      const date = new Date(boost.expires_at)
+      return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+    }
+
+    const openBoostModal = (offer) => {
+      boostingOffer.value = offer
+      selectedBoostPlan.value = '5days'
+      showBoostModal.value = true
+    }
+
+    const closeBoostModal = () => {
+      showBoostModal.value = false
+      boostingOffer.value = null
+      selectedBoostPlan.value = null
+    }
+
+    const purchaseBoost = async () => {
+      if (!selectedBoostPlan.value || !boostingOffer.value) return
+      
+      isPurchasingBoost.value = true
+      
+      try {
+        const plan = boostPlans.value.find(p => p.id === selectedBoostPlan.value)
+        if (!plan) throw new Error('План не найден')
+
+        // Создаём invoice
+        const result = await apiService.createInvoice(
+          authStore.user.telegram_id,
+          selectedBoostPlan.value,
+          boostingOffer.value.id
+        )
+
+        if (!result.success) {
+          throw new Error(result.error || 'Ошибка создания счёта')
+        }
+
+        const tg = window.Telegram?.WebApp
+
+        if (tg && result.invoice?.invoice_link) {
+          // Открываем Telegram Payment
+          tg.openInvoice(result.invoice.invoice_link, async (status) => {
+            if (status === 'paid') {
+              // Подтверждаем платёж
+              try {
+                await apiService.confirmPayment({
+                  telegram_payment_charge_id: 'tg_' + Date.now(),
+                  provider_payment_charge_id: 'stars_' + Date.now(),
+                  boost_type: selectedBoostPlan.value,
+                  offer_id: boostingOffer.value.id,
+                  telegram_id: authStore.user.telegram_id,
+                  total_amount: plan.price,
+                  currency: plan.currency
+                })
+                
+                showNotification('Буст активирован!', 'success')
+                loadActiveBoosts()
+                closeBoostModal()
+              } catch (e) {
+                showNotification('Ошибка активации', 'error')
+              }
+            } else if (status === 'cancelled') {
+              showNotification('Оплата отменена', 'info')
+            }
+            isPurchasingBoost.value = false
+          })
+        } else {
+          // Демо-режим без Telegram WebApp
+          showNotification(`Для оплаты откройте приложение в Telegram`, 'info')
+          isPurchasingBoost.value = false
+        }
+      } catch (e) {
+        showNotification(e.message || 'Ошибка', 'error')
+        isPurchasingBoost.value = false
+      }
+    }
     
     // Флаг для отслеживания "только что стал бизнесом"
     const justBecameBusiness = ref(false)
