@@ -940,8 +940,18 @@ export default {
       }) 
     }
     
+    // Флаг для отслеживания "только что стал бизнесом"
+    const justBecameBusiness = ref(false)
+
     // Определяем начальный шаг
     const determineInitialStep = async () => {
+      // Если только что прошли верификацию - показываем создание
+      if (justBecameBusiness.value) {
+        currentStep.value = 'create-offer'
+        justBecameBusiness.value = false
+        return
+      }
+      
       if (authStore.isBusinessOwner) {
         // Загружаем объявления пользователя
         await businessStore.loadUserOffers()
@@ -958,24 +968,15 @@ export default {
       }
     }
 
-    watch(() => authStore.isBusinessOwner, (isBusiness, oldValue) => {
-      // Если только что стали бизнесом (переход с false на true)
-      if (isBusiness && oldValue === false) {
-        // Показываем создание первого объявления
-        currentStep.value = 'create-offer'
-      } else if (isBusiness) {
-        determineInitialStep()
-      } else {
-        currentStep.value = 'verification'
-      }
-    }, { immediate: true })
+    // Метод для перехода после верификации (вызывается из verifyByINN и verifyManually)
+    const goToCreateOffer = () => {
+      justBecameBusiness.value = true
+      currentStep.value = 'create-offer'
+    }
 
     onMounted(() => {
       loadCategories()
-      // При монтировании проверяем начальный шаг
-      if (authStore.isBusinessOwner) {
-        determineInitialStep()
-      }
+      determineInitialStep()
     })
 
     return { 
