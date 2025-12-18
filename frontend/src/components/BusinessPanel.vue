@@ -691,6 +691,19 @@ export default {
       { id: '24h', name: '24 часа', icon: '•' }
     ]
 
+    // Буст
+    const showBoostModal = ref(false)
+    const boostingOffer = ref(null)
+    const selectedBoostPlan = ref(null)
+    const isPurchasingBoost = ref(false)
+    const activeBoosts = ref([])
+    
+    const boostPlans = ref([
+      { id: '1day', days: 1, price: 50, currency: 'XTR', popular: false },
+      { id: '5days', days: 5, price: 200, currency: 'XTR', popular: true },
+      { id: '7days', days: 7, price: 300, currency: 'XTR', popular: false }
+    ])
+
     const userOffers = computed(() => getUserOffers.value)
     const businessInfo = computed(() => ({ 
       companyName: authStore.user?.company_name || authStore.user?.first_name || 'Бизнес' 
