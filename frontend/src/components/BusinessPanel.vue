@@ -738,14 +738,15 @@ export default {
           
           showNotification('Верификация пройдена!', 'success')
           
+          // Заполняем адрес из данных DaData
+          if (result.verification?.address) {
+            offerForm.address = result.verification.address
+          }
+          
           // Переходим к созданию объявления
           setTimeout(() => {
-            currentStep.value = 'create-offer'
-            // Заполняем адрес из данных DaData
-            if (result.verification?.address) {
-              offerForm.address = result.verification.address
-            }
-          }, 1500)
+            goToCreateOffer()
+          }, 1000)
         }
       } catch (e) {
         innVerificationResult.value = { success: false, error: e.message || 'Ошибка проверки ИНН' }
